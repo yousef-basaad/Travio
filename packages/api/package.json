@@ -9,6 +9,7 @@
   "dependencies": {
     "@travio/database": "workspace:*",
     "@travio/types": "workspace:*",
+    "@supabase/supabase-js": "^2.45.4",
     "@tanstack/react-query": "^5.59.0"
   },
   "peerDependencies": {
