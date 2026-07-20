@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Button, Card, CardContent, CardHeader } from "@travio/ui";
 import { formatDate } from "@travio/utils";
@@ -8,6 +8,7 @@ import { useLead, LeadNotFoundError } from "../api/leads.api";
 import { LeadStatusBadge } from "./lead-status-badge";
 import { LeadSourceBadge } from "./lead-source-badge";
 import { EmptyState } from "./empty-state";
+import { EditLeadDialog } from "./edit-lead-dialog";
 import { humanize } from "../utils/humanize";
 
 function BackToLeadsLink() {
@@ -63,6 +64,7 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
 
 export function LeadDetails({ id }: { id: string }) {
   const { data: lead, isLoading, error } = useLead(id);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   if (isLoading) {
     return <LeadDetailsSkeleton />;
@@ -80,10 +82,13 @@ export function LeadDetails({ id }: { id: string }) {
     <div className="space-y-6">
       <BackToLeadsLink />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-lg font-semibold">{lead.fullName}</h1>
-        <LeadStatusBadge status={lead.status} />
-        {lead.source && <LeadSourceBadge source={lead.source} />}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-lg font-semibold">{lead.fullName}</h1>
+          <LeadStatusBadge status={lead.status} />
+          {lead.source && <LeadSourceBadge source={lead.source} />}
+        </div>
+        <Button onClick={() => setIsEditOpen(true)}>Edit</Button>
       </div>
 
       <Card>
@@ -138,6 +143,8 @@ export function LeadDetails({ id }: { id: string }) {
           <EmptyState message="Timeline coming soon." />
         </CardContent>
       </Card>
+
+      <EditLeadDialog lead={lead} open={isEditOpen} onOpenChange={setIsEditOpen} />
     </div>
   );
 }
