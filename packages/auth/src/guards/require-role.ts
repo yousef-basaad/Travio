@@ -1,9 +1,12 @@
 import { createServerSupabaseClient } from "@travio/database/server";
-import type { UserRole } from "@travio/types";
+import type { UserRole, Profile } from "@travio/types";
 import type { Database } from "@travio/database";
 
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type ProfileRow = Pick<
+  Database["public"]["Tables"]["profiles"]["Row"],
+  "id" | "tenant_id" | "email" | "full_name" | "role"
+>;
 
 
 export async function requireRole(allowedRoles: UserRole[]) {
@@ -25,22 +28,28 @@ export async function requireRole(allowedRoles: UserRole[]) {
 
 
 
-  const { data: profile } = await supabase
+  const { data: row } = await supabase
     .from("profiles")
-    .select("role, tenant_id")
+    .select("id, tenant_id, email, full_name, role")
     .eq("id", user.id)
-    .single<Pick<Profile, "role" | "tenant_id">>();
+    .single<ProfileRow>();
 
 
 
-  if (!profile || !allowedRoles.includes(profile.role)) {
+  if (!row || !allowedRoles.includes(row.role)) {
     return {
       authorized: false as const,
       reason: "forbidden" as const,
     };
   }
 
-
+  const profile: Profile = {
+    id: row.id,
+    tenantId: row.tenant_id,
+    email: row.email,
+    fullName: row.full_name,
+    role: row.role,
+  };
 
   return {
     authorized: true as const,
