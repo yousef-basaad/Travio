@@ -377,6 +377,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^5.0.0
         version: 5.2.0(eslint@9.39.5(jiti@1.21.7))
+      tailwindcss:
+        specifier: ^3.4.13
+        version: 3.4.19
 
   packages/database:
     dependencies:
