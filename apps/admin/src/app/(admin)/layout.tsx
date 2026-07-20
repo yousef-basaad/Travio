@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireRole } from "@travio/auth";
+import { requireRole } from "@travio/auth/server";
 
 // Travio staff only. This is the platform's highest-privilege surface -
 // the only app allowed to use @travio/database's admin (service-role)
