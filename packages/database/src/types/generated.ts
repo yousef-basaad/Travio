@@ -180,6 +180,8 @@ export type Database = {
         Row: {
           assigned_to: string | null
           branch_id: string | null
+          converted_at: string | null
+          converted_by: string | null
           converted_customer_id: string | null
           created_at: string | null
           deleted_at: string | null
@@ -196,6 +198,8 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           branch_id?: string | null
+          converted_at?: string | null
+          converted_by?: string | null
           converted_customer_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
@@ -212,6 +216,8 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           branch_id?: string | null
+          converted_at?: string | null
+          converted_by?: string | null
           converted_customer_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
@@ -238,6 +244,13 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_converted_by_fkey"
+            columns: ["converted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -948,6 +961,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      convert_crm_lead: {
+        Args: { force_create_new?: boolean; lead_id: string }
+        Returns: Json
+      }
       create_agency: {
         Args: { agency_cr_number: string; agency_name: string }
         Returns: {
