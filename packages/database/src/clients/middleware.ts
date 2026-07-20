@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "../types/generated";
 
@@ -8,27 +8,34 @@ import type { Database } from "../types/generated";
 export async function updateSupabaseSession(request: NextRequest) {
     console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 console.log("SUPABASE KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 10));
- 
- 
+
+
   let response = NextResponse.next({ request });
 
- 
+  // Typed against @supabase/ssr's own CookieMethodsServer contract so the
+  // getAll/setAll callback parameters are inferred from the library instead
+  // of falling back to implicit any (createServerClient's cookies option is
+  // overloaded, which defeats plain contextual typing on an untyped object
+  // literal).
+  const cookieMethods: CookieMethodsServer = {
+    getAll() {
+      return request.cookies.getAll();
+    },
+    setAll(cookiesToSet) {
+      cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+      response = NextResponse.next({ request });
+      cookiesToSet.forEach(({ name, value, options }) =>
+        response.cookies.set(name, value, options),
+      );
+    },
+  };
+
+
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          );
-        },
-      },
+      cookies: cookieMethods,
     },
   );
 
