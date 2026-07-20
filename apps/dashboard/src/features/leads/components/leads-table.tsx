@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useLeads } from "../api/leads.api";
 import { LeadStatusBadge } from "./lead-status-badge";
+import { CreateLeadDialog } from "./create-lead-dialog";
 
 function humanize(value: string) {
   return value
@@ -33,19 +35,14 @@ function LeadsErrorState() {
   );
 }
 
-function LeadsEmptyState() {
+function LeadsEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-12 text-center">
       <h2 className="text-lg font-medium">No leads yet</h2>
       <p className="max-w-sm text-sm text-muted-foreground">
         Create your first CRM lead to start managing your sales pipeline.
       </p>
-      <Button
-        className="mt-2"
-        disabled
-        aria-disabled="true"
-        title="Lead creation isn't available yet"
-      >
+      <Button className="mt-2" onClick={onCreateClick}>
         New Lead
       </Button>
     </div>
@@ -54,17 +51,21 @@ function LeadsEmptyState() {
 
 export function LeadsTable() {
   const { data: leads, isLoading, isError } = useLeads();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Leads</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Leads</h1>
+        <Button onClick={() => setIsCreateOpen(true)}>New Lead</Button>
+      </div>
 
       {isLoading ? (
         <LeadsTableSkeleton />
       ) : isError ? (
         <LeadsErrorState />
       ) : !leads || leads.length === 0 ? (
-        <LeadsEmptyState />
+        <LeadsEmptyState onCreateClick={() => setIsCreateOpen(true)} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm" aria-label="CRM leads">
@@ -131,6 +132,8 @@ export function LeadsTable() {
           </table>
         </div>
       )}
+
+      <CreateLeadDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </div>
   );
 }
