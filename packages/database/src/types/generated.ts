@@ -176,6 +176,86 @@ export type Database = {
           },
         ]
       }
+      crm_leads: {
+        Row: {
+          assigned_to: string | null
+          branch_id: string | null
+          converted_customer_id: string | null
+          created_at: string | null
+          deleted_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          lost_reason: string | null
+          phone: string | null
+          source: Database["public"]["Enums"]["crm_lead_source"] | null
+          status: Database["public"]["Enums"]["crm_lead_status"]
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          branch_id?: string | null
+          converted_customer_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          lost_reason?: string | null
+          phone?: string | null
+          source?: Database["public"]["Enums"]["crm_lead_source"] | null
+          status?: Database["public"]["Enums"]["crm_lead_status"]
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          branch_id?: string | null
+          converted_customer_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          lost_reason?: string | null
+          phone?: string | null
+          source?: Database["public"]["Enums"]["crm_lead_source"] | null
+          status?: Database["public"]["Enums"]["crm_lead_status"]
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_converted_customer_id_fkey"
+            columns: ["converted_customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           branch_id: string | null
@@ -899,6 +979,23 @@ export type Database = {
         | "confirmed"
         | "completed"
         | "cancelled"
+      crm_lead_source:
+        | "walk_in"
+        | "website"
+        | "whatsapp"
+        | "instagram"
+        | "snapchat"
+        | "tiktok"
+        | "referral"
+        | "phone"
+        | "other"
+      crm_lead_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "proposal_sent"
+        | "won"
+        | "lost"
       invoice_status:
         | "draft"
         | "issued"
@@ -1056,6 +1153,25 @@ export const Constants = {
         "confirmed",
         "completed",
         "cancelled",
+      ],
+      crm_lead_source: [
+        "walk_in",
+        "website",
+        "whatsapp",
+        "instagram",
+        "snapchat",
+        "tiktok",
+        "referral",
+        "phone",
+        "other",
+      ],
+      crm_lead_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "proposal_sent",
+        "won",
+        "lost",
       ],
       invoice_status: [
         "draft",
