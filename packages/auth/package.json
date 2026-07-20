@@ -10,7 +10,8 @@
     "./server": "./src/server.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@travio/database": "workspace:*",
@@ -21,6 +22,7 @@
     "next": "^15.0.0"
   },
   "devDependencies": {
+    "@travio/config": "workspace:*",
     "@types/react": "^18.3.11",
     "typescript": "^5.6.3"
   }

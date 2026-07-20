@@ -12,6 +12,10 @@
     "./middleware": "./src/clients/middleware.ts",
     "./admin": "./src/clients/admin.ts"
   },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
   "dependencies": {
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4"
@@ -20,6 +24,7 @@
     "next": "^15.0.0"
   },
   "devDependencies": {
+    "@travio/config": "workspace:*",
     "@types/node": "^22.7.5",
     "next": "^15.0.0",
     "typescript": "^5.6.3"

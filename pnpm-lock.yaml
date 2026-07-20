@@ -334,6 +334,9 @@ importers:
         specifier: ^18.3.1 || ^19.0.0
         version: 18.3.1
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       '@types/react':
         specifier: ^18.3.11
         version: 18.3.31
@@ -356,6 +359,9 @@ importers:
         specifier: ^18.3.1 || ^19.0.0
         version: 18.3.1
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       '@types/react':
         specifier: ^18.3.11
         version: 18.3.31
@@ -393,6 +399,9 @@ importers:
         specifier: ^2.45.4
         version: 2.110.7
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       '@types/node':
         specifier: ^22.7.5
         version: 22.20.1
@@ -409,6 +418,9 @@ importers:
         specifier: ^18.3.1 || ^19.0.0
         version: 18.3.1
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       '@types/react':
         specifier: ^18.3.11
         version: 18.3.31
@@ -422,6 +434,9 @@ importers:
         specifier: ^3.23.8
         version: 3.25.76
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
@@ -447,6 +462,9 @@ importers:
         specifier: ^18.3.1 || ^19.0.0
         version: 18.3.1(react@18.3.1)
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       '@types/react':
         specifier: ^18.3.11
         version: 18.3.31
@@ -466,6 +484,9 @@ importers:
         specifier: ^2.5.4
         version: 2.6.1
     devDependencies:
+      '@travio/config':
+        specifier: workspace:*
+        version: link:../config
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
