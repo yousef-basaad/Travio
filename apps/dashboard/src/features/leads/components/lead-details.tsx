@@ -9,6 +9,7 @@ import { LeadStatusBadge } from "./lead-status-badge";
 import { LeadSourceBadge } from "./lead-source-badge";
 import { EmptyState } from "./empty-state";
 import { EditLeadDialog } from "./edit-lead-dialog";
+import { ConvertLeadDialog } from "./convert-lead-dialog";
 import { humanize } from "../utils/humanize";
 
 function BackToLeadsLink() {
@@ -65,6 +66,7 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
 export function LeadDetails({ id }: { id: string }) {
   const { data: lead, isLoading, error } = useLead(id);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConvertOpen, setIsConvertOpen] = useState(false);
 
   if (isLoading) {
     return <LeadDetailsSkeleton />;
@@ -88,7 +90,14 @@ export function LeadDetails({ id }: { id: string }) {
           <LeadStatusBadge status={lead.status} />
           {lead.source && <LeadSourceBadge source={lead.source} />}
         </div>
-        <Button onClick={() => setIsEditOpen(true)}>Edit</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setIsEditOpen(true)}>
+            Edit
+          </Button>
+          {lead.status !== "won" && (
+            <Button onClick={() => setIsConvertOpen(true)}>Convert Lead</Button>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -145,6 +154,7 @@ export function LeadDetails({ id }: { id: string }) {
       </Card>
 
       <EditLeadDialog lead={lead} open={isEditOpen} onOpenChange={setIsEditOpen} />
+      <ConvertLeadDialog lead={lead} open={isConvertOpen} onOpenChange={setIsConvertOpen} />
     </div>
   );
 }

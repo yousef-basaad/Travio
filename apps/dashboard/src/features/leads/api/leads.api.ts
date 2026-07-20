@@ -160,8 +160,18 @@ function isConvertLeadResult(value: unknown): value is ConvertLeadResult {
   );
 }
 
-// No UI calls this yet - added ahead of the Convert button per this
-// issue's scope, so that button's own issue only has to wire it up.
+// Carries the HTTP status through so callers can map it to a friendly
+// message (see ConvertLeadDialog) without parsing the error's text.
+export class ConvertLeadError extends Error {
+  status: number;
+
+  constructor(status: number) {
+    super(`Failed to convert lead (${status})`);
+    this.name = "ConvertLeadError";
+    this.status = status;
+  }
+}
+
 async function convertLead({
   id,
   forceCreateNew,
@@ -176,7 +186,7 @@ async function convertLead({
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to convert lead (${response.status})`);
+    throw new ConvertLeadError(response.status);
   }
 
   const data: unknown = await response.json();
@@ -198,6 +208,9 @@ export function useConvertLead() {
       // the list and this lead's detail query refetch and pick up the new
       // status/converted_customer_id.
       void queryClient.invalidateQueries({ queryKey: LEADS_QUERY_KEY });
+      // Prefix match (no tenantId known here) - covers useCustomers'
+      // ["customers", tenantId] query if one is currently mounted.
+      void queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
   });
 }
