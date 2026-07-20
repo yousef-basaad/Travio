@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireRole } from "@travio/auth";
+import { requireRole } from "@travio/auth/server";
 
 // Customers only - a separate identity from agency staff. This guard
 // intentionally allows only "customer", matching this app's sole audience.
