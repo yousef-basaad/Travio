@@ -515,6 +515,33 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          agency_name: string
+          created_at: string
+          email: string
+          id: string
+          message: string
+          updated_at: string
+        }
+        Insert: {
+          agency_name: string
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          updated_at?: string
+        }
+        Update: {
+          agency_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -1060,4 +1087,3 @@ export const Constants = {
     },
   },
 } as const
-type Test = Database["public"]["Functions"]["create_agency"];

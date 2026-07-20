@@ -14,6 +14,10 @@ export async function submitInquiry(formData: FormData) {
   });
 
   const supabase = createAdminSupabaseClient();
-  const { error } = await supabase.from("leads").insert(parsed);
+  const { error } = await supabase.from("leads").insert({
+    agency_name: parsed.agencyName,
+    email: parsed.email,
+    message: parsed.message,
+  });
   if (error) throw error;
 }
