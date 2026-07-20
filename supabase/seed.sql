@@ -1,0 +1,7 @@
+-- Local development seed data.
+-- Runs automatically on `supabase db reset`. Keep this idempotent and
+-- local-only — never seed production data here.
+--
+-- Example (uncomment and adapt once auth.users test accounts exist):
+-- insert into public.tenants (name, slug, cr_number)
+--   values ('Demo Travel Agency', 'demo-agency', '1010000000');

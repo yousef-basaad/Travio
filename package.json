@@ -1,0 +1,35 @@
+{
+  "name": "travio",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.26.2",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:dashboard": "turbo run dev --filter=@travio/dashboard",
+    "dev:website": "turbo run dev --filter=@travio/website",
+    "dev:customer-portal": "turbo run dev --filter=@travio/customer-portal",
+    "dev:admin": "turbo run dev --filter=@travio/admin",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\" --cache",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\" --cache",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:diff": "supabase db diff",
+    "db:push": "supabase db push",
+    "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > packages/database/src/types/generated.ts"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "turbo": "^2.10.5",
+    "typescript": "^5.6.3"
+  }
+}

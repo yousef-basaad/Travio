@@ -1,0 +1,14 @@
+import { useEffect, useState } from "react";
+
+// Used across feature search/filter inputs (customers, bookings tables)
+// to avoid firing a query on every keystroke.
+export function useDebounce<T>(value: T, delayMs = 300): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timeout);
+  }, [value, delayMs]);
+
+  return debounced;
+}

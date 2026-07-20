@@ -1,0 +1,18 @@
+{
+  "name": "@travio/config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./eslint": "./eslint/base.js",
+    "./eslint/next": "./eslint/next.js",
+    "./tailwind": "./tailwind/preset.ts",
+    "./tsconfig": "../../tsconfig.base.json"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "eslint-config-next": "^15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^5.0.0"
+  }
+}
