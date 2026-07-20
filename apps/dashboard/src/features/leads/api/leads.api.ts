@@ -62,3 +62,42 @@ export function useCreateLead() {
     },
   });
 }
+
+// Distinguished from a generic fetch failure so the details page can show
+// "Lead not found" instead of a generic error message.
+export class LeadNotFoundError extends Error {
+  constructor() {
+    super("Lead not found");
+    this.name = "LeadNotFoundError";
+  }
+}
+
+async function fetchLead(id: string): Promise<CrmLead> {
+  const response = await fetch(`/api/crm/leads/${id}`);
+
+  if (response.status === 404) {
+    throw new LeadNotFoundError();
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to load lead (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Unexpected response from /api/crm/leads/:id");
+  }
+
+  return data as CrmLead;
+}
+
+export function useLead(id: string) {
+  return useQuery({
+    queryKey: [...LEADS_QUERY_KEY, id],
+    queryFn: () => fetchLead(id),
+    enabled: Boolean(id),
+    // A 404 won't become found by retrying, and every other error is
+    // already rare for a same-origin, first-party API - fail fast.
+    retry: false,
+  });
+}

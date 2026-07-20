@@ -10,13 +10,7 @@ import {
   CRM_LEAD_SOURCE_OPTIONS,
   type CreateLeadFormValues,
 } from "../schemas/create-lead.schema";
-
-function humanize(value: string) {
-  return value
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+import { humanize } from "../utils/humanize";
 
 const DEFAULT_VALUES: CreateLeadFormValues = {
   fullName: "",

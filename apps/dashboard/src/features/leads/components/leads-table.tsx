@@ -3,16 +3,11 @@
 import { useState } from "react";
 import { Button } from "@travio/ui";
 import { formatDate } from "@travio/utils";
+import Link from "next/link";
 import { useLeads } from "../api/leads.api";
 import { LeadStatusBadge } from "./lead-status-badge";
 import { CreateLeadDialog } from "./create-lead-dialog";
-
-function humanize(value: string) {
-  return value
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+import { humanize } from "../utils/humanize";
 
 function LeadsTableSkeleton() {
   return (
@@ -115,15 +110,10 @@ export function LeadsTable() {
                     {lead.createdAt ? formatDate(lead.createdAt) : "—"}
                   </td>
                   <td className="py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled
-                      aria-disabled="true"
-                      aria-label={`View ${lead.fullName}`}
-                      title="Lead detail view isn't available yet"
-                    >
-                      View
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/leads/${lead.id}`} aria-label={`View ${lead.fullName}`}>
+                        View
+                      </Link>
                     </Button>
                   </td>
                 </tr>
