@@ -143,3 +143,61 @@ export function useUpdateLead() {
     },
   });
 }
+
+export type ConvertLeadResult = {
+  outcome: "created" | "linked";
+  leadId: string;
+  customerId: string;
+};
+
+function isConvertLeadResult(value: unknown): value is ConvertLeadResult {
+  if (typeof value !== "object" || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    (record.outcome === "created" || record.outcome === "linked") &&
+    typeof record.leadId === "string" &&
+    typeof record.customerId === "string"
+  );
+}
+
+// No UI calls this yet - added ahead of the Convert button per this
+// issue's scope, so that button's own issue only has to wire it up.
+async function convertLead({
+  id,
+  forceCreateNew,
+}: {
+  id: string;
+  forceCreateNew?: boolean;
+}): Promise<ConvertLeadResult> {
+  const response = await fetch(`/api/crm/leads/${id}/convert`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ forceCreateNew: forceCreateNew ?? false }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to convert lead (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (!isConvertLeadResult(data)) {
+    throw new Error("Unexpected response from /api/crm/leads/:id/convert");
+  }
+
+  return data;
+}
+
+export function useConvertLead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: convertLead,
+    onSuccess: () => {
+      // No full lead object comes back from convert (only ids), so there's
+      // nothing to seed directly - invalidate broadly (no `exact`) so both
+      // the list and this lead's detail query refetch and pick up the new
+      // status/converted_customer_id.
+      void queryClient.invalidateQueries({ queryKey: LEADS_QUERY_KEY });
+    },
+  });
+}

@@ -46,3 +46,9 @@ export const updateCrmLeadSchema = z.object({
   status: crmLeadStatusSchema.optional(),
   lostReason: z.string().nullable().optional(),
 });
+
+// Body is entirely optional - an empty POST is valid and means
+// force_create_new: false, matching convert_crm_lead's own default.
+export const convertCrmLeadSchema = z.object({
+  forceCreateNew: z.boolean().optional().default(false),
+});
