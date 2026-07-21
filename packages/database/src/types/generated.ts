@@ -396,8 +396,10 @@ export type Database = {
           id: string
           nationality: string | null
           notes: string | null
+          passport_expiry: string | null
           passport_number: string | null
           phone: string | null
+          preferred_language: string | null
           tenant_id: string
           updated_at: string
         }
@@ -411,8 +413,10 @@ export type Database = {
           id?: string
           nationality?: string | null
           notes?: string | null
+          passport_expiry?: string | null
           passport_number?: string | null
           phone?: string | null
+          preferred_language?: string | null
           tenant_id: string
           updated_at?: string
         }
@@ -426,8 +430,10 @@ export type Database = {
           id?: string
           nationality?: string | null
           notes?: string | null
+          passport_expiry?: string | null
           passport_number?: string | null
           phone?: string | null
+          preferred_language?: string | null
           tenant_id?: string
           updated_at?: string
         }
