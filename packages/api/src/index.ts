@@ -17,3 +17,5 @@ export type {
   CreateCrmActivityInput,
   UpdateCrmActivityInput,
 } from "./services/crm-activities.mapper";
+export * from "./services/crm-timeline.service";
+export type { CrmTimelineItem, CrmTimelineItemType } from "./services/crm-timeline.mapper";
