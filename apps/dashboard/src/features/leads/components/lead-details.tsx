@@ -10,6 +10,7 @@ import { LeadSourceBadge } from "./lead-source-badge";
 import { EmptyState } from "./empty-state";
 import { EditLeadDialog } from "./edit-lead-dialog";
 import { ConvertLeadDialog } from "./convert-lead-dialog";
+import { LeadNotes } from "./notes/lead-notes";
 import { humanize } from "../utils/humanize";
 
 function BackToLeadsLink() {
@@ -126,14 +127,7 @@ export function LeadDetails({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-sm font-medium">Notes</h2>
-        </CardHeader>
-        <CardContent>
-          <EmptyState message="No notes yet." />
-        </CardContent>
-      </Card>
+      <LeadNotes leadId={lead.id} />
 
       <Card>
         <CardHeader>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CrmLead } from "@travio/api";
+import type { CrmLead, CrmNote } from "@travio/api";
 import type { CreateLeadFormValues } from "../schemas/create-lead.schema";
 import type { EditLeadFormValues } from "../schemas/edit-lead.schema";
 
@@ -211,6 +211,88 @@ export function useConvertLead() {
       // Prefix match (no tenantId known here) - covers useCustomers'
       // ["customers", tenantId] query if one is currently mounted.
       void queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+}
+
+function leadNotesQueryKey(leadId: string) {
+  return [...LEADS_QUERY_KEY, leadId, "notes"];
+}
+
+async function fetchLeadNotes(leadId: string): Promise<CrmNote[]> {
+  const response = await fetch(`/api/crm/leads/${leadId}/notes`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load notes (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected response from /api/crm/leads/:id/notes");
+  }
+
+  return data as CrmNote[];
+}
+
+export function useLeadNotes(leadId: string) {
+  return useQuery({
+    queryKey: leadNotesQueryKey(leadId),
+    queryFn: () => fetchLeadNotes(leadId),
+    enabled: Boolean(leadId),
+  });
+}
+
+async function createLeadNote({
+  leadId,
+  body,
+}: {
+  leadId: string;
+  body: string;
+}): Promise<CrmNote> {
+  const response = await fetch(`/api/crm/leads/${leadId}/notes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ body }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create note (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Unexpected response from /api/crm/leads/:id/notes");
+  }
+
+  return data as CrmNote;
+}
+
+export function useCreateLeadNote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createLeadNote,
+    onSuccess: (_note, variables) => {
+      void queryClient.invalidateQueries({ queryKey: leadNotesQueryKey(variables.leadId) });
+    },
+  });
+}
+
+async function deleteLeadNote({ id }: { id: string; leadId: string }): Promise<void> {
+  const response = await fetch(`/api/crm/notes/${id}`, { method: "DELETE" });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete note (${response.status})`);
+  }
+}
+
+export function useDeleteLeadNote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteLeadNote,
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: leadNotesQueryKey(variables.leadId) });
     },
   });
 }
