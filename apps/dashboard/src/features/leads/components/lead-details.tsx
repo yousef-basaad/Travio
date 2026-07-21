@@ -7,11 +7,11 @@ import { formatDate } from "@travio/utils";
 import { useLead, LeadNotFoundError } from "../api/leads.api";
 import { LeadStatusBadge } from "./lead-status-badge";
 import { LeadSourceBadge } from "./lead-source-badge";
-import { EmptyState } from "./empty-state";
 import { EditLeadDialog } from "./edit-lead-dialog";
 import { ConvertLeadDialog } from "./convert-lead-dialog";
 import { LeadNotes } from "./notes/lead-notes";
 import { ActivityList } from "./activities/activity-list";
+import { LeadTimeline } from "./timeline/lead-timeline";
 import { humanize } from "../utils/humanize";
 
 function BackToLeadsLink() {
@@ -132,14 +132,7 @@ export function LeadDetails({ id }: { id: string }) {
 
       <ActivityList leadId={lead.id} />
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-sm font-medium">Timeline</h2>
-        </CardHeader>
-        <CardContent>
-          <EmptyState message="Timeline coming soon." />
-        </CardContent>
-      </Card>
+      <LeadTimeline leadId={lead.id} />
 
       <EditLeadDialog lead={lead} open={isEditOpen} onOpenChange={setIsEditOpen} />
       <ConvertLeadDialog lead={lead} open={isConvertOpen} onOpenChange={setIsConvertOpen} />

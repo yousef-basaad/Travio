@@ -2,9 +2,10 @@ import type { CrmActivity, CrmActivityType } from "@travio/api";
 import { Button } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 
-// Single source of truth for the type -> icon mapping - nowhere else in
-// the activities UI needs icons, so this stays confined to one file.
-const ACTIVITY_ICONS: Record<CrmActivityType, string> = {
+// Single source of truth for the type -> icon mapping. Exported so
+// timeline-item.tsx reuses it for activity-type timeline entries instead
+// of duplicating it.
+export const ACTIVITY_ICONS: Record<CrmActivityType, string> = {
   call: "📞",
   email: "📧",
   meeting: "🤝",

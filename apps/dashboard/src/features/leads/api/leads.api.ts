@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CrmLead, CrmNote, CrmActivity, CrmActivityType } from "@travio/api";
+import type { CrmLead, CrmNote, CrmActivity, CrmActivityType, CrmTimelineItem } from "@travio/api";
 import type { CreateLeadFormValues } from "../schemas/create-lead.schema";
 import type { EditLeadFormValues } from "../schemas/edit-lead.schema";
 
@@ -421,5 +421,35 @@ export function useDeleteLeadActivity() {
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: leadActivitiesQueryKey(variables.leadId) });
     },
+  });
+}
+
+function leadTimelineQueryKey(leadId: string) {
+  return [...LEADS_QUERY_KEY, leadId, "timeline"];
+}
+
+// Read-only - crmTimelineService composes crm_leads/crm_notes/
+// crm_activities server-side and returns them pre-sorted (newest first),
+// so there's nothing to invalidate here beyond the query itself.
+async function fetchLeadTimeline(leadId: string): Promise<CrmTimelineItem[]> {
+  const response = await fetch(`/api/crm/leads/${leadId}/timeline`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load timeline (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected response from /api/crm/leads/:id/timeline");
+  }
+
+  return data as CrmTimelineItem[];
+}
+
+export function useLeadTimeline(leadId: string) {
+  return useQuery({
+    queryKey: leadTimelineQueryKey(leadId),
+    queryFn: () => fetchLeadTimeline(leadId),
+    enabled: Boolean(leadId),
   });
 }
