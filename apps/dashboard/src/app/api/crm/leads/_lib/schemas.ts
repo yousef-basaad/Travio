@@ -52,3 +52,10 @@ export const updateCrmLeadSchema = z.object({
 export const convertCrmLeadSchema = z.object({
   forceCreateNew: z.boolean().optional().default(false),
 });
+
+// leadId/customerId/createdBy/tenantId are never accepted from the
+// request body - the route derives them from the URL param and the
+// authenticated session.
+export const createCrmNoteSchema = z.object({
+  body: z.string().min(1),
+});

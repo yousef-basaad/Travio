@@ -11,6 +11,7 @@ const CRM_LEAD_ROLES = [
 
 type CrmAccess = {
   tenantId: string;
+  userId: string;
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>;
 };
 
@@ -44,6 +45,6 @@ export async function requireCrmAccess(): Promise<CrmAccessResult> {
 
   return {
     ok: true,
-    access: { tenantId: result.profile.tenantId, supabase },
+    access: { tenantId: result.profile.tenantId, userId: result.profile.id, supabase },
   };
 }
