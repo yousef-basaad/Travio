@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CrmLead, CrmNote } from "@travio/api";
+import type { CrmLead, CrmNote, CrmActivity, CrmActivityType } from "@travio/api";
 import type { CreateLeadFormValues } from "../schemas/create-lead.schema";
 import type { EditLeadFormValues } from "../schemas/edit-lead.schema";
 
@@ -293,6 +293,133 @@ export function useDeleteLeadNote() {
     mutationFn: deleteLeadNote,
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: leadNotesQueryKey(variables.leadId) });
+    },
+  });
+}
+
+function leadActivitiesQueryKey(leadId: string) {
+  return [...LEADS_QUERY_KEY, leadId, "activities"];
+}
+
+async function fetchLeadActivities(leadId: string): Promise<CrmActivity[]> {
+  const response = await fetch(`/api/crm/leads/${leadId}/activities`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load activities (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected response from /api/crm/leads/:id/activities");
+  }
+
+  return data as CrmActivity[];
+}
+
+export function useLeadActivities(leadId: string) {
+  return useQuery({
+    queryKey: leadActivitiesQueryKey(leadId),
+    queryFn: () => fetchLeadActivities(leadId),
+    enabled: Boolean(leadId),
+  });
+}
+
+async function createLeadActivity({
+  leadId,
+  type,
+  title,
+  description,
+}: {
+  leadId: string;
+  type: CrmActivityType;
+  title: string;
+  description?: string | null;
+}): Promise<CrmActivity> {
+  const response = await fetch(`/api/crm/leads/${leadId}/activities`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, title, description }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create activity (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Unexpected response from /api/crm/leads/:id/activities");
+  }
+
+  return data as CrmActivity;
+}
+
+export function useCreateLeadActivity() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createLeadActivity,
+    onSuccess: (_activity, variables) => {
+      void queryClient.invalidateQueries({ queryKey: leadActivitiesQueryKey(variables.leadId) });
+    },
+  });
+}
+
+async function updateLeadActivity({
+  id,
+  type,
+  title,
+  description,
+}: {
+  id: string;
+  leadId: string;
+  type?: CrmActivityType;
+  title?: string;
+  description?: string | null;
+}): Promise<CrmActivity> {
+  const response = await fetch(`/api/crm/activities/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, title, description }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update activity (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Unexpected response from /api/crm/activities/:id");
+  }
+
+  return data as CrmActivity;
+}
+
+export function useUpdateLeadActivity() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateLeadActivity,
+    onSuccess: (_activity, variables) => {
+      void queryClient.invalidateQueries({ queryKey: leadActivitiesQueryKey(variables.leadId) });
+    },
+  });
+}
+
+async function deleteLeadActivity({ id }: { id: string; leadId: string }): Promise<void> {
+  const response = await fetch(`/api/crm/activities/${id}`, { method: "DELETE" });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete activity (${response.status})`);
+  }
+}
+
+export function useDeleteLeadActivity() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteLeadActivity,
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({ queryKey: leadActivitiesQueryKey(variables.leadId) });
     },
   });
 }

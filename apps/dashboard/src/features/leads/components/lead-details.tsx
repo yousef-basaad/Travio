@@ -11,6 +11,7 @@ import { EmptyState } from "./empty-state";
 import { EditLeadDialog } from "./edit-lead-dialog";
 import { ConvertLeadDialog } from "./convert-lead-dialog";
 import { LeadNotes } from "./notes/lead-notes";
+import { ActivityList } from "./activities/activity-list";
 import { humanize } from "../utils/humanize";
 
 function BackToLeadsLink() {
@@ -129,14 +130,7 @@ export function LeadDetails({ id }: { id: string }) {
 
       <LeadNotes leadId={lead.id} />
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-sm font-medium">Activities</h2>
-        </CardHeader>
-        <CardContent>
-          <EmptyState message="No activities yet." />
-        </CardContent>
-      </Card>
+      <ActivityList leadId={lead.id} />
 
       <Card>
         <CardHeader>
