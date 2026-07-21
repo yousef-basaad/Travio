@@ -10,3 +10,10 @@ export type {
 } from "./services/crm-leads.mapper";
 export * from "./services/crm-notes.service";
 export type { CrmNote, CreateCrmNoteInput } from "./services/crm-notes.mapper";
+export * from "./services/crm-activities.service";
+export type {
+  CrmActivity,
+  CrmActivityType,
+  CreateCrmActivityInput,
+  UpdateCrmActivityInput,
+} from "./services/crm-activities.mapper";

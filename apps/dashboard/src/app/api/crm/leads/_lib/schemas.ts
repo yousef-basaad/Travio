@@ -59,3 +59,32 @@ export const convertCrmLeadSchema = z.object({
 export const createCrmNoteSchema = z.object({
   body: z.string().min(1),
 });
+
+// Matches crm_activities_type_check exactly.
+const crmActivityTypeSchema = z.enum([
+  "call",
+  "email",
+  "meeting",
+  "whatsapp",
+  "task",
+  "follow_up",
+]);
+
+// tenantId/leadId/performedBy are never accepted from the request body -
+// the route derives them from the URL param and the authenticated
+// session, same as createCrmNoteSchema.
+export const createCrmActivitySchema = z.object({
+  type: crmActivityTypeSchema,
+  title: z.string().min(1),
+  description: z.string().nullable().optional(),
+  performedAt: z.string().datetime().optional(),
+});
+
+// leadId/tenantId/performedBy are immutable after creation - not
+// accepted here either.
+export const updateCrmActivitySchema = z.object({
+  type: crmActivityTypeSchema.optional(),
+  title: z.string().min(1).optional(),
+  description: z.string().nullable().optional(),
+  performedAt: z.string().datetime().optional(),
+});
