@@ -8,3 +8,5 @@ export type {
   CreateCrmLeadInput,
   UpdateCrmLeadInput,
 } from "./services/crm-leads.mapper";
+export * from "./services/crm-notes.service";
+export type { CrmNote, CreateCrmNoteInput } from "./services/crm-notes.mapper";
