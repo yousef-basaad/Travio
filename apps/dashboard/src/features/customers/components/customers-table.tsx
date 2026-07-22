@@ -1,44 +1,115 @@
 "use client";
 
-import { useSession } from "@travio/auth";
+import { Button } from "@travio/ui";
+import { formatDate } from "@travio/utils";
 import { useCustomers } from "../api/customers.api";
-import type { Database } from "@travio/database";
+import { EmptyState } from "./empty-state";
 
-type Customer =
-  Database["public"]["Tables"]["customers"]["Row"];
+const COLUMNS = ["Full Name", "Email", "Phone", "Passport Expiry", "Preferred Language"];
 
+function CustomersTableSkeleton() {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm" aria-label="Loading customers">
+        <thead>
+          <tr className="border-b text-left">
+            {COLUMNS.map((column) => (
+              <th key={column} scope="col" className="whitespace-nowrap py-2 pr-4">
+                {column}
+              </th>
+            ))}
+            <th scope="col" className="whitespace-nowrap py-2">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody role="status" aria-label="Loading customers">
+          {Array.from({ length: 5 }).map((_, rowIndex) => (
+            <tr key={rowIndex} className="border-b">
+              {Array.from({ length: COLUMNS.length + 1 }).map((_, cellIndex) => (
+                <td key={cellIndex} className="py-2 pr-4">
+                  <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
+function CustomersErrorState() {
+  return (
+    <div
+      role="alert"
+      className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-sm text-destructive"
+    >
+      Something went wrong loading customers. Please try again later.
+    </div>
+  );
+}
 
 export function CustomersTable() {
-  const { profile } = useSession();
+  const { data: customers, isLoading, isError } = useCustomers();
 
-  const { data, isLoading } = useCustomers(
-    profile?.tenantId ?? ""
-  );
+  if (isLoading) {
+    return <CustomersTableSkeleton />;
+  }
 
-  const customers: Customer[] = data ?? [];
+  if (isError) {
+    return <CustomersErrorState />;
+  }
 
-  if (isLoading) return <p>Loading customers…</p>;
+  if (!customers || customers.length === 0) {
+    return <EmptyState message="No customers yet" />;
+  }
 
   return (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b text-left">
-          <th className="py-2">Name</th>
-          <th className="py-2">Email</th>
-          <th className="py-2">Phone</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {customers.map((customer) => (
-          <tr key={customer.id} className="border-b">
-            <td className="py-2">{customer.full_name}</td>
-            <td className="py-2">{customer.email}</td>
-            <td className="py-2">{customer.phone}</td>
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm" aria-label="Customers">
+        <caption className="sr-only">List of customers</caption>
+        <thead>
+          <tr className="border-b text-left">
+            {COLUMNS.map((column) => (
+              <th key={column} scope="col" className="whitespace-nowrap py-2 pr-4">
+                {column}
+              </th>
+            ))}
+            <th scope="col" className="whitespace-nowrap py-2">
+              <span className="sr-only">Actions</span>
+            </th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {customers.map((customer) => (
+            <tr key={customer.id} className="border-b">
+              <td className="py-2 pr-4">{customer.fullName}</td>
+              <td className="py-2 pr-4">{customer.email ?? "—"}</td>
+              <td className="py-2 pr-4">{customer.phone ?? "—"}</td>
+              <td className="py-2 pr-4">
+                {customer.passportExpiry ? formatDate(customer.passportExpiry) : "—"}
+              </td>
+              <td className="py-2 pr-4">{customer.preferredLanguage ?? "—"}</td>
+              <td className="py-2">
+                {/* Disabled - no Customer 360 detail page exists yet, same
+                    treatment leads-table.tsx's View button had before
+                    /leads/[id] existed. */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled
+                  aria-disabled="true"
+                  aria-label={`View ${customer.fullName}`}
+                  title="Customer detail view isn't available yet"
+                >
+                  View
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
