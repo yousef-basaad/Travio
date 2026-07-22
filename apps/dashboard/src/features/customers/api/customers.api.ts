@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { Customer } from "@travio/api";
+import type { Customer, CustomerTimelineItem } from "@travio/api";
 
 // CUSTOMERS_QUERY_KEY must stay exactly ["customers"] - leads.api.ts's
 // useConvertLead() already invalidates this same key (a prefix-match
@@ -73,5 +73,35 @@ export function useCustomer(id: string) {
     enabled: Boolean(id),
     // A 404 won't become found by retrying, matching useLead's reasoning.
     retry: false,
+  });
+}
+
+function customerTimelineQueryKey(customerId: string) {
+  return [...CUSTOMERS_QUERY_KEY, customerId, "timeline"];
+}
+
+// Read-only - customerTimelineService composes customer/crm_leads
+// server-side and returns them pre-sorted (newest first), matching
+// useLeadTimeline's reasoning exactly.
+async function fetchCustomerTimeline(customerId: string): Promise<CustomerTimelineItem[]> {
+  const response = await fetch(`/api/customers/${customerId}/timeline`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load timeline (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected response from /api/customers/:id/timeline");
+  }
+
+  return data as CustomerTimelineItem[];
+}
+
+export function useCustomerTimeline(customerId: string) {
+  return useQuery({
+    queryKey: customerTimelineQueryKey(customerId),
+    queryFn: () => fetchCustomerTimeline(customerId),
+    enabled: Boolean(customerId),
   });
 }

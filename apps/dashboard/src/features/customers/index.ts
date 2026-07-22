@@ -6,5 +6,7 @@ export * from "./components/empty-state";
 export * from "./components/customer-details";
 export * from "./components/customer-profile-card";
 export * from "./components/customer-tabs";
+export * from "./components/timeline/customer-timeline";
+export * from "./components/timeline/customer-timeline-item";
 export * from "./api/customers.api";
 export * from "./schemas/customer.schema";

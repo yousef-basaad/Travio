@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@travio/ui";
 import { cn, formatDate } from "@travio/utils";
 import type { Customer } from "@travio/api";
 import { InfoRow } from "./customer-profile-card";
+import { CustomerTimeline } from "./timeline/customer-timeline";
 
 const TABS = [
   "Overview",
@@ -72,6 +73,8 @@ export function CustomerTabs({ customer }: { customer: Customer }) {
       <CardContent className="pt-4">
         {activeTab === "Overview" ? (
           <OverviewTab customer={customer} />
+        ) : activeTab === "Timeline" ? (
+          <CustomerTimeline customerId={customer.id} />
         ) : (
           <p className="text-sm text-muted-foreground">Coming soon</p>
         )}
