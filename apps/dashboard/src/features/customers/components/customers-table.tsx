@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useCustomers } from "../api/customers.api";
@@ -92,18 +93,10 @@ export function CustomersTable() {
               </td>
               <td className="py-2 pr-4">{customer.preferredLanguage ?? "—"}</td>
               <td className="py-2">
-                {/* Disabled - no Customer 360 detail page exists yet, same
-                    treatment leads-table.tsx's View button had before
-                    /leads/[id] existed. */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled
-                  aria-disabled="true"
-                  aria-label={`View ${customer.fullName}`}
-                  title="Customer detail view isn't available yet"
-                >
-                  View
+                <Button asChild variant="ghost" size="sm">
+                  <Link href={`/customers/${customer.id}`} aria-label={`View ${customer.fullName}`}>
+                    View
+                  </Link>
                 </Button>
               </td>
             </tr>
