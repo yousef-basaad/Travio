@@ -22,6 +22,12 @@ export interface CrmLead {
   createdAt: string | null;
   updatedAt: string | null;
   deletedAt: string | null;
+  // convert_crm_lead() (20260720190617_crm_lead_conversion.sql) sets
+  // these; they were already being fetched by every select("*") here but
+  // never exposed on this type until customer-timeline.service.ts needed
+  // an honest, non-fabricated conversion timestamp.
+  convertedAt: string | null;
+  convertedBy: string | null;
 }
 
 export interface CreateCrmLeadInput {
@@ -64,6 +70,8 @@ export function toCrmLead(row: CrmLeadRow): CrmLead {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
+    convertedAt: row.converted_at,
+    convertedBy: row.converted_by,
   };
 }
 

@@ -21,3 +21,8 @@ export * from "./services/crm-timeline.service";
 export type { CrmTimelineItem, CrmTimelineItemType } from "./services/crm-timeline.mapper";
 export * from "./services/customer.service";
 export type { Customer, CreateCustomerInput, UpdateCustomerInput } from "./services/customer.mapper";
+export * from "./services/customer-timeline.service";
+export type {
+  CustomerTimelineItem,
+  CustomerTimelineItemType,
+} from "./services/customer-timeline.mapper";
