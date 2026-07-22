@@ -36,3 +36,42 @@ export function useCustomers() {
     queryFn: fetchCustomers,
   });
 }
+
+// Distinguished from a generic fetch failure so the details page can show
+// "Customer not found" instead of a generic error message - matches
+// leads.api.ts's LeadNotFoundError pattern.
+export class CustomerNotFoundError extends Error {
+  constructor() {
+    super("Customer not found");
+    this.name = "CustomerNotFoundError";
+  }
+}
+
+async function fetchCustomer(id: string): Promise<Customer> {
+  const response = await fetch(`/api/customers/${id}`);
+
+  if (response.status === 404) {
+    throw new CustomerNotFoundError();
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to load customer (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Unexpected response from /api/customers/:id");
+  }
+
+  return data as Customer;
+}
+
+export function useCustomer(id: string) {
+  return useQuery({
+    queryKey: [...CUSTOMERS_QUERY_KEY, id],
+    queryFn: () => fetchCustomer(id),
+    enabled: Boolean(id),
+    // A 404 won't become found by retrying, matching useLead's reasoning.
+    retry: false,
+  });
+}
