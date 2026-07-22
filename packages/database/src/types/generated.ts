@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       booking_services: {
@@ -64,13 +89,17 @@ export type Database = {
           booking_number: string
           branch_id: string | null
           created_at: string
+          created_by: string | null
           currency: string | null
           customer_id: string
           deleted_at: string | null
+          end_date: string | null
           id: string
           notes: string | null
+          start_date: string | null
           status: Database["public"]["Enums"]["booking_status"]
           tenant_id: string
+          title: string
           total_amount: number
           updated_at: string
         }
@@ -78,13 +107,17 @@ export type Database = {
           booking_number: string
           branch_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string | null
           customer_id: string
           deleted_at?: string | null
+          end_date?: string | null
           id?: string
           notes?: string | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           tenant_id: string
+          title: string
           total_amount?: number
           updated_at?: string
         }
@@ -92,13 +125,17 @@ export type Database = {
           booking_number?: string
           branch_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string | null
           customer_id?: string
           deleted_at?: string | null
+          end_date?: string | null
           id?: string
           notes?: string | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           tenant_id?: string
+          title?: string
           total_amount?: number
           updated_at?: string
         }
@@ -1284,6 +1321,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       booking_status: [

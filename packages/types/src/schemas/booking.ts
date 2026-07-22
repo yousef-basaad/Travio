@@ -18,9 +18,13 @@ export const bookingSchema = z.object({
   branchId: z.string().uuid().nullable(),
   bookingNumber: z.string(),
   status: bookingStatusSchema,
+  title: z.string(),
+  startDate: z.string().nullable(),
+  endDate: z.string().nullable(),
   totalAmount: z.number().nonnegative(),
   currency: z.string().nullable(),
   notes: z.string().nullable(),
+  createdBy: z.string().uuid().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
