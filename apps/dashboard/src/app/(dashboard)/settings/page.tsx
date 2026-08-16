@@ -1,3 +1,5 @@
+import { AgencySettingsPage } from "@/features/settings";
+
 export default function SettingsPage() {
-  return <div>Settings feature - see src/features/settings</div>;
+  return <AgencySettingsPage />;
 }

@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { crmActivitiesService } from "@travio/api";
-import { requireCrmAccess } from "../../leads/_lib/require-crm-access";
+import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
 import { updateCrmActivitySchema } from "../../leads/_lib/schemas";
+
+const ROUTE = "/api/crm/activities/:id";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// Reuses leads/_lib/require-crm-access.ts and schemas.ts - both are
-// CRM-wide, not leads-specific, same as crm/notes/[id]/route.ts already
-// does.
+// Reuses the shared dashboard auth bootstrap and leads/_lib/schemas.ts -
+// both are CRM-wide, not leads-specific, same as crm/notes/[id]/route.ts
+// already does.
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -37,13 +40,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // trade-off crm_notes' delete route already accepts.
     const activity = await crmActivitiesService.update(auth.access.supabase, id, parsed.data);
     return NextResponse.json(activity);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "PATCH", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }
 
 export async function DELETE(_request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -51,7 +54,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
   try {
     await crmActivitiesService.delete(auth.access.supabase, id);
     return new NextResponse(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "DELETE", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, CardContent, CardHeader } from "@travio/ui";
+import { ListChecks } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, EmptyState, Skeleton } from "@travio/ui";
 import type { CrmActivity } from "@travio/api";
 import { useLeadActivities, useDeleteLeadActivity } from "../../api/leads.api";
 import { ActivityItem } from "./activity-item";
@@ -12,7 +13,7 @@ function ActivitiesSkeleton() {
   return (
     <div role="status" aria-label="Loading activities" className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
-        <div key={index} className="h-16 w-full animate-pulse rounded-md bg-muted" />
+        <Skeleton key={index} className="h-16 w-full" />
       ))}
     </div>
   );
@@ -22,7 +23,7 @@ function ActivitiesErrorState() {
   return (
     <div
       role="alert"
-      className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
+      className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
       Something went wrong loading activities. Please try again later.
     </div>
@@ -31,12 +32,15 @@ function ActivitiesErrorState() {
 
 function ActivitiesEmptyState({ onAddClick }: { onAddClick: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center">
-      <p className="text-sm text-muted-foreground">No activities yet</p>
-      <Button size="sm" onClick={onAddClick}>
-        Add Activity
-      </Button>
-    </div>
+    <EmptyState
+      icon={<ListChecks size={20} />}
+      message="No activities yet"
+      action={
+        <Button size="sm" onClick={onAddClick}>
+          Add Activity
+        </Button>
+      }
+    />
   );
 }
 

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@travio/database";
+import type { UserRole } from "@travio/types";
 import {
   toCrmLead,
   toCrmLeadInsert,
@@ -9,17 +10,35 @@ import {
   type UpdateCrmLeadInput,
 } from "./crm-leads.mapper";
 
+export interface ListCrmLeadsOptions {
+  role: UserRole;
+  userId: string;
+}
+
 // Service layer: raw Supabase queries live here, never inline in components.
 // Mirrors bookings.service.ts's shape - callers only ever see the mapped
 // CrmLead domain shape, never the generated Row type.
 export const crmLeadsService = {
-  async list(supabase: SupabaseClient<Database>, tenantId: string): Promise<CrmLead[]> {
-    const { data, error } = await supabase
+  // See customer.service.ts's list() comment - the sales_agent .or()
+  // clause here mirrors what crm_leads_tenant_access (RLS, Phase 4C.1)
+  // already enforces at the database level; this is defense-in-depth,
+  // not the sole gate.
+  async list(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    options?: ListCrmLeadsOptions,
+  ): Promise<CrmLead[]> {
+    let query = supabase
       .from("crm_leads")
       .select("*")
       .eq("tenant_id", tenantId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false });
+      .is("deleted_at", null);
+
+    if (options?.role === "sales_agent") {
+      query = query.or(`assigned_to.eq.${options.userId},assigned_to.is.null`);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) throw error;
     return data.map(toCrmLead);

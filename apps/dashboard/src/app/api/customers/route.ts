@@ -1,26 +1,30 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { customerService } from "@travio/api";
-import { requireCrmAccess } from "../crm/leads/_lib/require-crm-access";
+import { requireCustomersAccess } from "@/lib/auth/require-domain-access";
 import { createCustomerSchema } from "./_lib/schemas";
 
-// Reuses crm/leads/_lib/require-crm-access.ts - it's a CRM-wide access
-// bootstrap (auth + tenant + client), not leads-specific, same as
-// crm/notes/[id]/route.ts and crm/activities/[id]/route.ts already do.
+const ROUTE = "/api/customers";
+
+// Reuses the shared dashboard auth bootstrap (auth + tenant + client).
 
 export async function GET() {
-  const auth = await requireCrmAccess();
+  const auth = await requireCustomersAccess();
   if (!auth.ok) return auth.response;
 
   try {
-    const customers = await customerService.list(auth.access.supabase, auth.access.tenantId);
+    const customers = await customerService.list(auth.access.supabase, auth.access.tenantId, {
+      role: auth.access.role,
+      userId: auth.access.userId,
+    });
     return NextResponse.json(customers);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "GET", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }
 
 export async function POST(request: Request) {
-  const auth = await requireCrmAccess();
+  const auth = await requireCustomersAccess();
   if (!auth.ok) return auth.response;
 
   let body: unknown;
@@ -46,7 +50,7 @@ export async function POST(request: Request) {
       tenantId: auth.access.tenantId,
     });
     return NextResponse.json(customer, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "POST", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

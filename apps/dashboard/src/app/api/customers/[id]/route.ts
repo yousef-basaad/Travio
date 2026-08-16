@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { customerService } from "@travio/api";
-import { requireCrmAccess } from "../../crm/leads/_lib/require-crm-access";
+import { requireCustomersAccess } from "@/lib/auth/require-domain-access";
 import { updateCustomerSchema } from "../_lib/schemas";
+
+const ROUTE = "/api/customers/:id";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireCustomersAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -20,13 +23,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
     return NextResponse.json(customer);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "GET", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }
 
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireCustomersAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -54,15 +57,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const customer = await customerService.update(auth.access.supabase, id, parsed.data);
     return NextResponse.json(customer);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "PATCH", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }
 
 // Soft delete only - customerService.delete() sets deleted_at, it never
 // issues a hard DELETE (see customer.service.ts for why).
 export async function DELETE(_request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireCustomersAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -75,7 +78,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
 
     await customerService.delete(auth.access.supabase, id);
     return new NextResponse(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "DELETE", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

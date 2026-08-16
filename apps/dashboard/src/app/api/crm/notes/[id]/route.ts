@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { crmNotesService } from "@travio/api";
-import { requireCrmAccess } from "../../leads/_lib/require-crm-access";
+import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
+
+const ROUTE = "/api/crm/notes/:id";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// Reuses leads/_lib/require-crm-access.ts - it's a CRM-wide access
-// bootstrap (auth + tenant + client), not leads-specific, even though it
-// currently lives under the leads route tree.
+// Reuses the shared dashboard auth bootstrap (auth + tenant + client).
 export async function DELETE(_request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -20,7 +21,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     // so this is treated as a successful, idempotent delete.
     await crmNotesService.delete(auth.access.supabase, id);
     return new NextResponse(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "DELETE", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

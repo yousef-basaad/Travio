@@ -1,22 +1,28 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { crmLeadsService } from "@travio/api";
-import { requireCrmAccess } from "./_lib/require-crm-access";
+import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
 import { createCrmLeadSchema } from "./_lib/schemas";
 
+const ROUTE = "/api/crm/leads";
+
 export async function GET() {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   try {
-    const leads = await crmLeadsService.list(auth.access.supabase, auth.access.tenantId);
+    const leads = await crmLeadsService.list(auth.access.supabase, auth.access.tenantId, {
+      role: auth.access.role,
+      userId: auth.access.userId,
+    });
     return NextResponse.json(leads);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "GET", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }
 
 export async function POST(request: Request) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   let body: unknown;
@@ -40,7 +46,7 @@ export async function POST(request: Request) {
       tenantId: auth.access.tenantId,
     });
     return NextResponse.json(lead, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "POST", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

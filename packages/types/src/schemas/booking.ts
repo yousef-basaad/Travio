@@ -16,6 +16,7 @@ export const bookingSchema = z.object({
   tenantId: z.string().uuid(),
   customerId: z.string().uuid(),
   branchId: z.string().uuid().nullable(),
+  assignedTo: z.string().uuid().nullable(),
   bookingNumber: z.string(),
   status: bookingStatusSchema,
   title: z.string(),

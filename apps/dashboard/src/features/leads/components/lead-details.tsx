@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Button, Card, CardContent, CardHeader } from "@travio/ui";
+import { SearchX } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, EmptyState, InfoRow, Skeleton } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useLead, LeadNotFoundError } from "../api/leads.api";
 import { LeadStatusBadge } from "./lead-status-badge";
@@ -25,18 +26,20 @@ function BackToLeadsLink() {
 function LeadDetailsSkeleton() {
   return (
     <div role="status" aria-label="Loading lead" className="space-y-4">
-      <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
-      <div className="h-48 w-full animate-pulse rounded-md bg-muted" />
+      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-48 w-full" />
     </div>
   );
 }
 
 function LeadNotFoundState() {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-12 text-center">
-      <h1 className="text-lg font-medium">Lead not found</h1>
-      <BackToLeadsLink />
-    </div>
+    <EmptyState
+      className="p-12"
+      icon={<SearchX size={20} />}
+      title="Lead not found"
+      action={<BackToLeadsLink />}
+    />
   );
 }
 
@@ -46,21 +49,10 @@ function LeadDetailsErrorState() {
       <BackToLeadsLink />
       <div
         role="alert"
-        className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-sm text-destructive"
+        className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
       >
         Something went wrong loading this lead. Please try again later.
       </div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="text-sm">{value}</dd>
     </div>
   );
 }
@@ -83,12 +75,12 @@ export function LeadDetails({ id }: { id: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <BackToLeadsLink />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-lg font-semibold">{lead.fullName}</h1>
+          <h1 className="text-heading-lg text-foreground">{lead.fullName}</h1>
           <LeadStatusBadge status={lead.status} />
           {lead.source && <LeadSourceBadge source={lead.source} />}
         </div>

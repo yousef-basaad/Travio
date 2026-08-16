@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireCrmAccess } from "../../_lib/require-crm-access";
+import { handleApiError } from "@/lib/api/handle-api-error";
+import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
 import { convertCrmLeadSchema } from "../../_lib/schemas";
+
+const ROUTE = "/api/crm/leads/:id/convert";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -33,7 +36,7 @@ const ERROR_BY_SQLSTATE: Record<string, { status: number; error: string }> = {
 };
 
 export async function POST(request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -67,15 +70,23 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (error) {
     const mapped = ERROR_BY_SQLSTATE[error.code ?? ""];
     if (mapped) {
+      // Expected, handled outcomes (not_found/already_converted/forbidden) -
+      // not logged as errors, same as every other route's validation-style
+      // 4xx responses.
       return NextResponse.json({ error: mapped.error }, { status: mapped.status });
     }
     // Never surface the raw database error (message/details/hint) to the
     // client - anything not explicitly recognized is an unexpected failure.
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+    return handleApiError(error, { route: ROUTE, action: "POST", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 
   if (!isConvertLeadRpcResult(data)) {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+    return handleApiError(new Error("convert_crm_lead RPC returned an unexpected shape"), {
+      route: ROUTE,
+      action: "POST",
+      tenantId: auth.access.tenantId,
+      userId: auth.access.userId,
+    });
   }
 
   return NextResponse.json({

@@ -5,7 +5,7 @@ import type { Database } from "@travio/database";
 
 type ProfileRow = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "id" | "tenant_id" | "email" | "full_name" | "role"
+  "id" | "tenant_id" | "customer_id" | "email" | "full_name" | "role"
 >;
 
 
@@ -30,7 +30,7 @@ export async function requireRole(allowedRoles: UserRole[]) {
 
   const { data: row } = await supabase
     .from("profiles")
-    .select("id, tenant_id, email, full_name, role")
+    .select("id, tenant_id, customer_id, email, full_name, role")
     .eq("id", user.id)
     .single<ProfileRow>();
 
@@ -46,6 +46,7 @@ export async function requireRole(allowedRoles: UserRole[]) {
   const profile: Profile = {
     id: row.id,
     tenantId: row.tenant_id,
+    customerId: row.customer_id,
     email: row.email,
     fullName: row.full_name,
     role: row.role,

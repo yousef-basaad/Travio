@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { crmTimelineService } from "@travio/api";
-import { requireCrmAccess } from "../../_lib/require-crm-access";
+import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
+
+const ROUTE = "/api/crm/leads/:id/timeline";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -20,7 +23,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     // otherwise.
     const timeline = await crmTimelineService.listByLead(auth.access.supabase, id);
     return NextResponse.json(timeline);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "GET", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

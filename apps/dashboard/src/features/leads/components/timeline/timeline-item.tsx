@@ -1,5 +1,5 @@
 import type { CrmTimelineItem } from "@travio/api";
-import { formatDate } from "@travio/utils";
+import { formatDate, formatRelativeTime } from "@travio/utils";
 import { ACTIVITY_ICONS } from "../activities/activity-item";
 import { isCrmActivityType } from "../activities/create-activity-dialog";
 
@@ -24,33 +24,6 @@ function getTimelineIcon(item: CrmTimelineItem): string {
   }
 
   return NON_ACTIVITY_ICONS[item.type];
-}
-
-// MDN's standard Intl.RelativeTimeFormat "divisions" approach - no
-// external dependency, confined to this one consumer.
-function formatRelativeTime(iso: string): string {
-  const diffSeconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
-  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-
-  const divisions: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
-    { amount: 60, unit: "seconds" },
-    { amount: 60, unit: "minutes" },
-    { amount: 24, unit: "hours" },
-    { amount: 7, unit: "days" },
-    { amount: 4.34524, unit: "weeks" },
-    { amount: 12, unit: "months" },
-    { amount: Number.POSITIVE_INFINITY, unit: "years" },
-  ];
-
-  let duration = diffSeconds;
-  for (const division of divisions) {
-    if (Math.abs(duration) < division.amount) {
-      return rtf.format(Math.round(duration), division.unit);
-    }
-    duration /= division.amount;
-  }
-
-  return rtf.format(Math.round(duration), "years");
 }
 
 export function TimelineItem({ item }: { item: CrmTimelineItem }) {

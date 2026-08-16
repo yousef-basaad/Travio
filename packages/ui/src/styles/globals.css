@@ -1,49 +1,68 @@
+@import "./tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens consumed by packages/config/tailwind/preset.ts.
-   Each app may override these per-theme (e.g. white-label branding
-   per agency tenant — see apps/dashboard/features/branding). */
+/* Design System v2.0: every color/radius token is now owned exclusively
+   by tokens.css (consolidated from the two-copies-of-the-same-numbers
+   split this file and tokens.css previously had). Each app may still
+   override individual token values per-theme (e.g. white-label branding
+   per agency tenant — see apps/dashboard/features/branding) by
+   re-declaring the specific --token(s) it needs, same mechanism as
+   before, just against tokens.css's :root/.dark instead of a second copy
+   here. */
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 160 84% 30%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 160 84% 30%;
-    --radius: 0.5rem;
+  * {
+    @apply border-border;
   }
 
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 160 84% 39%;
+  body {
+    @apply bg-background font-sans text-body text-foreground antialiased;
+  }
+
+  /* Design System v2.5 (Product-8.2 Phase 1): every heading-sized
+     element automatically gets the heading font (Tajawal where an app
+     has loaded it into --font-heading, falling back to that app's own
+     --font-sans otherwise - see preset.ts's fontFamily.heading). Two
+     selector groups: real heading elements (h1-h6, for any not-yet-
+     migrated markup that never adopted the text-heading-* utilities),
+     and the text-heading-* and text-display utility classes themselves
+     (StatsCard/PageHeader/etc. style a <p> or <span> at heading size,
+     not a real h-tag). This is a `font-family` rule only - it never
+     touches font-size/line-height/weight (Tailwind's own utility layer
+     owns those), and a component that explicitly opts into font-sans
+     alongside a heading-size class still wins (utilities layer beats
+     base layer regardless of source order). */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .text-display,
+  .text-heading-xl,
+  .text-heading-lg,
+  .text-heading-md,
+  .text-heading-sm,
+  .text-heading-xs {
+    @apply font-heading;
   }
 }
+
+/* ---- RTL foundation (Product-8.2 Phase 1) ----
+   Not yet switched on anywhere (every app still renders dir="ltr" -
+   see each app's root layout, which now derives `dir` from a single
+   named constant instead of a hardcoded literal, so flipping it later
+   is a one-line change, not a hunt-and-replace). This phase's actual
+   RTL work is at the token/config level only:
+     - Tajawal is loaded with an Arabic-capable subset (dashboard's
+       root layout), ready the moment real Arabic copy exists.
+     - New/touched components going forward should prefer Tailwind's
+       logical-property utilities (ms-/me-, ps-/pe-, start-/end-,
+       rounded-s-/rounded-e-, border-s-/border-e-, text-start/text-end)
+       over physical ones (ml-/mr-, pl-/pr-, left-/right-) so they
+       render correctly the moment dir flips to rtl, without a second
+       pass. This is *not* a retroactive sweep of every existing file -
+       physical-property call sites get converted screen-by-screen as
+       Phase 2/3 actually touch each one, not all at once here. */

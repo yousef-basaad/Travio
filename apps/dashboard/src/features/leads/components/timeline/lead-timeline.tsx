@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@travio/ui";
+import { History } from "lucide-react";
+import { Card, CardContent, CardHeader, EmptyState, Skeleton } from "@travio/ui";
 import { useLeadTimeline } from "../../api/leads.api";
 import { TimelineItem } from "./timeline-item";
 
@@ -8,7 +9,7 @@ function TimelineSkeleton() {
   return (
     <div role="status" aria-label="Loading timeline" className="space-y-2">
       {Array.from({ length: 3 }).map((_, index) => (
-        <div key={index} className="h-16 w-full animate-pulse rounded-md bg-muted" />
+        <Skeleton key={index} className="h-16 w-full" />
       ))}
     </div>
   );
@@ -18,7 +19,7 @@ function TimelineErrorState() {
   return (
     <div
       role="alert"
-      className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
+      className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
       Something went wrong loading the timeline. Please try again later.
     </div>
@@ -26,11 +27,7 @@ function TimelineErrorState() {
 }
 
 function TimelineEmptyState() {
-  return (
-    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center">
-      <p className="text-sm text-muted-foreground">No activity yet</p>
-    </div>
-  );
+  return <EmptyState icon={<History size={20} />} message="No activity yet" />;
 }
 
 // Read-only per ADR-0004 - no create/edit/delete here, unlike Notes and

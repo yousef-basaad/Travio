@@ -1,0 +1,59 @@
+import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
+import { bookingTransfersService } from "@travio/api";
+import { requireBookingsAccess } from "@/lib/auth/require-domain-access";
+import { updateTransferSchema } from "../../bookings/_lib/schemas";
+
+const ROUTE = "/api/transfers/:id";
+
+type RouteParams = { params: Promise<{ id: string }> };
+
+// Reuses the shared dashboard auth bootstrap and bookings/_lib/schemas.ts -
+// both are CRM-wide/booking-wide, not transfers-specific, same as
+// flights/[id]/route.ts and hotels/[id]/route.ts.
+export async function PATCH(request: Request, { params }: RouteParams) {
+  const auth = await requireBookingsAccess();
+  if (!auth.ok) return auth.response;
+
+  const { id } = await params;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
+
+  const parsed = updateTransferSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "invalid_input", issues: parsed.error.issues },
+      { status: 400 },
+    );
+  }
+
+  try {
+    // No pre-existence check - bookingTransfersService has no getById
+    // (only listByBooking/create/update/delete), same trade-off
+    // flights/[id]/route.ts's and hotels/[id]/route.ts's PATCH already
+    // accept.
+    const transfer = await bookingTransfersService.update(auth.access.supabase, id, parsed.data);
+    return NextResponse.json(transfer);
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "PATCH", tenantId: auth.access.tenantId, userId: auth.access.userId });
+  }
+}
+
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const auth = await requireBookingsAccess();
+  if (!auth.ok) return auth.response;
+
+  const { id } = await params;
+
+  try {
+    await bookingTransfersService.delete(auth.access.supabase, id);
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "DELETE", tenantId: auth.access.tenantId, userId: auth.access.userId });
+  }
+}
