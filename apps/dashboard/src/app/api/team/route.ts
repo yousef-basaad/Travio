@@ -1,11 +1,25 @@
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { teamMembersService } from "@travio/api";
-import { createAdminSupabaseClient } from "@travio/database/admin";
+import { AdminClientConfigError, createAdminSupabaseClient } from "@travio/database/admin";
+import { logger } from "@travio/logger";
 import { requireAgencyOwnerAccess } from "@/lib/auth/require-domain-access";
 import { inviteTeamMemberSchema, type TeamMemberResponse } from "./_lib/schemas";
 
 const ROUTE = "/api/team";
+
+// Both handlers need the service-role client; a missing key is a server
+// configuration fault, so it's logged as one and reported as such
+// instead of surfacing as a generic internal_error.
+function adminConfigErrorResponse(action: string, context: { tenantId: string; userId: string }) {
+  logger.error({
+    message: "Service-role client unavailable: SUPABASE_SERVICE_ROLE_KEY is not configured",
+    route: ROUTE,
+    action,
+    ...context,
+  });
+  return NextResponse.json({ error: "server_misconfigured" }, { status: 500 });
+}
 
 // Reuses the shared dashboard auth bootstrap (requireAgencyOwnerAccess),
 // same as every other domain route.
@@ -47,6 +61,12 @@ export async function GET() {
 
     return NextResponse.json(withStatus);
   } catch (error) {
+    if (error instanceof AdminClientConfigError) {
+      return adminConfigErrorResponse("GET", {
+        tenantId: auth.access.tenantId,
+        userId: auth.access.userId,
+      });
+    }
     return handleApiError(error, {
       route: ROUTE,
       action: "GET",
@@ -111,6 +131,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
+    if (error instanceof AdminClientConfigError) {
+      return adminConfigErrorResponse("POST", {
+        tenantId: auth.access.tenantId,
+        userId: auth.access.userId,
+      });
+    }
     return handleApiError(error, {
       route: ROUTE,
       action: "POST",

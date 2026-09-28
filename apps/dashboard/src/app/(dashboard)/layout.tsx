@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@travio/auth/server";
 import { SessionProvider } from "@travio/auth";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { getDashboardGateRedirect } from "@/lib/auth/dashboard-gate";
 
 // Route-group guard: every page under (dashboard) requires agency staff.
 // Individual feature pages don't re-check auth - this is the single
@@ -38,12 +39,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // a minimal, honest choice (the page's own copy is generic enough to
   // not misrepresent a system fault as "you" being unauthorized), not
   // an accidental fold-back into "forbidden" like before this phase.
-  if (!result.authorized) {
-    if (result.reason === "unauthenticated") {
-      redirect("/login");
-    }
-    // reason is "forbidden" or "error" - both land on /forbidden today.
-    redirect("/forbidden");
+  // A signed-in user with no profile row gets /forbidden?reason=no_profile
+  // (see lib/auth/dashboard-gate.ts); everything else is unchanged.
+  const gateRedirect = getDashboardGateRedirect(result);
+  if (gateRedirect || !result.authorized) {
+    redirect(gateRedirect ?? "/forbidden");
   }
 
   return (

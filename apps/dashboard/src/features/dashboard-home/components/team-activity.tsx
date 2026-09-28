@@ -15,10 +15,13 @@ import { useBookings } from "@/features/bookings";
 // to the busiest member's count (a real, computed proportion) - never a
 // fabricated quota/target, since no such thing exists in this app.
 export function TeamActivity() {
-  const { data: members, isLoading: isLoadingMembers } = useTeamMembers();
-  const { data: bookings, isLoading: isLoadingBookings } = useBookings();
+  const { data: members, isLoading: isLoadingMembers, isError: isErrorMembers } = useTeamMembers();
+  const { data: bookings, isLoading: isLoadingBookings, isError: isErrorBookings } = useBookings();
 
   const isLoading = isLoadingMembers || isLoadingBookings;
+  // A failed request (e.g. /api/team's server_misconfigured 500) shows an
+  // error state, never a misleading "No team members yet".
+  const isError = isErrorMembers || isErrorBookings;
 
   const countByMember = new Map<string, number>();
   for (const booking of bookings ?? []) {
@@ -37,7 +40,8 @@ export function TeamActivity() {
     <Widget title="Team" description="Bookings assigned per team member">
       <DataTableState
         isLoading={isLoading}
-        isError={false}
+        isError={isError}
+        errorMessage="Couldn't load team activity."
         isEmpty={rows.length === 0}
         emptyMessage="No team members yet"
         emptyIcon={<Users size={20} />}

@@ -87,7 +87,7 @@ describe("requireRole", () => {
       error: null,
     };
     const result = await requireRole(ALLOWED);
-    expect(result).toEqual({ authorized: false, reason: "forbidden" });
+    expect(result).toEqual({ authorized: false, reason: "forbidden", detail: "role_not_allowed" });
     expect(loggerError).not.toHaveBeenCalled();
   });
 
@@ -97,7 +97,7 @@ describe("requireRole", () => {
       error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     };
     const result = await requireRole(ALLOWED);
-    expect(result).toEqual({ authorized: false, reason: "forbidden" });
+    expect(result).toEqual({ authorized: false, reason: "forbidden", detail: "no_profile" });
     expect(loggerError).not.toHaveBeenCalled();
   });
 
