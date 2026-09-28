@@ -29,7 +29,9 @@ vi.mock("@travio/database/server", () => ({
   })),
 }));
 
-const loggerError = vi.fn();
+// vi.hoisted: vi.mock factories are hoisted above top-level consts, and
+// this factory reads loggerError eagerly (unlike the lazy closures above).
+const { loggerError } = vi.hoisted(() => ({ loggerError: vi.fn() }));
 vi.mock("@travio/logger", () => ({
   logger: { error: loggerError },
 }));
