@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
 import {
   Button,
@@ -16,6 +17,7 @@ import {
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useCustomers } from "../api/customers.api";
+import { CreateCustomerDialog } from "./create-customer-dialog";
 
 const COLUMNS = ["Full Name", "Email", "Phone", "Passport Expiry", "Preferred Language"];
 
@@ -32,9 +34,21 @@ function matchesSearch(
   return haystack.includes(query.toLowerCase());
 }
 
-export function CustomersTable() {
+// openCreate comes from /customers?new=1 (the Quick add menu's "New
+// Customer"). It opens the dialog, then the param is dropped from the URL
+// so a refresh or closing the dialog doesn't reopen it.
+export function CustomersTable({ openCreate = false }: { openCreate?: boolean }) {
+  const router = useRouter();
   const { data: customers, isLoading, isError } = useCustomers();
   const [query, setQuery] = useState("");
+  const [isCreateOpen, setIsCreateOpen] = useState(openCreate);
+
+  useEffect(() => {
+    if (openCreate) {
+      setIsCreateOpen(true);
+      router.replace("/customers", { scroll: false });
+    }
+  }, [openCreate, router]);
 
   const filtered = useMemo(
     () => (customers ?? []).filter((customer) => matchesSearch(customer, query)),
@@ -43,7 +57,11 @@ export function CustomersTable() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Customers" description="Everyone your agency has booked travel for" />
+      <PageHeader
+        title="Customers"
+        description="Everyone your agency has booked travel for"
+        actions={<Button onClick={() => setIsCreateOpen(true)}>New Customer</Button>}
+      />
 
       <SearchInput
         placeholder="Search by name, email, or phone"
@@ -60,6 +78,9 @@ export function CustomersTable() {
         loadingLabel="Loading customers"
         errorMessage="Something went wrong loading customers. Please try again later."
         emptyMessage={query ? "No customers match your search" : "No customers yet"}
+        emptyAction={
+          !query ? <Button onClick={() => setIsCreateOpen(true)}>New Customer</Button> : undefined
+        }
         emptyIcon={<Users size={20} />}
         size="page"
       >
@@ -100,6 +121,8 @@ export function CustomersTable() {
           </TableBody>
         </Table>
       </DataTableState>
+
+      <CreateCustomerDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </div>
   );
 }
