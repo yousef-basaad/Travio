@@ -1,0 +1,311 @@
+/* Travio Design System v2.0 - Premium SaaS foundation.
+   This phase is foundation-only: tokens + shared primitives, no feature
+   page has been redesigned. This file is the single source of truth for
+   every color/radius/spacing/shadow/motion/typography token in the app -
+   packages/config/tailwind/preset.ts wires these into Tailwind utilities
+   (`bg-surface`, `text-heading-lg`, `shadow-md`, `rounded-lg`, `bg-muted`,
+   etc.), components/pages never hardcode a color value directly. Four
+   principles guide every value here: premium SaaS, enterprise dashboard,
+   minimal, high information density - not playful, not marketing-style,
+   not overly colorful. Referenced quality bar (not copied): Linear,
+   Vercel Dashboard, Stripe Dashboard, Clerk, Resend, Raycast.
+
+   Previously (Design System v1.5) these values were split across this
+   file *and* globals.css's own `@layer base` block, kept manually in
+   sync as two copies of the same numbers. Consolidated into this single
+   file as of v2.0 - globals.css now only imports this file, it declares
+   no color tokens of its own.
+
+   Not wrapped in @layer base: this file is @import-ed by globals.css
+   before the @tailwind directives, and webpack/css-loader resolves that
+   @import as its own module boundary - Tailwind's postcss plugin then
+   has no matching @tailwind base in that boundary to attach the layer
+   to, which is a hard build error. Plain :root/.dark custom-property
+   declarations don't need cascade-layer positioning anyway.
+
+   Every token has a .dark counterpart even though dark mode is not
+   wired up anywhere yet (no toggle, no `dark` class is ever applied) -
+   the explicit goal is that turning dark mode on later is a matter of
+   applying the `dark` class, not rewriting components. */
+
+:root {
+  /* ---- Core surfaces & text ----
+     background = the page canvas. surface = anything raised above it
+     (cards, panels, popovers - same value as the pre-existing --card,
+     which is kept as its own name too since bg-card/text-card-foreground
+     is already wired everywhere). surface-muted = a recessed/secondary
+     panel tone (table header rows, nested panels). border-muted = a
+     lighter division line for low-emphasis separators (inside a card)
+     vs. --border's stronger outer-edge use. */
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --surface: 0 0% 100%;
+  --surface-foreground: 222 47% 11%;
+  --surface-muted: 210 40% 98%;
+  --border: 214 32% 91%;
+  --border-muted: 214 32% 95%;
+  --input: 214 32% 91%;
+  --ring: 239 84% 67%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  /* Design System v2.1: visual language extracted from the reference
+     Travio design system (colors/spacing/radius/shadows/typography only
+     - see components for layout, no workflow/feature changes anywhere).
+     Third-party reference, treated as inspiration for the visual
+     language, not cloned screen-for-screen. Every hue below matches a
+     standard Tailwind default color (Indigo-500/Green-500/Blue-500) -
+     not a proprietary or distinctive palette - kept in the same
+     "H S% L%" raw-triplet convention as every other token here. */
+
+  /* Text hierarchy - three tiers instead of the previous two
+     (foreground/muted-foreground). text-primary is the same value as
+     --foreground (body copy, headings); text-secondary sits between
+     primary and muted (de-emphasized but still readable prose, e.g.
+     card descriptions); text-muted is the existing --muted-foreground
+     (timestamps, helper text, placeholders) - kept under its original
+     name too since every not-yet-redesigned page already uses
+     text-muted-foreground directly. */
+  --text-primary: 222 47% 11%;
+  --text-secondary: 215 19% 35%;
+  --text-muted: 215 16% 47%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+
+  /* Secondary/accent - unchanged from v1.5, every existing Button/Badge
+     hover state already depends on these exact values. */
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+
+  /* Brand - v2.1: indigo (Tailwind Indigo-500, #6366F1), matching the
+     reference design system's primary swatch. primary-hover is a real
+     token (not the old `bg-primary/90` opacity trick) so hover states
+     aren't an ad hoc opacity hack. */
+  --primary: 239 84% 67%;
+  --primary-hover: 239 84% 62%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Semantic status colors - v2.1: success and info retuned to the
+     reference's standard Tailwind hues (Green-500/Blue-500) so they read
+     as distinct from the new indigo primary (previously success was
+     literally the same hue as primary - true green reads more clearly
+     as "success" once primary is brand-indigo, not brand-green).
+     warning/danger already matched the reference's Amber-500/Red-500
+     almost exactly, so they're untouched. */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 222 47% 11%;
+  --danger: 0 84% 60%; /* = --destructive */
+  --danger-foreground: 0 0% 100%;
+  --info: 217 91% 60%;
+  --info-foreground: 0 0% 100%;
+
+  /* Sidebar - v2.1: dark navy (Tailwind Slate-900), matching the
+     reference design system's sidebar treatment on every screen it
+     shows - a deliberate, consistent choice there (dark rail against a
+     light canvas), not incidental. Active item is a solid indigo pill
+     (bg-sidebar-active + white text), not a tinted background - see
+     AppSidebar's own updated markup. */
+  --sidebar-background: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 217 33% 20%;
+  --sidebar-active: 239 84% 67%;
+  --sidebar-active-foreground: 0 0% 100%;
+  --sidebar-hover: 217 33% 18%;
+
+  /* ---- Radius ----
+     One consistent scale used everywhere: sm for tight controls
+     (badges, small buttons), md for the default control size
+     (buttons/inputs), lg for containers (cards/dialogs/tables), xl
+     reserved for larger surfaces (modals on bigger breakpoints, popovers).
+     --radius is kept as the original base var name (preset.ts's
+     borderRadius.lg/md/sm still derive from it via calc(), untouched -
+     see "Backward-compatible aliases" below) so no existing
+     rounded-lg/md/sm usage anywhere changes shape. */
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem; /* v2.1: 4px, matching the reference's radius scale exactly */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* ---- Spacing ----
+     Named for direct reference; values match Tailwind's own default
+     scale exactly (4px increments) so `p-1`..`p-16` utilities and these
+     names always agree - this documents the scale, it doesn't replace
+     Tailwind's spacing utilities with a new one. */
+  --space-1: 0.25rem; /* 4px  - p-1 */
+  --space-2: 0.5rem; /* 8px  - p-2 */
+  --space-3: 0.75rem; /* 12px - p-3 */
+  --space-4: 1rem; /* 16px - p-4 */
+  --space-5: 1.25rem; /* 20px - p-5 */
+  --space-6: 1.5rem; /* 24px - p-6 */
+  --space-8: 2rem; /* 32px - p-8 */
+  --space-10: 2.5rem; /* 40px - p-10 */
+  --space-12: 3rem; /* 48px - p-12 */
+  --space-16: 4rem; /* 64px - p-16 */
+
+  /* ---- Shadows ----
+     v2.1: retuned to match the reference design system's own shadow
+     scale (its documented values are Tailwind's stock sm/md/lg/xl
+     elevation curve) - slightly more present than v2.0's ultra-flat
+     shadows, still restrained (no heavy drop shadows). sm = barely-there
+     (cards at rest), md = raised (dropdowns, popovers), lg = floating
+     (dialogs), xl = modals/command palettes on larger surfaces. Wired
+     into Tailwind's shadow-sm/md/lg/xl utilities directly (preset.ts). */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ---- Motion ----
+     Very subtle, fast transitions - fast for micro-interactions (button/
+     row hover), base for dropdowns/toggles, slow reserved for anything
+     larger (not currently used by any component, kept for consistency
+     when one needs it). */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 240ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Typography ----
+     Design System v2.5 (Product-8.2 Phase 1): retuned to match the
+     TRAVIO Figma reference's own H1-H5/Body-Large/Body/Small/X-Small
+     scale exactly (Developer Handoff doc) - sizes, line-heights AND
+     weights below are the reference's literal numbers, not
+     approximated. Utility names are kept as they were (text-heading-xl/
+     -lg/-md/-sm, text-body, text-small, text-caption) so the ~12 files
+     already consuming them pick up the corrected values automatically,
+     with two net-new tiers (heading-xs, body-lg) added to fully cover
+     the reference's H5 and Body Large rows, which had no equivalent
+     before. Mapping (reference -> token):
+       H1  32/48/700 -> heading-xl   (was 30/36/700)
+       H2  24/36/600 -> heading-lg   (was 24/32/600)
+       H3  20/28/600 -> heading-md   (unchanged, already matched)
+       H4  16/24/500 -> heading-sm   (was 16/24/600)
+       H5  14/20/500 -> heading-xs   (new)
+       Body Large 16/24/400 -> body-lg (new)
+       Body 14/20/400 -> body        (was 14/24/400)
+       Small 12/16/400 -> small      (was 13/20/400)
+       X Small 11/14/400 -> caption  (was 12/16/500)
+     `display` (36/40/700) is kept as-is - the reference has no tier
+     above H1, and its one prior use (the dashboard-home greeting) is a
+     Phase 3 screen fix, not a token decision. */
+  --font-size-display: 2.25rem; /* 36px */
+  --line-height-display: 2.5rem;
+  --font-weight-display: 700;
+
+  --font-size-heading-xl: 2rem; /* 32px - reference H1, Page Titles */
+  --line-height-heading-xl: 3rem; /* 48px */
+  --font-weight-heading-xl: 700;
+
+  --font-size-heading-lg: 1.5rem; /* 24px - reference H2, Section Titles */
+  --line-height-heading-lg: 2.25rem; /* 36px */
+  --font-weight-heading-lg: 600;
+
+  --font-size-heading-md: 1.25rem; /* 20px - reference H3, Sub Section */
+  --line-height-heading-md: 1.75rem; /* 28px */
+  --font-weight-heading-md: 600;
+
+  --font-size-heading-sm: 1rem; /* 16px - reference H4, Card Titles */
+  --line-height-heading-sm: 1.5rem; /* 24px */
+  --font-weight-heading-sm: 500;
+
+  --font-size-heading-xs: 0.875rem; /* 14px - reference H5, Small Titles */
+  --line-height-heading-xs: 1.25rem; /* 20px */
+  --font-weight-heading-xs: 500;
+
+  --font-size-body-lg: 1rem; /* 16px - reference Body Large */
+  --line-height-body-lg: 1.5rem; /* 24px */
+  --font-weight-body-lg: 400;
+
+  --font-size-body: 0.875rem; /* 14px - reference Body, Default Text */
+  --line-height-body: 1.25rem; /* 20px */
+  --font-weight-body: 400;
+
+  --font-size-small: 0.75rem; /* 12px - reference Small, Helper Text */
+  --line-height-small: 1rem; /* 16px */
+  --font-weight-small: 400;
+
+  --font-size-caption: 0.6875rem; /* 11px - reference X Small, Captions */
+  --line-height-caption: 0.875rem; /* 14px */
+  --font-weight-caption: 400;
+
+  /* Backward-compatible aliases - v1.5's size names, identical values to
+     their v2.0 equivalents above, kept so nothing regresses. */
+  --text-heading-lg: 1.5rem;
+  --text-heading-md: 1.125rem;
+  --text-heading-sm: 0.875rem;
+  --text-body-md: 0.875rem;
+  --text-body-sm: 0.75rem;
+  --text-caption: 0.75rem;
+
+  /* ---- Brand secondary (Product-8.2 Phase 1) ----
+     A genuinely new token, not a repurposing of --secondary (which
+     stays the neutral gray Button/Badge "secondary"/"neutral" variants
+     already depend on everywhere - changing that would be a much
+     bigger, unrequested visual change than adding a new one). The
+     reference's own component sheets show Secondary buttons as plain
+     neutral/outline, not blue - the blue swatch family in its color
+     palette is a second categorical/brand accent instead (sky-500
+     family), reserved for future use: a second chart series, an
+     icon-chip tone, a categorical badge. */
+  --brand-secondary: 198 89% 48%; /* Tailwind Sky-500, #0EA5E9 */
+  --brand-secondary-foreground: 0 0% 100%;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --surface: 222 40% 10%;
+  --surface-foreground: 210 40% 98%;
+  --surface-muted: 217 33% 14%;
+  --border: 217 33% 18%;
+  --border-muted: 217 33% 15%;
+  --input: 217 33% 18%;
+  --ring: 239 84% 72%;
+
+  --card: 222 40% 10%;
+  --card-foreground: 210 40% 98%;
+
+  --text-primary: 210 40% 98%;
+  --text-secondary: 215 20% 75%;
+  --text-muted: 215 20% 65%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+
+  --primary: 239 84% 72%;
+  --primary-hover: 239 84% 77%;
+  --primary-foreground: 0 0% 100%;
+
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --success: 142 71% 50%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 222 47% 11%;
+  --danger: 0 63% 31%;
+  --danger-foreground: 210 40% 98%;
+  --info: 217 91% 65%;
+  --info-foreground: 222 47% 11%;
+
+  --sidebar-background: 222 45% 8%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 217 33% 16%;
+  --sidebar-active: 239 84% 72%;
+  --sidebar-active-foreground: 0 0% 100%;
+  --sidebar-hover: 217 33% 14%;
+
+  --brand-secondary: 198 89% 58%;
+  --brand-secondary-foreground: 222 47% 11%;
+}

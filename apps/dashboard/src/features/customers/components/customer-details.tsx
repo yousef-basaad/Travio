@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@travio/ui";
-import { useCustomer, CustomerNotFoundError } from "../api/customers.api";
+import { SearchX } from "lucide-react";
+import { Button, EmptyState, Skeleton, toast } from "@travio/ui";
+import { useCustomer, useInviteCustomerToPortal, CustomerNotFoundError } from "../api/customers.api";
 import { CustomerProfileCard } from "./customer-profile-card";
+import { CustomerStatusBadge } from "./customer-status-badge";
 import { CustomerTabs } from "./customer-tabs";
 
 function BackToCustomersLink() {
@@ -17,18 +19,20 @@ function BackToCustomersLink() {
 function CustomerDetailsSkeleton() {
   return (
     <div role="status" aria-label="Loading customer" className="space-y-4">
-      <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
-      <div className="h-48 w-full animate-pulse rounded-md bg-muted" />
+      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-48 w-full" />
     </div>
   );
 }
 
 function CustomerNotFoundState() {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-12 text-center">
-      <h1 className="text-lg font-medium">Customer not found</h1>
-      <BackToCustomersLink />
-    </div>
+    <EmptyState
+      className="p-12"
+      icon={<SearchX size={20} />}
+      title="Customer not found"
+      action={<BackToCustomersLink />}
+    />
   );
 }
 
@@ -38,7 +42,7 @@ function CustomerDetailsErrorState() {
       <BackToCustomersLink />
       <div
         role="alert"
-        className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-sm text-destructive"
+        className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
       >
         Something went wrong loading this customer. Please try again later.
       </div>
@@ -52,6 +56,33 @@ function CustomerDetailsErrorState() {
 // modules to plug into.
 export function CustomerDetails({ id }: { id: string }) {
   const { data: customer, isLoading, error } = useCustomer(id);
+  const inviteToPortal = useInviteCustomerToPortal();
+
+  // Design System v2.4 (Product-8.1): toast() (packages/ui) instead of
+  // inline success/error text below the button - same mutation, same
+  // useInviteCustomerToPortal hook, only the feedback's presentation
+  // changed. Per-call onSuccess/onError (not a useEffect watching
+  // isSuccess/isError) so this fires exactly once per invite attempt,
+  // never re-firing on an unrelated re-render.
+  const handleInvite = () => {
+    if (!customer) return;
+    inviteToPortal.mutate(customer.id, {
+      onSuccess: (result) => {
+        toast({
+          variant: "success",
+          title: "Invite sent",
+          description: `Portal invite sent to ${result.email}.`,
+        });
+      },
+      onError: (mutationError) => {
+        toast({
+          variant: "danger",
+          title: "Couldn't send the invite",
+          description: mutationError instanceof Error ? mutationError.message : undefined,
+        });
+      },
+    });
+  };
 
   if (isLoading) {
     return <CustomerDetailsSkeleton />;
@@ -66,12 +97,35 @@ export function CustomerDetails({ id }: { id: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <BackToCustomersLink />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold">{customer.fullName}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-heading-lg text-foreground">{customer.fullName}</h1>
+            <CustomerStatusBadge customer={customer} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {customer.email ?? "No email"} · {customer.phone ?? "No phone"}
+          </p>
+        </div>
         <div className="flex items-center gap-2">
+          {/* Product-5: sends a real Supabase Auth invite (see
+              useInviteCustomerToPortal) - requires an email on file,
+              same constraint the route itself enforces. No dialog: the
+              invite uses this customer's already-known name/email,
+              nothing to collect. Design System v2.4: feedback is now a
+              toast (see handleInvite above), not inline text under the
+              button. */}
+          <Button
+            variant="outline"
+            disabled={!customer.email || inviteToPortal.isPending}
+            title={customer.email ? undefined : "This customer has no email on file"}
+            onClick={handleInvite}
+          >
+            {inviteToPortal.isPending ? "Sending…" : "Invite to Portal"}
+          </Button>
           <Button
             variant="outline"
             disabled

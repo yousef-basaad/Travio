@@ -94,7 +94,7 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
             {...register("fullName")}
           />
           {errors.fullName && (
-            <p id="lead-full-name-error" className="text-sm text-destructive">
+            <p id="lead-full-name-error" className="text-sm text-danger">
               {errors.fullName.message}
             </p>
           )}
@@ -124,7 +124,7 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
             {...register("email")}
           />
           {errors.email && (
-            <p id="lead-email-error" className="text-sm text-destructive">
+            <p id="lead-email-error" className="text-sm text-danger">
               {errors.email.message}
             </p>
           )}
@@ -149,7 +149,7 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
         </div>
 
         {submitError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-danger">
             {submitError}
           </p>
         )}

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@travio/database";
+import type { UserRole } from "@travio/types";
 import {
   toCustomer,
   toCustomerInsert,
@@ -9,20 +10,42 @@ import {
   type UpdateCustomerInput,
 } from "./customer.mapper";
 
+export interface ListCustomersOptions {
+  role: UserRole;
+  userId: string;
+}
+
 // Service layer: raw Supabase queries live here, never inline in
 // components/routes. Mirrors crm-leads.service.ts's shape exactly -
 // callers only ever see the mapped Customer domain shape, never the
-// generated Row type. Tenant isolation relies entirely on RLS
-// (customers_tenant_access, 0002_core_tables.sql) - every method takes
-// the caller's own authenticated SupabaseClient, never service_role.
+// generated Row type. Tenant isolation relies on RLS
+// (customers_tenant_access) - every method takes the caller's own
+// authenticated SupabaseClient, never service_role.
 export const customerService = {
-  async list(supabase: SupabaseClient<Database>, tenantId: string): Promise<Customer[]> {
-    const { data, error } = await supabase
+  // The explicit .eq("tenant_id", ...) below is defense-in-depth, not the
+  // real enforcement point (RLS is) - same convention already used
+  // everywhere else. The sales_agent branch is the same story: RLS
+  // (customers_tenant_access, Phase 4C.1) already restricts the rows a
+  // sales_agent's session can see to assigned-to-them-or-unassigned, so
+  // this .or() is a second, application-layer expression of the same
+  // rule, not the only thing standing between a sales_agent and another
+  // agent's customers.
+  async list(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    options?: ListCustomersOptions,
+  ): Promise<Customer[]> {
+    let query = supabase
       .from("customers")
       .select("*")
       .eq("tenant_id", tenantId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false });
+      .is("deleted_at", null);
+
+    if (options?.role === "sales_agent") {
+      query = query.or(`assigned_to.eq.${options.userId},assigned_to.is.null`);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) throw error;
     return data.map(toCustomer);

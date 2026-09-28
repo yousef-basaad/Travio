@@ -133,7 +133,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
             aria-describedby={validationError ? "activity-title-error" : undefined}
           />
           {validationError && (
-            <p id="activity-title-error" className="text-sm text-destructive">
+            <p id="activity-title-error" className="text-sm text-danger">
               {validationError}
             </p>
           )}
@@ -153,7 +153,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
         </div>
 
         {createActivity.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-danger">
             Couldn't add the activity. Please try again.
           </p>
         )}

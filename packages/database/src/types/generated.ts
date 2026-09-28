@@ -12,33 +12,185 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      booking_flights: {
+        Row: {
+          airline: string | null
+          arrival_airport: string | null
+          arrival_time: string | null
+          booking_id: string
+          cabin_class: string | null
+          created_at: string | null
+          created_by: string | null
+          departure_airport: string | null
+          departure_time: string | null
+          flight_number: string | null
+          id: string
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          airline?: string | null
+          arrival_airport?: string | null
+          arrival_time?: string | null
+          booking_id: string
+          cabin_class?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          departure_airport?: string | null
+          departure_time?: string | null
+          flight_number?: string | null
+          id?: string
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          airline?: string | null
+          arrival_airport?: string | null
+          arrival_time?: string | null
+          booking_id?: string
+          cabin_class?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          departure_airport?: string | null
+          departure_time?: string | null
+          flight_number?: string | null
+          id?: string
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_flights_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_flights_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_hotels: {
+        Row: {
+          board_type: string | null
+          booking_id: string
+          check_in: string | null
+          check_out: string | null
+          city: string | null
+          confirmation_number: string | null
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          hotel_name: string | null
+          id: string
+          room_type: string | null
+          rooms: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          board_type?: string | null
+          booking_id: string
+          check_in?: string | null
+          check_out?: string | null
+          city?: string | null
+          confirmation_number?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          hotel_name?: string | null
+          id?: string
+          room_type?: string | null
+          rooms?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          board_type?: string | null
+          booking_id?: string
+          check_in?: string | null
+          check_out?: string | null
+          city?: string | null
+          confirmation_number?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          hotel_name?: string | null
+          id?: string
+          room_type?: string | null
+          rooms?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_hotels_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_hotels_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_notes: {
+        Row: {
+          body: string
+          booking_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          booking_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_notes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_services: {
         Row: {
           booking_id: string
@@ -84,8 +236,123 @@ export type Database = {
           },
         ]
       }
+      booking_timeline: {
+        Row: {
+          booking_id: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          tenant_id: string
+          type: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+          type: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_timeline_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_timeline_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_transfers: {
+        Row: {
+          booking_id: string
+          confirmation_number: string | null
+          created_at: string | null
+          created_by: string | null
+          dropoff_location: string | null
+          id: string
+          passenger_count: number | null
+          pickup_location: string | null
+          pickup_time: string | null
+          provider_name: string | null
+          tenant_id: string
+          transfer_type: string | null
+          updated_at: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          booking_id: string
+          confirmation_number?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          dropoff_location?: string | null
+          id?: string
+          passenger_count?: number | null
+          pickup_location?: string | null
+          pickup_time?: string | null
+          provider_name?: string | null
+          tenant_id: string
+          transfer_type?: string | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          booking_id?: string
+          confirmation_number?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          dropoff_location?: string | null
+          id?: string
+          passenger_count?: number | null
+          pickup_location?: string | null
+          pickup_time?: string | null
+          provider_name?: string | null
+          tenant_id?: string
+          transfer_type?: string | null
+          updated_at?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_transfers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_transfers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
+          assigned_to: string | null
           booking_number: string
           branch_id: string | null
           created_at: string
@@ -104,6 +371,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_to?: string | null
           booking_number: string
           branch_id?: string | null
           created_at?: string
@@ -122,6 +390,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_to?: string | null
           booking_number?: string
           branch_id?: string | null
           created_at?: string
@@ -140,6 +409,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_branch_id_fkey"
             columns: ["branch_id"]
@@ -424,6 +700,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          assigned_to: string | null
           branch_id: string | null
           created_at: string
           date_of_birth: string | null
@@ -441,6 +718,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_to?: string | null
           branch_id?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -458,6 +736,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_to?: string | null
           branch_id?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -476,6 +755,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "customers_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "customers_branch_id_fkey"
             columns: ["branch_id"]
             isOneToOne: false
@@ -484,6 +770,62 @@ export type Database = {
           },
           {
             foreignKeyName: "customers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          mime_type: string
+          owner_id: string | null
+          owner_type: string
+          tenant_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id?: string
+          mime_type: string
+          owner_id?: string | null
+          owner_type: string
+          tenant_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          owner_id?: string | null
+          owner_type?: string
+          tenant_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -646,7 +988,9 @@ export type Database = {
           description: string
           id: string
           invoice_id: string
+          item_type: string
           quantity: number
+          reference_id: string | null
           tenant_id: string
           total: number
           unit_price: number
@@ -656,7 +1000,9 @@ export type Database = {
           description: string
           id?: string
           invoice_id: string
+          item_type?: string
           quantity?: number
+          reference_id?: string | null
           tenant_id: string
           total?: number
           unit_price?: number
@@ -666,7 +1012,9 @@ export type Database = {
           description?: string
           id?: string
           invoice_id?: string
+          item_type?: string
           quantity?: number
+          reference_id?: string | null
           tenant_id?: string
           total?: number
           unit_price?: number
@@ -794,6 +1142,50 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json
+          read_at: string | null
+          tenant_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json
+          read_at?: string | null
+          tenant_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          read_at?: string | null
+          tenant_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -913,6 +1305,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          customer_id: string | null
           email: string
           full_name: string
           id: string
@@ -922,6 +1315,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_id?: string | null
           email: string
           full_name: string
           id: string
@@ -931,6 +1325,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_id?: string | null
           email?: string
           full_name?: string
           id?: string
@@ -939,6 +1334,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1039,29 +1441,38 @@ export type Database = {
       }
       tenants: {
         Row: {
+          address: string | null
           cr_number: string
           created_at: string
+          email: string | null
           id: string
           is_active: boolean
           name: string
+          phone: string | null
           slug: string
           updated_at: string
         }
         Insert: {
+          address?: string | null
           cr_number: string
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           name: string
+          phone?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
+          address?: string | null
           cr_number?: string
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          phone?: string | null
           slug?: string
           updated_at?: string
         }
@@ -1069,41 +1480,67 @@ export type Database = {
       }
       visa_applications: {
         Row: {
-          booking_service_id: string
+          assigned_to: string | null
+          booking_id: string | null
           country: string | null
           created_at: string | null
+          created_by: string | null
+          customer_id: string
           id: string
           status: Database["public"]["Enums"]["visa_status"] | null
           submitted_at: string | null
           tenant_id: string | null
+          updated_at: string | null
           visa_type: string | null
         }
         Insert: {
-          booking_service_id: string
+          assigned_to?: string | null
+          booking_id?: string | null
           country?: string | null
           created_at?: string | null
+          created_by?: string | null
+          customer_id: string
           id?: string
           status?: Database["public"]["Enums"]["visa_status"] | null
           submitted_at?: string | null
           tenant_id?: string | null
+          updated_at?: string | null
           visa_type?: string | null
         }
         Update: {
-          booking_service_id?: string
+          assigned_to?: string | null
+          booking_id?: string | null
           country?: string | null
           created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
           id?: string
           status?: Database["public"]["Enums"]["visa_status"] | null
           submitted_at?: string | null
           tenant_id?: string | null
+          updated_at?: string | null
           visa_type?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "visa_applications_booking_service_id_fkey"
-            columns: ["booking_service_id"]
+            foreignKeyName: "visa_applications_assigned_to_fkey"
+            columns: ["assigned_to"]
             isOneToOne: false
-            referencedRelation: "booking_services"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visa_applications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visa_applications_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
           {
@@ -1127,11 +1564,14 @@ export type Database = {
       create_agency: {
         Args: { agency_cr_number: string; agency_name: string }
         Returns: {
+          address: string | null
           cr_number: string
           created_at: string
+          email: string | null
           id: string
           is_active: boolean
           name: string
+          phone: string | null
           slug: string
           updated_at: string
         }
@@ -1142,11 +1582,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_customer_id: { Args: never; Returns: string }
       current_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
       current_tenant_id: { Args: never; Returns: string }
+      current_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+      update_team_member_role: {
+        Args: { new_role: Database["public"]["Enums"]["user_role"]; target_user_id: string }
+        Returns: {
+          created_at: string
+          customer_id: string | null
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       booking_status:
@@ -1321,9 +1785,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       booking_status: [

@@ -101,7 +101,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
             {...register("fullName")}
           />
           {errors.fullName && (
-            <p id="edit-lead-full-name-error" className="text-sm text-destructive">
+            <p id="edit-lead-full-name-error" className="text-sm text-danger">
               {errors.fullName.message}
             </p>
           )}
@@ -131,7 +131,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
             {...register("email")}
           />
           {errors.email && (
-            <p id="edit-lead-email-error" className="text-sm text-destructive">
+            <p id="edit-lead-email-error" className="text-sm text-danger">
               {errors.email.message}
             </p>
           )}
@@ -185,14 +185,14 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
             {...register("assignedTo")}
           />
           {errors.assignedTo && (
-            <p id="edit-lead-assigned-to-error" className="text-sm text-destructive">
+            <p id="edit-lead-assigned-to-error" className="text-sm text-danger">
               {errors.assignedTo.message}
             </p>
           )}
         </div>
 
         {submitError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-danger">
             {submitError}
           </p>
         )}

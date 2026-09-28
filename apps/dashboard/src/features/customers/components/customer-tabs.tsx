@@ -1,84 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@travio/ui";
-import { cn, formatDate } from "@travio/utils";
+import { DetailLayout } from "@travio/ui";
 import type { Customer } from "@travio/api";
-import { InfoRow } from "./customer-profile-card";
+import { CustomerOverviewTab } from "./customer-overview-tab";
 import { CustomerTimeline } from "./timeline/customer-timeline";
+import { CustomerBookingsTable } from "./bookings/customer-bookings-table";
+import { VisaList } from "./visa/visa-list";
+import { InvoiceList } from "@/features/finance";
+import { DocumentsPage } from "@/features/documents";
 
+// Phase UI-3: Customer 360 tabs, matching the spec's lettered sections
+// A-F exactly. "Invoices" and "Payments" (previously two tabs, the
+// second just pointing back at the first) are merged into one "Finance"
+// tab - InvoiceList already shows each invoice's own Paid/Remaining and
+// payment list inline (payments have no cross-invoice view of their
+// own), so a separate Payments tab never showed anything Finance
+// doesn't already cover.
 const TABS = [
   "Overview",
-  "Timeline",
   "Bookings",
-  "Invoices",
-  "Payments",
+  "Finance",
   "Documents",
   "Visa Applications",
+  "Timeline",
 ] as const;
 
 type CustomerTab = (typeof TABS)[number];
 
-function OverviewTab({ customer }: { customer: Customer }) {
-  return (
-    <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <InfoRow label="Full Name" value={customer.fullName} />
-      <InfoRow label="Email" value={customer.email ?? "—"} />
-      <InfoRow label="Phone" value={customer.phone ?? "—"} />
-      <InfoRow
-        label="Passport Expiry"
-        value={customer.passportExpiry ? formatDate(customer.passportExpiry) : "—"}
-      />
-      <InfoRow label="Preferred Language" value={customer.preferredLanguage ?? "—"} />
-      <InfoRow label="Created At" value={formatDate(customer.createdAt)} />
-      <InfoRow label="Updated At" value={formatDate(customer.updatedAt)} />
-    </dl>
-  );
-}
-
-// Tab shell only, per this issue's explicit scope - every tab besides
-// Overview is an empty placeholder for a future module (Timeline,
-// Bookings, Invoices, Payments, Documents, Visa Applications) to plug
-// into later.
+// Uses the design system's shared DetailLayout (Card + Tabs) instead of
+// the raw role="tablist" markup this file previously defined for
+// itself.
 export function CustomerTabs({ customer }: { customer: Customer }) {
   const [activeTab, setActiveTab] = useState<CustomerTab>("Overview");
 
   return (
-    <Card>
-      <CardHeader className="space-y-0 p-0">
-        <div
-          role="tablist"
-          aria-label="Customer sections"
-          className="flex flex-wrap gap-1 border-b p-2"
-        >
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                activeTab === tab
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-4">
-        {activeTab === "Overview" ? (
-          <OverviewTab customer={customer} />
-        ) : activeTab === "Timeline" ? (
-          <CustomerTimeline customerId={customer.id} />
-        ) : (
-          <p className="text-sm text-muted-foreground">Coming soon</p>
-        )}
-      </CardContent>
-    </Card>
+    <DetailLayout
+      tabs={TABS}
+      activeTab={activeTab}
+      onTabChange={(tab) => setActiveTab(tab as CustomerTab)}
+      ariaLabel="Customer sections"
+    >
+      {activeTab === "Overview" ? (
+        <CustomerOverviewTab customer={customer} />
+      ) : activeTab === "Bookings" ? (
+        <CustomerBookingsTable customerId={customer.id} />
+      ) : activeTab === "Finance" ? (
+        <InvoiceList customerId={customer.id} />
+      ) : activeTab === "Documents" ? (
+        <DocumentsPage ownerType="customer" ownerId={customer.id} />
+      ) : activeTab === "Visa Applications" ? (
+        <VisaList customerId={customer.id} />
+      ) : activeTab === "Timeline" ? (
+        <CustomerTimeline customerId={customer.id} />
+      ) : (
+        <p className="text-sm text-muted-foreground">Coming soon</p>
+      )}
+    </DetailLayout>
   );
 }

@@ -8,6 +8,7 @@ export interface Customer {
   id: string;
   tenantId: string;
   branchId: string | null;
+  assignedTo: string | null;
   fullName: string;
   phone: string | null;
   email: string | null;
@@ -26,6 +27,7 @@ export interface CreateCustomerInput {
   tenantId: string;
   fullName: string;
   branchId?: string | null;
+  assignedTo?: string | null;
   phone?: string | null;
   email?: string | null;
   nationality?: string | null;
@@ -38,6 +40,7 @@ export interface CreateCustomerInput {
 
 export interface UpdateCustomerInput {
   branchId?: string | null;
+  assignedTo?: string | null;
   fullName?: string;
   phone?: string | null;
   email?: string | null;
@@ -60,6 +63,7 @@ export function toCustomer(row: CustomerRow): Customer {
     id: row.id,
     tenantId: row.tenant_id,
     branchId: row.branch_id,
+    assignedTo: row.assigned_to,
     fullName: row.full_name,
     phone: row.phone,
     email: row.email,
@@ -80,6 +84,7 @@ export function toCustomerInsert(input: CreateCustomerInput): CustomerInsertRow 
     tenant_id: input.tenantId,
     full_name: input.fullName,
     branch_id: input.branchId,
+    assigned_to: input.assignedTo,
     phone: input.phone,
     email: input.email,
     nationality: input.nationality,
@@ -94,6 +99,7 @@ export function toCustomerInsert(input: CreateCustomerInput): CustomerInsertRow 
 export function toCustomerUpdate(input: UpdateCustomerInput): CustomerUpdateRow {
   return {
     branch_id: input.branchId,
+    assigned_to: input.assignedTo,
     full_name: input.fullName,
     phone: input.phone,
     email: input.email,

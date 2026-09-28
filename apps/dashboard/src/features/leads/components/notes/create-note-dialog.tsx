@@ -90,14 +90,14 @@ export function CreateNoteDialog({ leadId, open, onOpenChange }: CreateNoteDialo
             aria-describedby={validationError ? "note-body-error" : undefined}
           />
           {validationError && (
-            <p id="note-body-error" className="text-sm text-destructive">
+            <p id="note-body-error" className="text-sm text-danger">
               {validationError}
             </p>
           )}
         </div>
 
         {createNote.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-danger">
             Couldn't add the note. Please try again.
           </p>
         )}

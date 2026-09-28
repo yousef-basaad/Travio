@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/lib/api/handle-api-error";
 import { crmLeadsService, crmNotesService } from "@travio/api";
-import { requireCrmAccess } from "../../_lib/require-crm-access";
+import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
 import { createCrmNoteSchema } from "../../_lib/schemas";
+
+const ROUTE = "/api/crm/leads/:id/notes";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -22,13 +25,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
     const notes = await crmNotesService.listByLead(auth.access.supabase, id);
     return NextResponse.json(notes);
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "GET", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }
 
 export async function POST(request: Request, { params }: RouteParams) {
-  const auth = await requireCrmAccess();
+  const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
@@ -63,7 +66,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       createdBy: auth.access.userId,
     });
     return NextResponse.json(note, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, { route: ROUTE, action: "POST", tenantId: auth.access.tenantId, userId: auth.access.userId });
   }
 }

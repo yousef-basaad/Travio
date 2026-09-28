@@ -130,7 +130,7 @@ export function EditActivityDialog({
             aria-describedby={validationError ? "edit-activity-title-error" : undefined}
           />
           {validationError && (
-            <p id="edit-activity-title-error" className="text-sm text-destructive">
+            <p id="edit-activity-title-error" className="text-sm text-danger">
               {validationError}
             </p>
           )}
@@ -150,7 +150,7 @@ export function EditActivityDialog({
         </div>
 
         {updateActivity.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-danger">
             Couldn't save changes. Please try again.
           </p>
         )}

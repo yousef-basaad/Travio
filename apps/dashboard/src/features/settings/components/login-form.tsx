@@ -19,7 +19,7 @@ export function LoginForm() {
         <label className="text-sm font-medium" htmlFor="password">Password</label>
         <input id="password" name="password" type="password" required className="w-full rounded-md border px-3 py-2 text-sm" />
       </div>
-      {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+      {state.error && <p className="text-sm text-danger">{state.error}</p>}
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Signing in…" : "Sign in"}
       </Button>

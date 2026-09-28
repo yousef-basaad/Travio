@@ -6,10 +6,6 @@ import type { Database } from "../types/generated";
 // middleware.ts calls this and then applies its own route-protection logic
 // (see packages/auth for role/tenant guards built on top of this).
 export async function updateSupabaseSession(request: NextRequest) {
-    console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log("SUPABASE KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 10));
-
-
   let response = NextResponse.next({ request });
 
   // Typed against @supabase/ssr's own CookieMethodsServer contract so the

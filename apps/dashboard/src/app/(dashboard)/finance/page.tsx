@@ -1,3 +1,5 @@
-export default function FinancePage() {
-  return <div>Finance feature - see src/features/finance</div>;
+import { FinancePage } from "@/features/finance";
+
+export default function Page() {
+  return <FinancePage />;
 }

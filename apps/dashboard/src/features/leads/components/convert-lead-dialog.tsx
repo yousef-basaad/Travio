@@ -87,7 +87,7 @@ export function ConvertLeadDialog({ lead, open, onOpenChange }: ConvertLeadDialo
         </p>
 
         {convertLead.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-danger">
             {getErrorMessage(convertLead.error)}
           </p>
         )}
