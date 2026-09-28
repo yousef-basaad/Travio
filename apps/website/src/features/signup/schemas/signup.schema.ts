@@ -25,7 +25,6 @@ export type SignupState =
   | { status: "check_email"; email: string };
 
 export const SIGNUP_MESSAGES = {
-  emailTaken: "An account with this email already exists. Sign in on the dashboard instead.",
   rateLimited: "Too many signup attempts. Please wait a few minutes and try again.",
   unknown: "We couldn't create your account. Please try again.",
   unavailable: "Signup is temporarily unavailable. Please try again later.",

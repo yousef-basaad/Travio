@@ -63,13 +63,10 @@ export async function signupAction(_prevState: SignupState, formData: FormData):
     case "confirmation_required":
       return { status: "check_email", email: parsed.data.email };
     case "error":
+      // Never reveal whether an account exists: an already-registered
+      // email gets exactly the same "check your email" state as (b).
       if (result.code === "email_taken") {
-        return {
-          status: "error",
-          fieldErrors: { email: SIGNUP_MESSAGES.emailTaken },
-          formError: null,
-          values,
-        };
+        return { status: "check_email", email: parsed.data.email };
       }
       return {
         status: "error",

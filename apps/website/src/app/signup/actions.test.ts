@@ -92,10 +92,15 @@ describe("signupAction", () => {
     });
   });
 
-  it("(c) email already registered: field error on email, no redirect", async () => {
+  it("email already registered: identical to (b), never reveals the account exists", async () => {
+    signUpResult = { status: "confirmation_required" };
+    const newEmailState = await signupAction(IDLE, form());
+
     signUpResult = { status: "error", code: "email_taken" };
-    const state = await signupAction(IDLE, form());
-    expect(state).toMatchObject({ status: "error", fieldErrors: { email: SIGNUP_MESSAGES.emailTaken } });
+    const takenEmailState = await signupAction(IDLE, form());
+
+    expect(takenEmailState).toEqual({ status: "check_email", email: "owner@agency.test" });
+    expect(takenEmailState).toEqual(newEmailState);
   });
 
   it("(c) rate limited: friendly form error", async () => {
