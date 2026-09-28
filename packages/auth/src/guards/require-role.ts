@@ -18,7 +18,11 @@ const NO_ROW_ERROR_CODE = "PGRST116";
 export type RequireRoleResult =
   | { authorized: true; profile: Profile }
   | { authorized: false; reason: "unauthenticated" }
-  | { authorized: false; reason: "forbidden" }
+  // `detail` separates "signed in, but no profile row exists" (e.g. an
+  // auth user created before handle_new_user() existed) from "profile
+  // exists, role not allowed". Both stay reason "forbidden", so callers
+  // that only branch on `reason` behave exactly as before.
+  | { authorized: false; reason: "forbidden"; detail: "no_profile" | "role_not_allowed" }
   // Stabilization Phase 1: distinct from "forbidden" - the profile
   // query itself failed (DB outage, schema mismatch, RLS
   // misconfiguration, ...), not "this user has no access". Every
@@ -72,10 +76,19 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<RequireRole
     };
   }
 
-  if (!row || !allowedRoles.includes(row.role)) {
+  if (!row) {
     return {
       authorized: false as const,
       reason: "forbidden" as const,
+      detail: "no_profile" as const,
+    };
+  }
+
+  if (!allowedRoles.includes(row.role)) {
+    return {
+      authorized: false as const,
+      reason: "forbidden" as const,
+      detail: "role_not_allowed" as const,
     };
   }
 
