@@ -1557,6 +1557,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      analytics_booking_status_counts: {
+        Args: never
+        Returns: {
+          booking_count: number
+          status: Database["public"]["Enums"]["booking_status"]
+        }[]
+      }
+      analytics_finance_totals: {
+        Args: never
+        Returns: {
+          paid_amount: number
+          total_revenue: number
+        }[]
+      }
+      analytics_revenue_by_month: {
+        Args: { range_start: string }
+        Returns: {
+          invoice_total: number
+          month: string
+          paid_total: number
+        }[]
+      }
+      analytics_top_customers: {
+        Args: { limit_count: number }
+        Returns: {
+          customer_id: string
+          revenue: number
+        }[]
+      }
       convert_crm_lead: {
         Args: { force_create_new?: boolean; lead_id: string }
         Returns: Json
@@ -1611,6 +1640,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      usage_document_totals: {
+        Args: never
+        Returns: {
+          document_count: number
+          storage_bytes: number
+        }[]
+      }
+      visa_officer_customer_ids: { Args: never; Returns: string[] }
     }
     Enums: {
       booking_status:
