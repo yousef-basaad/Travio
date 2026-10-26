@@ -81,11 +81,14 @@ export function startOfMonth(monthsAgo: number): string {
 // tenant isolation comes from RLS (tenant_id = current_tenant_id()) on
 // the caller's own session-scoped client - never service_role, and no
 // query here filters by tenant_id explicitly because RLS already does.
-// Aggregation happens in JS after a bounded select (no SUM/COUNT-GROUP-BY
-// pushed to Postgres) - readable and consistent with every other service
-// in this codebase, none of which use rpc()/raw SQL. Revisit with a
-// dedicated rpc() aggregate if a tenant's row counts ever make that
-// bottleneck real.
+// Sums and group-bys run in Postgres (analytics_* functions,
+// 20261027120000) - selecting rows and summing here was capped at
+// PostgREST's max_rows (1000), so totals went silently wrong past that.
+// The functions are SECURITY INVOKER, so RLS still scopes every number
+// to what the caller may see. Plain counts stay as head-only count
+// queries, which aren't affected by the row cap.
+const TOP_CUSTOMERS_LIMIT = 5;
+
 export const analyticsService = {
   async getDashboardStats(supabase: SupabaseClient<Database>): Promise<DashboardStats> {
     const today = new Date().toISOString().slice(0, 10);
@@ -93,8 +96,7 @@ export const analyticsService = {
     const [
       customersResult,
       bookingsResult,
-      invoicesResult,
-      paymentsResult,
+      financeResult,
       upcomingBookingsResult,
     ] = await Promise.all([
       supabase
@@ -102,8 +104,7 @@ export const analyticsService = {
         .select("*", { count: "exact", head: true })
         .is("deleted_at", null),
       supabase.from("bookings").select("*", { count: "exact", head: true }).is("deleted_at", null),
-      supabase.from("invoices").select("total").is("deleted_at", null),
-      supabase.from("payments").select("amount"),
+      supabase.rpc("analytics_finance_totals"),
       supabase
         .from("bookings")
         .select("*", { count: "exact", head: true })
@@ -114,12 +115,12 @@ export const analyticsService = {
 
     if (customersResult.error) throw customersResult.error;
     if (bookingsResult.error) throw bookingsResult.error;
-    if (invoicesResult.error) throw invoicesResult.error;
-    if (paymentsResult.error) throw paymentsResult.error;
+    if (financeResult.error) throw financeResult.error;
     if (upcomingBookingsResult.error) throw upcomingBookingsResult.error;
 
-    const totalRevenue = invoicesResult.data.reduce((sum, row) => sum + row.total, 0);
-    const paidAmount = paymentsResult.data.reduce((sum, row) => sum + row.amount, 0);
+    const totals = financeResult.data[0];
+    const totalRevenue = Number(totals?.total_revenue ?? 0);
+    const paidAmount = Number(totals?.paid_amount ?? 0);
 
     return {
       totalCustomers: customersResult.count ?? 0,
@@ -135,39 +136,19 @@ export const analyticsService = {
     const months = lastNMonthKeys(12);
     const rangeStart = startOfMonth(11);
 
-    const [invoicesResult, paymentsResult] = await Promise.all([
-      supabase
-        .from("invoices")
-        .select("created_at, total")
-        .is("deleted_at", null)
-        .gte("created_at", rangeStart),
-      supabase.from("payments").select("paid_at, amount").gte("paid_at", rangeStart),
-    ]);
+    const { data, error } = await supabase.rpc("analytics_revenue_by_month", {
+      range_start: rangeStart,
+    });
 
-    if (invoicesResult.error) throw invoicesResult.error;
-    if (paymentsResult.error) throw paymentsResult.error;
+    if (error) throw error;
 
-    const invoiceTotalByMonth = new Map<string, number>();
-    for (const row of invoicesResult.data) {
-      const key = row.created_at.slice(0, 7);
-      invoiceTotalByMonth.set(key, (invoiceTotalByMonth.get(key) ?? 0) + row.total);
-    }
-
-    const paidTotalByMonth = new Map<string, number>();
-    for (const row of paymentsResult.data) {
-      // paid_at is nullable (a payment can have its date explicitly
-      // cleared) - without a date it can't be placed in a month bucket,
-      // so it's skipped here rather than guessed at.
-      if (!row.paid_at) continue;
-      const key = row.paid_at.slice(0, 7);
-      paidTotalByMonth.set(key, (paidTotalByMonth.get(key) ?? 0) + row.amount);
-    }
+    const byMonth = new Map(data.map((row) => [row.month, row]));
 
     return {
       months: months.map((month) => ({
         month,
-        invoiceTotal: invoiceTotalByMonth.get(month) ?? 0,
-        paidTotal: paidTotalByMonth.get(month) ?? 0,
+        invoiceTotal: Number(byMonth.get(month)?.invoice_total ?? 0),
+        paidTotal: Number(byMonth.get(month)?.paid_total ?? 0),
       })),
     };
   },
@@ -175,7 +156,7 @@ export const analyticsService = {
   async getBookingAnalytics(supabase: SupabaseClient<Database>): Promise<BookingAnalytics> {
     const [bookingsResult, flightsResult, hotelsResult, transfersResult, visaResult] =
       await Promise.all([
-        supabase.from("bookings").select("status").is("deleted_at", null),
+        supabase.rpc("analytics_booking_status_counts"),
         supabase.from("booking_flights").select("*", { count: "exact", head: true }),
         supabase.from("booking_hotels").select("*", { count: "exact", head: true }),
         supabase.from("booking_transfers").select("*", { count: "exact", head: true }),
@@ -192,12 +173,15 @@ export const analyticsService = {
       (acc, status) => ({ ...acc, [status]: 0 }),
       {} as Record<BookingStatus, number>,
     );
+    let totalBookings = 0;
     for (const row of bookingsResult.data) {
-      byStatus[row.status] += 1;
+      const count = Number(row.booking_count);
+      byStatus[row.status] += count;
+      totalBookings += count;
     }
 
     return {
-      totalBookings: bookingsResult.data.length,
+      totalBookings,
       byStatus,
       serviceDistribution: {
         flights: flightsResult.count ?? 0,
@@ -224,29 +208,16 @@ export const analyticsService = {
         .is("deleted_at", null)
         .gte("created_at", lastMonthStart)
         .lt("created_at", thisMonthStart),
-      supabase
-        .from("invoices")
-        .select("customer_id, total")
-        .is("deleted_at", null)
-        .not("customer_id", "is", null),
+      supabase.rpc("analytics_top_customers", { limit_count: TOP_CUSTOMERS_LIMIT }),
     ]);
 
     if (thisMonthResult.error) throw thisMonthResult.error;
     if (lastMonthResult.error) throw lastMonthResult.error;
     if (invoicesResult.error) throw invoicesResult.error;
 
-    const revenueByCustomer = new Map<string, number>();
-    for (const row of invoicesResult.data) {
-      if (!row.customer_id) continue;
-      revenueByCustomer.set(
-        row.customer_id,
-        (revenueByCustomer.get(row.customer_id) ?? 0) + row.total,
-      );
-    }
-
-    const topEntries = [...revenueByCustomer.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
+    const topEntries = invoicesResult.data.map(
+      (row) => [row.customer_id, Number(row.revenue)] as const,
+    );
 
     let topCustomersByRevenue: TopCustomer[] = [];
     if (topEntries.length > 0) {
