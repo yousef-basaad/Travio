@@ -3,9 +3,11 @@ import type { Database } from "@travio/database";
 import type { UserRole } from "@travio/types";
 import {
   toVisaApplication,
+  toVisaApplicationWithCustomer,
   toVisaApplicationInsert,
   toVisaApplicationUpdate,
   type VisaApplication,
+  type VisaApplicationWithCustomer,
   type CreateVisaApplicationInput,
   type UpdateVisaApplicationInput,
 } from "./visa-applications.mapper";
@@ -26,6 +28,25 @@ export const visaApplicationsService = {
   // defense-in-depth, not the sole gate: visa_applications_tenant_access
   // (RLS, Phase 4C.2) already restricts a visa_officer's session to
   // assigned-to-them-or-unassigned rows.
+  // The visa workspace: every visa application in the tenant the caller
+  // may see, newest first, with the customer's name. Which rows come back
+  // is decided by RLS (20261026120000/20261026130000): managers see all,
+  // a visa officer its own + unassigned, a sales agent those of customers
+  // it can see. The tenant .eq() is defense-in-depth, same as list().
+  async listForTenant(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+  ): Promise<VisaApplicationWithCustomer[]> {
+    const { data, error } = await supabase
+      .from("visa_applications")
+      .select("*, customer:customers(id, full_name)")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data.map(toVisaApplicationWithCustomer);
+  },
+
   async listByCustomer(
     supabase: SupabaseClient<Database>,
     customerId: string,

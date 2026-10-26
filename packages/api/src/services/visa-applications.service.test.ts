@@ -58,6 +58,53 @@ describe("visaApplicationsService", () => {
     });
   });
 
+  describe("listForTenant - visa workspace", () => {
+    it("selects the customer name, scopes to the tenant, newest first", async () => {
+      const { client, allCalls } = createFakeSupabaseClient({
+        visa_applications: [{ data: [VISA_ROW], error: null }],
+      });
+
+      await visaApplicationsService.listForTenant(client, "tenant-1");
+
+      expect(findCallsByMethod(allCalls, "visa_applications", "select")).toContainEqual({
+        method: "select",
+        args: ["*, customer:customers(id, full_name)"],
+      });
+      expect(findCallsByMethod(allCalls, "visa_applications", "eq")).toContainEqual({
+        method: "eq",
+        args: ["tenant_id", "tenant-1"],
+      });
+      expect(findCallsByMethod(allCalls, "visa_applications", "order")).toContainEqual({
+        method: "order",
+        args: ["created_at", { ascending: false }],
+      });
+    });
+
+    it("maps the embedded customer, and null when RLS hides it", async () => {
+      const { client } = createFakeSupabaseClient({
+        visa_applications: [
+          {
+            data: [
+              { ...VISA_ROW, customer: { id: "customer-1", full_name: "Sara Ali" } },
+              { ...VISA_ROW, id: "visa-2", customer: null },
+            ],
+            error: null,
+          },
+        ],
+      });
+
+      const result = await visaApplicationsService.listForTenant(client, "tenant-1");
+
+      expect(result[0]).toMatchObject({
+        id: "visa-1",
+        customerId: "customer-1",
+        country: "United Kingdom",
+        customer: { id: "customer-1", fullName: "Sara Ali" },
+      });
+      expect(result[1]).toMatchObject({ id: "visa-2", customer: null });
+    });
+  });
+
   describe("listByCustomer / listByBooking - visa officer ownership scoping", () => {
     // The .or() clause here is service-layer defense-in-depth, not the
     // sole gate - visa_applications_tenant_access (RLS, Phase 4C.2)
