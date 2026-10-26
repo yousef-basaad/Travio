@@ -9,6 +9,7 @@ import {
   type CreateCrmLeadInput,
   type UpdateCrmLeadInput,
 } from "./crm-leads.mapper";
+import { ilikeAny, toRange, RANGE_NOT_SATISFIABLE, type Page, type PageRequest } from "./pagination";
 
 export interface ListCrmLeadsOptions {
   role: UserRole;
@@ -42,6 +43,46 @@ export const crmLeadsService = {
 
     if (error) throw error;
     return data.map(toCrmLead);
+  },
+
+  // One page of the Leads list, newest first, with the exact total.
+  // Search matches name, email or phone. Same ownership filter as list().
+  async listPage(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    request: PageRequest,
+    options?: ListCrmLeadsOptions,
+  ): Promise<Page<CrmLead>> {
+    // head: true -> count only (used when the page is past the end).
+    const filtered = (head: boolean) => {
+      let query = supabase
+        .from("crm_leads")
+        .select("*", { count: "exact", head })
+        .eq("tenant_id", tenantId)
+        .is("deleted_at", null);
+
+      if (options?.role === "sales_agent") {
+        query = query.or(`assigned_to.eq.${options.userId},assigned_to.is.null`);
+      }
+      if (request.search) {
+        query = query.or(ilikeAny(["full_name", "email", "phone"], request.search));
+      }
+      return query;
+    };
+
+    const [from, to] = toRange(request);
+    const { data, count, error } = await filtered(false)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error?.code === RANGE_NOT_SATISFIABLE) {
+      const { count: total, error: countError } = await filtered(true);
+      if (countError) throw countError;
+      return { items: [], total: total ?? 0, page: request.page, pageSize: request.pageSize };
+    }
+    if (error) throw error;
+    return { items: data.map(toCrmLead), total: count ?? 0, page: request.page, pageSize: request.pageSize };
   },
 
   async getById(supabase: SupabaseClient<Database>, id: string): Promise<CrmLead | null> {
