@@ -22,6 +22,20 @@ const VISA_STATUS_STYLES: Record<VisaStatus, string> = {
   rejected: "bg-danger/10 text-danger",
 };
 
+// Shared by VisaItem and the Visa Center workspace table.
+export function VisaStatusBadge({ status }: { status: VisaStatus }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+        VISA_STATUS_STYLES[status],
+      )}
+    >
+      {VISA_STATUS_LABELS[status]}
+    </span>
+  );
+}
+
 type VisaItemProps = {
   visa: VisaApplication;
   /**
@@ -43,16 +57,7 @@ export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) 
       <ServiceItemHeader>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">{visa.visaType ?? "Unknown visa type"}</span>
-          {visa.status && (
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                VISA_STATUS_STYLES[visa.status],
-              )}
-            >
-              {VISA_STATUS_LABELS[visa.status]}
-            </span>
-          )}
+          {visa.status && <VisaStatusBadge status={visa.status} />}
         </div>
         {!readOnly && (
           <ServiceItemActions>
