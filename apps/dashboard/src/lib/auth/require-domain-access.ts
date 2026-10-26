@@ -86,9 +86,16 @@ export function requireBookingsAccess(): Promise<DomainAccessResult> {
 
 // Visa domain (visa-applications/**, customers/[id]/visas) - gives
 // visa_officer the dedicated route access Phase 4C.2's ownership model
-// needs. Deliberately narrower than the old blanket CRM gate: sales_agent
-// no longer reaches visa routes directly (branch_manager still does).
-const VISA_ROLES = ["travio_admin", "agency_owner", "branch_manager", "visa_officer"] as const;
+// needs. sales_agent is allowed too (Phase 2 authorization alignment):
+// RLS limits it to visas of customers it can see, so its Customer 360
+// visa tab works instead of returning 403.
+const VISA_ROLES = [
+  "travio_admin",
+  "agency_owner",
+  "branch_manager",
+  "visa_officer",
+  "sales_agent",
+] as const;
 export function requireVisaAccess(): Promise<DomainAccessResult> {
   return requireDomainAccess(VISA_ROLES);
 }
