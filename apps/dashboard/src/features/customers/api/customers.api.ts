@@ -38,6 +38,117 @@ export function useCustomers() {
   });
 }
 
+// Mirrors POST /api/customers' createCustomerSchema (app/api/customers/
+// _lib/schemas.ts). tenantId never comes from here - the route takes it
+// from the session. assignedTo is left out, same as the New Lead dialog.
+export interface CreateCustomerInput {
+  fullName: string;
+  phone?: string;
+  email?: string;
+  /** "YYYY-MM-DD" - what <input type="date"> yields and the API expects. */
+  passportExpiry?: string;
+  preferredLanguage?: string;
+}
+
+export type CreateCustomerField = keyof CreateCustomerInput;
+export type CreateCustomerFieldErrors = Partial<Record<CreateCustomerField, string>>;
+
+const CREATE_CUSTOMER_FIELDS: readonly CreateCustomerField[] = [
+  "fullName",
+  "phone",
+  "email",
+  "passportExpiry",
+  "preferredLanguage",
+];
+
+const CREATE_CUSTOMER_GENERIC_ERROR = "Couldn't create the customer. Please try again.";
+
+// Thrown for the API's 400 so the dialog can put each message next to
+// its own field; anything it can't pin to a field lands in formError.
+export class CreateCustomerValidationError extends Error {
+  constructor(
+    public readonly fieldErrors: CreateCustomerFieldErrors,
+    public readonly formError: string | null,
+  ) {
+    super("Customer details are invalid");
+    this.name = "CreateCustomerValidationError";
+  }
+}
+
+function isCreateCustomerField(value: unknown): value is CreateCustomerField {
+  return typeof value === "string" && (CREATE_CUSTOMER_FIELDS as readonly string[]).includes(value);
+}
+
+// Maps a 400 body ({ error: "invalid_input", issues: ZodIssue[] }) to
+// per-field messages (first message per field wins). Issues for fields
+// this form doesn't show, or a body with no usable issues (e.g. the
+// route's invalid-JSON 400), become a single general message.
+export function toCreateCustomerErrors(body: unknown): {
+  fieldErrors: CreateCustomerFieldErrors;
+  formError: string | null;
+} {
+  const fieldErrors: CreateCustomerFieldErrors = {};
+  let hasUnmappedIssue = false;
+
+  const issues =
+    body && typeof body === "object" && "issues" in body && Array.isArray(body.issues)
+      ? (body.issues as unknown[])
+      : [];
+
+  for (const issue of issues) {
+    if (!issue || typeof issue !== "object") continue;
+    const field = "path" in issue && Array.isArray(issue.path) ? issue.path[0] : undefined;
+    const message = "message" in issue && typeof issue.message === "string" ? issue.message : null;
+    if (isCreateCustomerField(field) && message) {
+      fieldErrors[field] ??= message;
+    } else {
+      hasUnmappedIssue = true;
+    }
+  }
+
+  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+  return {
+    fieldErrors,
+    formError: hasUnmappedIssue || !hasFieldErrors ? CREATE_CUSTOMER_GENERIC_ERROR : null,
+  };
+}
+
+export async function createCustomer(input: CreateCustomerInput): Promise<Customer> {
+  const response = await fetch("/api/customers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (response.status === 400) {
+    const body: unknown = await response.json().catch(() => null);
+    const { fieldErrors, formError } = toCreateCustomerErrors(body);
+    throw new CreateCustomerValidationError(fieldErrors, formError);
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to create customer (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Unexpected response from /api/customers");
+  }
+
+  return data as Customer;
+}
+
+export function useCreateCustomer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createCustomer,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: CUSTOMERS_QUERY_KEY });
+    },
+  });
+}
+
 // Distinguished from a generic fetch failure so the details page can show
 // "Customer not found" instead of a generic error message - matches
 // leads.api.ts's LeadNotFoundError pattern.
