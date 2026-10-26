@@ -67,6 +67,21 @@ export function toVisaApplication(row: VisaApplicationRow): VisaApplication {
   };
 }
 
+// The visa workspace's list row: the visa plus who it's for. customer is
+// null when RLS hides the customer from the caller.
+export interface VisaApplicationWithCustomer extends VisaApplication {
+  customer: { id: string; fullName: string } | null;
+}
+
+export function toVisaApplicationWithCustomer(
+  row: VisaApplicationRow & { customer: { id: string; full_name: string } | null },
+): VisaApplicationWithCustomer {
+  return {
+    ...toVisaApplication(row),
+    customer: row.customer ? { id: row.customer.id, fullName: row.customer.full_name } : null,
+  };
+}
+
 export function toVisaApplicationInsert(
   input: CreateVisaApplicationInput,
 ): VisaApplicationInsertRow {

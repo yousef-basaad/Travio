@@ -58,6 +58,7 @@ export type {
 export * from "./services/visa-applications.service";
 export type {
   VisaApplication,
+  VisaApplicationWithCustomer,
   VisaStatus,
   CreateVisaApplicationInput,
   UpdateVisaApplicationInput,

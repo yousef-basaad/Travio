@@ -1,7 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Customer, CustomerTimelineItem, VisaApplication, VisaStatus } from "@travio/api";
+import type {
+  Customer,
+  CustomerTimelineItem,
+  VisaApplication,
+  VisaApplicationWithCustomer,
+  VisaStatus,
+} from "@travio/api";
 import type { Booking } from "@/features/bookings";
 
 // CUSTOMERS_QUERY_KEY must stay exactly ["customers"] - leads.api.ts's
@@ -302,6 +308,34 @@ async function fetchCustomerVisas(customerId: string): Promise<VisaApplication[]
   return data as VisaApplication[];
 }
 
+// Visa Center workspace: every visa the caller may see in its tenant,
+// with the customer's name (GET /api/visa-applications). RLS decides
+// which rows come back. The create/update/delete visa mutations below
+// invalidate this key too, so the workspace stays current.
+export const VISA_APPLICATIONS_QUERY_KEY = ["visa-applications"];
+
+async function fetchVisaApplications(): Promise<VisaApplicationWithCustomer[]> {
+  const response = await fetch("/api/visa-applications");
+
+  if (!response.ok) {
+    throw new Error(`Failed to load visa applications (${response.status})`);
+  }
+
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected response from /api/visa-applications");
+  }
+
+  return data as VisaApplicationWithCustomer[];
+}
+
+export function useVisaApplications() {
+  return useQuery({
+    queryKey: VISA_APPLICATIONS_QUERY_KEY,
+    queryFn: fetchVisaApplications,
+  });
+}
+
 export function useCustomerVisas(customerId: string) {
   return useQuery({
     queryKey: customerVisasQueryKey(customerId),
@@ -385,6 +419,7 @@ export function useCreateVisa() {
       void queryClient.invalidateQueries({
         queryKey: customerVisasQueryKey(variables.customerId),
       });
+      void queryClient.invalidateQueries({ queryKey: VISA_APPLICATIONS_QUERY_KEY });
       // Also invalidate the booking-scoped view when this visa was
       // linked to one, so Booking 360's read-only visa list (if mounted)
       // picks up the newly created row too.
@@ -442,6 +477,7 @@ export function useUpdateVisa() {
       void queryClient.invalidateQueries({
         queryKey: customerVisasQueryKey(variables.customerId),
       });
+      void queryClient.invalidateQueries({ queryKey: VISA_APPLICATIONS_QUERY_KEY });
       // Same reasoning as useCreateVisa - only invalidates the new
       // bookingId (if the visa was relinked away from a previous
       // booking, that booking's cached view goes stale until its own
@@ -473,6 +509,7 @@ export function useDeleteVisa() {
       void queryClient.invalidateQueries({
         queryKey: customerVisasQueryKey(variables.customerId),
       });
+      void queryClient.invalidateQueries({ queryKey: VISA_APPLICATIONS_QUERY_KEY });
     },
   });
 }
