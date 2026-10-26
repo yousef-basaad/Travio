@@ -10,6 +10,9 @@ function emptyToNull(value: unknown) {
 
 const bookingStatusSchema = z.enum(["draft", "pending", "confirmed", "completed", "cancelled"]);
 
+// GET /api/bookings?status= - absent means every status.
+export const bookingStatusFilterSchema = bookingStatusSchema.optional();
+
 // tenantId and createdBy are intentionally absent - tenantId is resolved
 // from the authenticated session and createdBy from the authenticated
 // user id in the route handler, neither is ever trusted from the request
