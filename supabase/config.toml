@@ -41,13 +41,19 @@ additional_redirect_urls = [
   "http://127.0.0.1:3001",
   "http://127.0.0.1:3002",
   "http://127.0.0.1:3003",
+  # Signup confirmation emails land on the dashboard's /login
+  # (emailRedirectTo = NEXT_PUBLIC_DASHBOARD_URL + /login?confirmed=1).
+  "http://127.0.0.1:3001/**",
+  "http://localhost:3001/**",
 ]
 jwt_expiry = 3600
 enable_signup = true
 
 [auth.email]
 enable_signup = true
-enable_confirmations = false
+# Mirrors production ("Confirm email" ON): signUp returns no session,
+# and the agency is created on the owner's first dashboard sign-in.
+enable_confirmations = true
 
 [edge_runtime]
 enabled = true

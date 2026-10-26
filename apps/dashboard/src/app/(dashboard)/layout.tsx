@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@travio/auth/server";
 import { SessionProvider } from "@travio/auth";
 import { DashboardShell } from "@/components/dashboard-shell";
-import { getDashboardGateRedirect } from "@/lib/auth/dashboard-gate";
+import { getAgencySetupRedirect, getDashboardGateRedirect } from "@/lib/auth/dashboard-gate";
+import { completeAgencySetup } from "@/lib/auth/complete-agency-setup";
 
 // Route-group guard: every page under (dashboard) requires agency staff.
 // Individual feature pages don't re-check auth - this is the single
@@ -44,6 +45,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const gateRedirect = getDashboardGateRedirect(result);
   if (gateRedirect || !result.authorized) {
     redirect(gateRedirect ?? "/forbidden");
+  }
+
+  // An agency owner without a tenant (signed up with email confirmation
+  // ON) gets their agency created here on first sign-in - see
+  // lib/auth/complete-agency-setup.ts. Everyone else is "not_needed".
+  const setupRedirect = getAgencySetupRedirect(await completeAgencySetup(result.profile));
+  if (setupRedirect) {
+    redirect(setupRedirect);
   }
 
   return (

@@ -1,50 +1,23 @@
-import { signupAction } from "./actions";
+import type { Metadata } from "next";
+import { SignupForm } from "@/features/signup/components/signup-form";
+import { SectionHeader } from "@/components/section-header";
 
+export const metadata: Metadata = {
+  title: "Create your agency - Travio",
+  description: "Sign up your travel agency for Travio.",
+};
 
 export default function SignupPage() {
-
   return (
-
-    <form action={signupAction}>
-
-      <input
-        name="fullName"
-        placeholder="Full Name"
+    <section className="mx-auto max-w-lg px-6 pb-24 pt-20 sm:pt-28">
+      <SectionHeader
+        eyebrow="Get started"
+        title="Create your agency"
+        description="Set up your Travio workspace in a minute."
       />
-
-
-      <input
-        name="agencyName"
-        placeholder="Agency Name"
-      />
-
-
-      <input
-        name="crNumber"
-        placeholder="CR Number"
-      />
-
-
-      <input
-        name="email"
-        type="email"
-        placeholder="Email"
-      />
-
-
-      <input
-        name="password"
-        type="password"
-        placeholder="Password"
-      />
-
-
-      <button type="submit">
-        Create Agency
-      </button>
-
-
-    </form>
-
+      <div className="mt-10">
+        <SignupForm />
+      </div>
+    </section>
   );
 }
