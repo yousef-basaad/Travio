@@ -38,3 +38,21 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+  # Database tests (pgTAP in supabase/tests): applies every migration to a
+  # throwaway local Postgres in the runner, then runs the RLS/function
+  # tests against it. Never touches the remote project - no secrets used.
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.118.0
+
+      - name: Start local database (applies all migrations)
+        run: supabase db start
+
+      - name: Run pgTAP tests
+        run: supabase test db
