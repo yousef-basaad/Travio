@@ -43,11 +43,10 @@ export const usageService = {
           .select("*", { count: "exact", head: true })
           .is("deleted_at", null)
           .gte("created_at", thisMonthStart),
-        // file_size is only summed for documents, not counted with head:
-        // true - the row count and the byte sum both come out of the
-        // same bounded select, matching analyticsService's own "aggregate
-        // in JS after a bounded select" convention (see its own comment).
-        supabase.from("documents").select("file_size").is("deleted_at", null),
+        // Count and byte sum computed in Postgres (usage_document_totals,
+        // 20261027120000) - summing selected rows here was capped at
+        // max_rows (1000). SECURITY INVOKER, so RLS still applies.
+        supabase.rpc("usage_document_totals"),
       ]);
 
     if (teamMembersResult.error) throw teamMembersResult.error;
@@ -55,14 +54,14 @@ export const usageService = {
     if (bookingsResult.error) throw bookingsResult.error;
     if (documentsResult.error) throw documentsResult.error;
 
-    const storageBytes = documentsResult.data.reduce((sum, row) => sum + row.file_size, 0);
+    const documentTotals = documentsResult.data[0];
 
     return {
       teamMembers: teamMembersResult.count ?? 0,
       customers: customersResult.count ?? 0,
       bookingsThisMonth: bookingsResult.count ?? 0,
-      documents: documentsResult.data.length,
-      storageBytes,
+      documents: Number(documentTotals?.document_count ?? 0),
+      storageBytes: Number(documentTotals?.storage_bytes ?? 0),
     };
   },
 };
