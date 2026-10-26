@@ -35,4 +35,5 @@ export * from "./components/patterns/donut-chart";
 export * from "./components/patterns/progress-ring";
 export * from "./components/patterns/widget";
 export * from "./components/patterns/section-toolbar";
+export * from "./components/patterns/pagination";
 export * from "./components/patterns/kanban";

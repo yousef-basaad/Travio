@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchPage } from "@/lib/api/fetch-page";
 import type {
   Customer,
   CustomerTimelineItem,
@@ -41,6 +42,23 @@ export function useCustomers() {
   return useQuery({
     queryKey: CUSTOMERS_QUERY_KEY,
     queryFn: fetchCustomers,
+  });
+}
+
+// One server-side page of /api/customers (search + paging done by Postgres,
+// so the list isn't capped at 1000 rows). The key extends CUSTOMERS_QUERY_KEY, so the
+// existing mutations' invalidateQueries(CUSTOMERS_QUERY_KEY) refreshes every page.
+// placeholderData keeps the current page visible while the next loads.
+export function useCustomersPage(query: { page: number; pageSize: number; search?: string }) {
+  return useQuery({
+    queryKey: [...CUSTOMERS_QUERY_KEY, "page", query],
+    queryFn: () =>
+      fetchPage<Customer>("/api/customers", {
+        page: query.page,
+        pageSize: query.pageSize,
+        search: query.search,
+      }),
+    placeholderData: keepPreviousData,
   });
 }
 

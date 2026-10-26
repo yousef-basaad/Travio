@@ -3,6 +3,15 @@ import type { Database } from "@travio/database";
 import type { Booking, BookingStatus, UserRole } from "@travio/types";
 import { bookingTimelineService } from "./booking-timeline.service";
 import { notificationService } from "./notification.service";
+import { ilikeAny, toRange, RANGE_NOT_SATISFIABLE, type Page, type PageRequest } from "./pagination";
+
+// A Bookings list row: the booking plus its customer's name (null when RLS
+// hides the customer), so the list doesn't need every customer loaded.
+export type BookingListItem = Booking & { customerName: string | null };
+
+export interface BookingPageRequest extends PageRequest {
+  status?: BookingStatus;
+}
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 type BookingInsertRow = Database["public"]["Tables"]["bookings"]["Insert"];
@@ -144,6 +153,58 @@ export const bookingsService = {
 
     if (error) throw error;
     return data.map(toBooking);
+  },
+
+  // One page of the Bookings list, newest first, with the exact total.
+  // Search matches booking number or title; optional status filter. Same
+  // ownership filter as list().
+  async listPage(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    request: BookingPageRequest,
+    options?: ListBookingsOptions,
+  ): Promise<Page<BookingListItem>> {
+    // head: true -> count only (used when the page is past the end).
+    const filtered = (head: boolean) => {
+      let query = supabase
+        .from("bookings")
+        .select("*, customer:customers(full_name)", { count: "exact", head })
+        .eq("tenant_id", tenantId)
+        .is("deleted_at", null);
+
+      if (options?.role === "sales_agent") {
+        query = query.or(`assigned_to.eq.${options.userId},assigned_to.is.null`);
+      }
+      if (request.status) {
+        query = query.eq("status", request.status);
+      }
+      if (request.search) {
+        query = query.or(ilikeAny(["booking_number", "title"], request.search));
+      }
+      return query;
+    };
+
+    const [from, to] = toRange(request);
+    const { data, count, error } = await filtered(false)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error?.code === RANGE_NOT_SATISFIABLE) {
+      const { count: total, error: countError } = await filtered(true);
+      if (countError) throw countError;
+      return { items: [], total: total ?? 0, page: request.page, pageSize: request.pageSize };
+    }
+    if (error) throw error;
+    return {
+      items: data.map(({ customer, ...row }) => ({
+        ...toBooking(row),
+        customerName: customer?.full_name ?? null,
+      })),
+      total: count ?? 0,
+      page: request.page,
+      pageSize: request.pageSize,
+    };
   },
 
   // Product-5: the one booking-adjacent domain that didn't already have

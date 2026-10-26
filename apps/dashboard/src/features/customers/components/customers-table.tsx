@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
@@ -14,33 +14,26 @@ import {
   TableRow,
   TableCell,
   SearchInput,
+  Pagination,
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
-import { useCustomers } from "../api/customers.api";
+import { useCustomersPage } from "../api/customers.api";
+import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { CreateCustomerDialog } from "./create-customer-dialog";
 
 const COLUMNS = ["Full Name", "Email", "Phone", "Passport Expiry", "Preferred Language"];
-
-// Phase UI-6: client-side search only (name/email/phone substring match
-// over the already-fetched full list) - no new endpoint, no query
-// params, same "filter what's already loaded" convention
-// DocumentFilters already uses for its type filter.
-function matchesSearch(
-  customer: { fullName: string; email: string | null; phone: string | null },
-  query: string,
-): boolean {
-  if (!query) return true;
-  const haystack = `${customer.fullName} ${customer.email ?? ""} ${customer.phone ?? ""}`.toLowerCase();
-  return haystack.includes(query.toLowerCase());
-}
 
 // openCreate comes from /customers?new=1 (the Quick add menu's "New
 // Customer"). It opens the dialog, then the param is dropped from the URL
 // so a refresh or closing the dialog doesn't reopen it.
 export function CustomersTable({ openCreate = false }: { openCreate?: boolean }) {
   const router = useRouter();
-  const { data: customers, isLoading, isError } = useCustomers();
-  const [query, setQuery] = useState("");
+  // Server-side paging + search (name/email/phone), so the list isn't
+  // capped at the 1000 rows a single response can carry.
+  const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging();
+  const { data, isLoading, isError, isFetching } = useCustomersPage({ page, pageSize, search: debouncedSearch });
+  const customers = data?.items ?? [];
+  usePageClamp(page, setPage, pageSize, data?.total);
   const [isCreateOpen, setIsCreateOpen] = useState(openCreate);
 
   useEffect(() => {
@@ -49,11 +42,6 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
       router.replace("/customers", { scroll: false });
     }
   }, [openCreate, router]);
-
-  const filtered = useMemo(
-    () => (customers ?? []).filter((customer) => matchesSearch(customer, query)),
-    [customers, query],
-  );
 
   return (
     <div className="space-y-6">
@@ -66,20 +54,20 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
       <SearchInput
         placeholder="Search by name, email, or phone"
         aria-label="Search customers"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
         containerClassName="max-w-sm"
       />
 
       <DataTableState
         isLoading={isLoading}
         isError={isError}
-        isEmpty={!isLoading && filtered.length === 0}
+        isEmpty={!isLoading && customers.length === 0}
         loadingLabel="Loading customers"
         errorMessage="Something went wrong loading customers. Please try again later."
-        emptyMessage={query ? "No customers match your search" : "No customers yet"}
+        emptyMessage={debouncedSearch ? "No customers match your search" : "No customers yet"}
         emptyAction={
-          !query ? <Button onClick={() => setIsCreateOpen(true)}>New Customer</Button> : undefined
+          !debouncedSearch ? <Button onClick={() => setIsCreateOpen(true)}>New Customer</Button> : undefined
         }
         emptyIcon={<Users size={20} />}
         size="page"
@@ -98,7 +86,7 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((customer) => (
+            {customers.map((customer) => (
               <TableRow key={customer.id}>
                 <TableCell className="font-medium text-foreground">{customer.fullName}</TableCell>
                 <TableCell className="text-muted-foreground">{customer.email ?? "—"}</TableCell>
@@ -121,6 +109,16 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
           </TableBody>
         </Table>
       </DataTableState>
+
+      {data && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={data.total}
+          onPageChange={setPage}
+          disabled={isFetching}
+        />
+      )}
 
       <CreateCustomerDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </div>

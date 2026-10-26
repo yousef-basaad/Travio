@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
 import {
@@ -13,22 +13,14 @@ import {
   TableRow,
   TableCell,
   SearchInput,
+  Pagination,
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
-import type { CrmLead } from "@travio/api";
-import { useLeads } from "../api/leads.api";
+import { useLeadsPage } from "../api/leads.api";
+import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { LeadStatusBadge } from "./lead-status-badge";
 import { LeadSourceBadge } from "./lead-source-badge";
 import { CreateLeadDialog } from "./create-lead-dialog";
-
-// Phase UI-6: client-side search only (name/email/phone substring match
-// over the already-fetched full list) - no new endpoint, same convention
-// as CustomersTable's search.
-function matchesSearch(lead: CrmLead, query: string): boolean {
-  if (!query) return true;
-  const haystack = `${lead.fullName} ${lead.email ?? ""} ${lead.phone ?? ""}`.toLowerCase();
-  return haystack.includes(query.toLowerCase());
-}
 
 // Phase UI-6: rebuilt on the shared Table/DataTableState/PageHeader
 // primitives (was hand-rolled raw <table>/<thead>/<tbody> markup that
@@ -37,14 +29,12 @@ function matchesSearch(lead: CrmLead, query: string): boolean {
 // in LeadSourceBadge (previously defined but only used on the lead
 // detail page, never in this table) instead of plain humanized text.
 export function LeadsTable() {
-  const { data: leads, isLoading, isError } = useLeads();
+  // Server-side paging + search (name/email/phone), same as Customers.
+  const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging();
+  const { data, isLoading, isError, isFetching } = useLeadsPage({ page, pageSize, search: debouncedSearch });
+  const leads = data?.items ?? [];
+  usePageClamp(page, setPage, pageSize, data?.total);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [query, setQuery] = useState("");
-
-  const filtered = useMemo(
-    () => (leads ?? []).filter((lead) => matchesSearch(lead, query)),
-    [leads, query],
-  );
 
   return (
     <div className="space-y-6">
@@ -57,21 +47,21 @@ export function LeadsTable() {
       <SearchInput
         placeholder="Search by name, email, or phone"
         aria-label="Search leads"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
         containerClassName="max-w-sm"
       />
 
       <DataTableState
         isLoading={isLoading}
         isError={isError}
-        isEmpty={!isLoading && filtered.length === 0}
+        isEmpty={!isLoading && leads.length === 0}
         loadingLabel="Loading leads"
         errorMessage="Something went wrong loading leads. Please try again later."
-        emptyMessage={query ? "No leads match your search" : "No leads yet"}
+        emptyMessage={debouncedSearch ? "No leads match your search" : "No leads yet"}
         emptyIcon={<UserPlus size={20} />}
         emptyAction={
-          !query ? <Button onClick={() => setIsCreateOpen(true)}>New Lead</Button> : undefined
+          !debouncedSearch ? <Button onClick={() => setIsCreateOpen(true)}>New Lead</Button> : undefined
         }
         size="page"
       >
@@ -91,7 +81,7 @@ export function LeadsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((lead) => (
+            {leads.map((lead) => (
               <TableRow key={lead.id}>
                 <TableCell className="font-medium text-foreground">{lead.fullName}</TableCell>
                 <TableCell className="text-muted-foreground">{lead.phone ?? "—"}</TableCell>
@@ -119,6 +109,16 @@ export function LeadsTable() {
           </TableBody>
         </Table>
       </DataTableState>
+
+      {data && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={data.total}
+          onPageChange={setPage}
+          disabled={isFetching}
+        />
+      )}
 
       <CreateLeadDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </div>

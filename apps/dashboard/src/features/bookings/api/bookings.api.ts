@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchPage } from "@/lib/api/fetch-page";
 import type {
   Booking,
   BookingTimelineEvent,
@@ -12,6 +13,8 @@ import type {
   TransferType,
   BookingNote,
 } from "../types/booking";
+import type { BookingListItem } from "@travio/api";
+import type { BookingStatus } from "@travio/types";
 import type { CreateBookingFormValues } from "../schemas/create-booking.schema";
 import type { UpdateBookingFormValues } from "../schemas/update-booking.schema";
 
@@ -42,6 +45,24 @@ export function useBookings() {
   return useQuery({
     queryKey: BOOKINGS_QUERY_KEY,
     queryFn: fetchBookings,
+  });
+}
+
+// One server-side page of /api/bookings (search + paging done by Postgres,
+// so the list isn't capped at 1000 rows). The key extends BOOKINGS_QUERY_KEY, so the
+// existing mutations' invalidateQueries(BOOKINGS_QUERY_KEY) refreshes every page.
+// placeholderData keeps the current page visible while the next loads.
+export function useBookingsPage(query: { page: number; pageSize: number; search?: string; status?: BookingStatus }) {
+  return useQuery({
+    queryKey: [...BOOKINGS_QUERY_KEY, "page", query],
+    queryFn: () =>
+      fetchPage<BookingListItem>("/api/bookings", {
+        page: query.page,
+        pageSize: query.pageSize,
+        search: query.search,
+        filters: { status: query.status },
+      }),
+    placeholderData: keepPreviousData,
   });
 }
 

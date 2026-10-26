@@ -3,14 +3,30 @@ import { handleApiError } from "@/lib/api/handle-api-error";
 import { crmLeadsService } from "@travio/api";
 import { requireLeadsAccess } from "@/lib/auth/require-domain-access";
 import { createCrmLeadSchema } from "./_lib/schemas";
+import { parsePageRequest } from "@/lib/api/page-request";
 
 const ROUTE = "/api/crm/leads";
 
-export async function GET() {
+// ?page= returns one page ({ items, total, page, pageSize }); without it,
+// the full list as before (see lib/api/page-request.ts).
+export async function GET(request: Request) {
   const auth = await requireLeadsAccess();
   if (!auth.ok) return auth.response;
 
+  const pageParse = parsePageRequest(new URL(request.url).searchParams);
+
   try {
+    if (pageParse.kind === "invalid") {
+      return NextResponse.json({ error: "invalid_input", issues: pageParse.issues }, { status: 400 });
+    }
+    if (pageParse.kind === "page") {
+      const page = await crmLeadsService.listPage(auth.access.supabase, auth.access.tenantId, pageParse.request, {
+        role: auth.access.role,
+        userId: auth.access.userId,
+      });
+      return NextResponse.json(page);
+    }
+
     const leads = await crmLeadsService.list(auth.access.supabase, auth.access.tenantId, {
       role: auth.access.role,
       userId: auth.access.userId,

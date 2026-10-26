@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
 import {
@@ -14,11 +14,12 @@ import {
   TableCell,
   SearchInput,
   Select,
+  Pagination,
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
-import { useCustomers } from "@/features/customers";
-import { useBookings } from "../api/bookings.api";
-import type { Booking, BookingStatus } from "../types/booking";
+import { useBookingsPage } from "../api/bookings.api";
+import type { BookingStatus } from "../types/booking";
+import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { BookingStatusBadge, BOOKING_STATUS_LABELS } from "./booking-status-badge";
 
 const COLUMNS = ["Booking Number", "Title", "Customer", "Status", "Start Date", "End Date"];
@@ -33,39 +34,19 @@ const STATUS_FILTER_OPTIONS: BookingStatus[] = [
 
 type StatusFilter = BookingStatus | "all";
 
-// Client-side search only (booking number/title substring match over the
-// already-fetched full list) - no new endpoint, same convention as
-// CustomersTable/LeadsTable's own search.
-function matchesSearch(booking: Booking, query: string): boolean {
-  if (!query) return true;
-  const haystack = `${booking.bookingNumber} ${booking.title}`.toLowerCase();
-  return haystack.includes(query.toLowerCase());
-}
-
 export function BookingsTable() {
-  const { data: bookings, isLoading, isError } = useBookings();
-  // Booking only carries customerId - the customer's name is resolved
-  // client-side from the already-built customers list rather than
-  // fabricating a name or adding a join (out of scope: no API/packages/api
-  // changes this issue). Falls back to the raw id if the lookup misses
-  // (still loading, or a customer RLS can't see).
-  const { data: customers } = useCustomers();
-  const customerNameById = new Map(customers?.map((customer) => [customer.id, customer.fullName]));
-  const [query, setQuery] = useState("");
-  // Product-2: client-side status filter, mirroring DocumentFilters'
-  // single-dimension <Select> pattern (features/documents) - no new
-  // endpoint, filters the same already-fetched list search already does.
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
-  const filtered = useMemo(
-    () =>
-      (bookings ?? []).filter(
-        (booking) =>
-          matchesSearch(booking, query) &&
-          (statusFilter === "all" || booking.status === statusFilter),
-      ),
-    [bookings, query, statusFilter],
-  );
+  // Server-side paging, search (number/title) and status filter; each row
+  // carries its customer's name, so no full customer list is loaded.
+  const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(statusFilter);
+  const { data, isLoading, isError, isFetching } = useBookingsPage({
+    page,
+    pageSize,
+    search: debouncedSearch,
+    ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+  });
+  const bookings = data?.items ?? [];
+  usePageClamp(page, setPage, pageSize, data?.total);
 
   return (
     <div className="space-y-6">
@@ -82,8 +63,8 @@ export function BookingsTable() {
         <SearchInput
           placeholder="Search by booking number or title"
           aria-label="Search bookings"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
           containerClassName="max-w-sm flex-1"
         />
 
@@ -110,11 +91,11 @@ export function BookingsTable() {
       <DataTableState
         isLoading={isLoading}
         isError={isError}
-        isEmpty={!isLoading && filtered.length === 0}
+        isEmpty={!isLoading && bookings.length === 0}
         loadingLabel="Loading bookings"
         errorMessage="Something went wrong loading bookings. Please try again later."
         emptyMessage={
-          query || statusFilter !== "all" ? "No bookings match your filters" : "No bookings yet"
+          debouncedSearch || statusFilter !== "all" ? "No bookings match your filters" : "No bookings yet"
         }
         emptyIcon={<CalendarCheck size={20} />}
         size="page"
@@ -133,12 +114,12 @@ export function BookingsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((booking) => (
+            {bookings.map((booking) => (
               <TableRow key={booking.id}>
                 <TableCell>{booking.bookingNumber}</TableCell>
                 <TableCell>{booking.title}</TableCell>
                 <TableCell>
-                  {customerNameById.get(booking.customerId) ?? booking.customerId}
+                  {booking.customerName ?? "—"}
                 </TableCell>
                 <TableCell>
                   <BookingStatusBadge status={booking.status} />
@@ -160,6 +141,16 @@ export function BookingsTable() {
           </TableBody>
         </Table>
       </DataTableState>
+
+      {data && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={data.total}
+          onPageChange={setPage}
+          disabled={isFetching}
+        />
+      )}
     </div>
   );
 }
