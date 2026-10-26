@@ -123,16 +123,17 @@ describe("require-domain-access", () => {
   });
 
   describe("requireVisaAccess", () => {
-    it("allows travio_admin, agency_owner, branch_manager, visa_officer", async () => {
-      for (const role of ["travio_admin", "agency_owner", "branch_manager", "visa_officer"] as const) {
+    it("allows travio_admin, agency_owner, branch_manager, visa_officer, sales_agent", async () => {
+      for (const role of [
+        "travio_admin",
+        "agency_owner",
+        "branch_manager",
+        "visa_officer",
+        "sales_agent",
+      ] as const) {
         currentRole = role;
         await expectAllowed(requireVisaAccess);
       }
-    });
-
-    it("rejects sales_agent (Phase 4D narrows Visa to its own domain)", async () => {
-      currentRole = "sales_agent";
-      await expectForbidden(requireVisaAccess);
     });
 
     it("rejects accountant", async () => {
