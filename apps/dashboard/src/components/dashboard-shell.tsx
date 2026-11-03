@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { PageContainer, MobileNavDrawer } from "@travio/ui";
 import { DashboardHeader } from "./dashboard-header";
 import { DashboardFooter } from "./dashboard-footer";
-import { DashboardSidebar, Brand, NAV_ITEMS, renderNavLink } from "./dashboard-sidebar";
+import { DashboardSidebar, Brand, renderNavLink, useNavItems } from "./dashboard-sidebar";
 import { UserMenu } from "./user-menu";
 
 // Design System v2.4 (Product-8.1): owns the one piece of state the
@@ -20,6 +20,7 @@ import { UserMenu } from "./user-menu";
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navItems = useNavItems();
 
   return (
     <div className="flex min-h-screen">
@@ -28,7 +29,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         open={mobileNavOpen}
         onOpenChange={setMobileNavOpen}
         brand={<Brand />}
-        items={NAV_ITEMS}
+        items={navItems}
         pathname={pathname}
         renderLink={renderNavLink}
         footer={<UserMenu variant="sidebar" />}

@@ -10,7 +10,10 @@ import {
   CalendarCheck,
   Stamp,
   Receipt,
-  FileBarChart,
+  BarChart3,
+  UserPlus,
+  UsersRound,
+  CreditCard,
   FileText,
   CalendarDays,
   Inbox,
@@ -20,6 +23,19 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { AppSidebar, isRouteActive, type AppNavItem } from "@travio/ui";
+import { useSession } from "@travio/auth";
+import {
+  AGENCY_OWNER_ROLES,
+  ANALYTICS_ROLES,
+  BOOKINGS_ROLES,
+  CUSTOMERS_ROLES,
+  DASHBOARD_ROLES,
+  DOCUMENTS_ROLES,
+  FINANCE_ROLES,
+  LEADS_ROLES,
+  VISA_ROLES,
+} from "@/lib/auth/domain-roles";
+import { itemsForRole, type RoleScopedItem } from "@/lib/navigation/nav-access";
 import { UserMenu } from "./user-menu";
 
 // Design System v2.5 (Product-8.2 Phase 2): the reference's sidebar is a
@@ -37,21 +53,37 @@ import { UserMenu } from "./user-menu";
 // existing navigation, this phase doesn't restructure that.
 const ICON_SIZE = 18;
 
-export const NAV_ITEMS: readonly AppNavItem[] = [
-  { label: "Operations Center", href: "/", icon: <LayoutDashboard size={ICON_SIZE} /> },
-  { label: "CRM", href: "/customers", icon: <Users size={ICON_SIZE} /> },
-  { label: "Bookings", href: "/bookings", icon: <CalendarCheck size={ICON_SIZE} /> },
-  { label: "Visa Center", href: "/visa", icon: <Stamp size={ICON_SIZE} /> },
-  { label: "Finance", href: "/finance", icon: <Receipt size={ICON_SIZE} /> },
-  { label: "Reports", href: "/reports", icon: <FileBarChart size={ICON_SIZE} /> },
-  { label: "Documents", href: "/documents", icon: <FileText size={ICON_SIZE} /> },
-  { label: "Calendar", href: "/calendar", icon: <CalendarDays size={ICON_SIZE} /> },
-  { label: "Inbox", href: "/inbox", icon: <Inbox size={ICON_SIZE} /> },
-  { label: "Activities", href: "/activities", icon: <Activity size={ICON_SIZE} /> },
-  { label: "AI Assistant", href: "/ai-assistant", icon: <Sparkles size={ICON_SIZE} /> },
-  { label: "Settings", href: "/settings", icon: <SettingsIcon size={ICON_SIZE} /> },
-  { label: "Help Center", href: "/help-center", icon: <HelpCircle size={ICON_SIZE} /> },
-] as const;
+export type DashboardNavItem = AppNavItem & RoleScopedItem;
+
+// Each item lists the roles that may use it - the same lists the API
+// guards enforce (lib/auth/domain-roles.ts) - so nobody is offered a page
+// whose data would answer 403. Placeholder pages ("Coming soon") are open
+// to every dashboard role.
+export const NAV_ITEMS: readonly DashboardNavItem[] = [
+  { label: "Operations Center", href: "/", icon: <LayoutDashboard size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { label: "CRM", href: "/customers", icon: <Users size={ICON_SIZE} />, roles: CUSTOMERS_ROLES },
+  { label: "Leads", href: "/leads", icon: <UserPlus size={ICON_SIZE} />, roles: LEADS_ROLES },
+  { label: "Bookings", href: "/bookings", icon: <CalendarCheck size={ICON_SIZE} />, roles: BOOKINGS_ROLES },
+  { label: "Visa Center", href: "/visa", icon: <Stamp size={ICON_SIZE} />, roles: VISA_ROLES },
+  { label: "Finance", href: "/finance", icon: <Receipt size={ICON_SIZE} />, roles: FINANCE_ROLES },
+  { label: "Analytics", href: "/analytics", icon: <BarChart3 size={ICON_SIZE} />, roles: ANALYTICS_ROLES },
+  { label: "Documents", href: "/documents", icon: <FileText size={ICON_SIZE} />, roles: DOCUMENTS_ROLES },
+  { label: "Calendar", href: "/calendar", icon: <CalendarDays size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { label: "Inbox", href: "/inbox", icon: <Inbox size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { label: "Activities", href: "/activities", icon: <Activity size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { label: "AI Assistant", href: "/ai-assistant", icon: <Sparkles size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { label: "Team", href: "/team", icon: <UsersRound size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { label: "Subscription", href: "/subscription", icon: <CreditCard size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { label: "Settings", href: "/settings", icon: <SettingsIcon size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { label: "Help Center", href: "/help-center", icon: <HelpCircle size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+];
+
+// The items the signed-in user may use. Shared by the desktop sidebar and
+// the mobile drawer so both always show the same list.
+export function useNavItems(): DashboardNavItem[] {
+  const { profile } = useSession();
+  return itemsForRole(NAV_ITEMS, profile?.role);
+}
 
 // Exported so DashboardHeader can show the current section's title
 // without a second, duplicated route->label array - NAV_ITEMS above
@@ -126,11 +158,12 @@ export function renderNavLink(item: AppNavItem, active: boolean) {
 // component.
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const items = useNavItems();
 
   return (
     <AppSidebar
       brand={<Brand />}
-      items={NAV_ITEMS}
+      items={items}
       pathname={pathname}
       renderLink={renderNavLink}
       footer={<UserMenu variant="sidebar" />}
