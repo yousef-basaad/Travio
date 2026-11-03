@@ -1,7 +1,8 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Document, DocumentType, OwnerType } from "@travio/api";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Document, DocumentListItem, DocumentType, OwnerType } from "@travio/api";
+import { fetchPage } from "@/lib/api/fetch-page";
 import { useSession } from "@travio/auth";
 import { supabase } from "@/lib/supabase";
 
@@ -37,6 +38,30 @@ export function useDocuments(ownerType: OwnerType, ownerId: string) {
     queryKey: documentsQueryKey(ownerType, ownerId),
     queryFn: () => fetchDocuments(ownerType, ownerId),
     enabled: Boolean(ownerId),
+  });
+}
+
+export interface DocumentsPageQuery {
+  page: number;
+  pageSize: number;
+  search?: string;
+  ownerType?: OwnerType;
+  documentType?: DocumentType;
+}
+
+// One page of the whole agency's documents (the Documents workspace),
+// each labelled with what it's attached to.
+export function useDocumentsPage(query: DocumentsPageQuery) {
+  return useQuery({
+    queryKey: [...DOCUMENTS_QUERY_KEY, "page", query],
+    queryFn: () =>
+      fetchPage<DocumentListItem>("/api/documents", {
+        page: query.page,
+        pageSize: query.pageSize,
+        search: query.search,
+        filters: { ownerType: query.ownerType, documentType: query.documentType },
+      }),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -124,7 +149,7 @@ export function useUploadDocument() {
   });
 }
 
-async function deleteDocument({ id }: { id: string; ownerType: OwnerType; ownerId: string }): Promise<void> {
+async function deleteDocument({ id }: { id: string }): Promise<void> {
   const response = await fetch(`/api/documents/${id}`, { method: "DELETE" });
 
   if (!response.ok) {
@@ -134,16 +159,15 @@ async function deleteDocument({ id }: { id: string; ownerType: OwnerType; ownerI
 
 // Soft delete - the row's deleted_at is set server-side, the storage
 // object is left in place (see the migration's own comment: storage
-// cleanup is out of scope for this phase).
+// cleanup is out of scope for this phase). Refreshes every documents
+// list (the owner's tab and the Documents workspace pages alike).
 export function useDeleteDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: deleteDocument,
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: documentsQueryKey(variables.ownerType, variables.ownerId),
-      });
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: DOCUMENTS_QUERY_KEY });
     },
   });
 }

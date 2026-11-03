@@ -41,8 +41,6 @@ export function DocumentsPage({ ownerType, ownerId }: DocumentsPageProps) {
         documents={documents}
         isLoading={isLoading}
         isError={isError}
-        ownerType={ownerType}
-        ownerId={ownerId}
         typeFilter={typeFilter}
         onUploadClick={() => setIsUploadOpen(true)}
       />
