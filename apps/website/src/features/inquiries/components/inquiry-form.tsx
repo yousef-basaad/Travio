@@ -3,16 +3,15 @@
 import { useState, type FormEvent } from "react";
 import { Button, FormField, Input, Textarea } from "@travio/ui";
 import { submitInquiry } from "../api/submit-inquiry";
+import { HONEYPOT_FIELD } from "../schemas/inquiry.schema";
 
-// The underlying server action/schema (submit-inquiry.ts) only ever
-// reads 3 named fields (agencyName/email/message) from FormData - it is
-// intentionally untouched (out of this phase's scope: "do not modify
-// APIs"). This form still shows the requested 4 fields (Name/Email/
-// Company/Message) by folding the contact's name into the message body
-// before submission rather than dropping it - nothing entered here is
-// silently lost.
+// The server action (submit-inquiry.ts) reads agencyName/email/message
+// from FormData. This form shows 4 fields (Name/Email/Company/Message) by
+// folding the contact's name into the message body rather than dropping
+// it - nothing entered here is silently lost. A hidden honeypot field
+// (HONEYPOT_FIELD) is sent too: people never see it, bots often fill it.
 export function InquiryForm() {
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error" | "rate_limited">("idle");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,8 +28,14 @@ export function InquiryForm() {
     formData.set("email", email);
     formData.set("message", `From: ${name}\n\n${message}`);
 
+    formData.set(HONEYPOT_FIELD, (form.elements.namedItem(HONEYPOT_FIELD) as HTMLInputElement).value);
+
     try {
-      await submitInquiry(formData);
+      const result = await submitInquiry(formData);
+      if (result.status === "rate_limited") {
+        setStatus("rate_limited");
+        return;
+      }
       setStatus("success");
       form.reset();
     } catch {
@@ -50,24 +55,37 @@ export function InquiryForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <FormField label="Name" htmlFor="contact-name">
-        <Input id="contact-name" name="name" required autoComplete="name" />
+        <Input id="contact-name" name="name" required autoComplete="name" maxLength={80} />
       </FormField>
 
       <FormField label="Email" htmlFor="contact-email">
-        <Input id="contact-email" name="email" type="email" required autoComplete="email" />
+        <Input id="contact-email" name="email" type="email" required autoComplete="email" maxLength={254} />
       </FormField>
 
       <FormField label="Company" htmlFor="contact-company">
-        <Input id="contact-company" name="company" required autoComplete="organization" />
+        <Input id="contact-company" name="company" required autoComplete="organization" maxLength={200} />
       </FormField>
 
       <FormField label="Message" htmlFor="contact-message">
-        <Textarea id="contact-message" name="message" rows={5} required minLength={10} />
+        <Textarea id="contact-message" name="message" rows={5} required minLength={10} maxLength={4900} />
       </FormField>
+
+      {/* Honeypot: hidden from people and assistive tech, left empty by
+          them; bots that fill every field get a fake success. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label htmlFor={`contact-${HONEYPOT_FIELD}`}>Leave this field empty</label>
+        <input id={`contact-${HONEYPOT_FIELD}`} name={HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" />
+      </div>
 
       {status === "error" ? (
         <p role="alert" className="text-sm text-danger">
           Something went wrong sending your message. Please try again.
+        </p>
+      ) : null}
+
+      {status === "rate_limited" ? (
+        <p role="alert" className="text-sm text-danger">
+          We&rsquo;ve received several messages recently. Please try again a little later.
         </p>
       ) : null}
 
