@@ -2,18 +2,30 @@ import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { customerService, bookingsService, invoiceService } from "@travio/api";
 import { requireFinanceAccess } from "@/lib/auth/require-domain-access";
+import { parsePageRequest } from "@/lib/api/page-request";
 import { createInvoiceSchema } from "./_lib/schemas";
 
 const ROUTE = "/api/invoices";
 
-// Tenant-wide list - backs the Finance workspace's InvoiceTable. RLS
-// (tenant_id = current_tenant_id()) scopes this, same as every other
-// list route; no query params to trust/validate.
-export async function GET() {
+// Tenant-wide list for the Finance workspace. RLS (tenant_id =
+// current_tenant_id() plus the finance role checks) scopes this. ?page=
+// returns one page ({ items, total, page, pageSize }); without it, the
+// full list as before (see lib/api/page-request.ts).
+export async function GET(request: Request) {
   const auth = await requireFinanceAccess();
   if (!auth.ok) return auth.response;
 
+  const pageParse = parsePageRequest(new URL(request.url).searchParams);
+
   try {
+    if (pageParse.kind === "invalid") {
+      return NextResponse.json({ error: "invalid_input", issues: pageParse.issues }, { status: 400 });
+    }
+    if (pageParse.kind === "page") {
+      const page = await invoiceService.listPage(auth.access.supabase, auth.access.tenantId, pageParse.request);
+      return NextResponse.json(page);
+    }
+
     const invoices = await invoiceService.list(auth.access.supabase);
     return NextResponse.json(invoices);
   } catch (error) {

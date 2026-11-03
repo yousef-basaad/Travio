@@ -8,6 +8,11 @@ import {
   type CreatePaymentInput,
   type UpdatePaymentInput,
 } from "./payment.mapper";
+import { ilikeAny, toRange, RANGE_NOT_SATISFIABLE, type Page, type PageRequest } from "./pagination";
+
+// A Finance list row: the payment plus its invoice's number (null when
+// RLS hides the invoice), so the list doesn't need every invoice loaded.
+export type PaymentListItem = Payment & { invoiceNumber: string | null };
 
 // Service layer: raw Supabase queries live here, never inline in
 // components/routes. Mirrors invoiceItemsService's shape - callers only
@@ -26,6 +31,49 @@ export const paymentService = {
 
     if (error) throw error;
     return data.map(toPayment);
+  },
+
+  // One page of the tenant's payments, newest first, searchable by
+  // reference. Same shape as bookingsService.listPage.
+  async listPage(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    request: PageRequest,
+  ): Promise<Page<PaymentListItem>> {
+    // head: true -> count only (used when the page is past the end).
+    const filtered = (head: boolean) => {
+      let query = supabase
+        .from("payments")
+        .select("*, invoice:invoices(invoice_number)", { count: "exact", head })
+        .eq("tenant_id", tenantId);
+
+      if (request.search) {
+        query = query.or(ilikeAny(["reference"], request.search));
+      }
+      return query;
+    };
+
+    const [from, to] = toRange(request);
+    const { data, count, error } = await filtered(false)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error?.code === RANGE_NOT_SATISFIABLE) {
+      const { count: total, error: countError } = await filtered(true);
+      if (countError) throw countError;
+      return { items: [], total: total ?? 0, page: request.page, pageSize: request.pageSize };
+    }
+    if (error) throw error;
+    return {
+      items: data.map(({ invoice, ...row }) => ({
+        ...toPayment(row),
+        invoiceNumber: invoice?.invoice_number ?? null,
+      })),
+      total: count ?? 0,
+      page: request.page,
+      pageSize: request.pageSize,
+    };
   },
 
   // Ascending (oldest first) - a payment ledger reads top-to-bottom in

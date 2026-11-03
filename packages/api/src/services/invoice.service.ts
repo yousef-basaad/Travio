@@ -8,6 +8,12 @@ import {
   type CreateInvoiceInput,
   type UpdateInvoiceInput,
 } from "./invoice.mapper";
+import { ilikeAny, toRange, RANGE_NOT_SATISFIABLE, type Page, type PageRequest } from "./pagination";
+
+// A Finance list row: the invoice plus its customer's name (null when
+// there's no customer or RLS hides it), so the list doesn't need every
+// customer loaded.
+export type InvoiceListItem = Invoice & { customerName: string | null };
 
 // Service layer: raw Supabase queries live here, never inline in
 // components/routes. Mirrors crm-leads.service.ts's soft-delete shape
@@ -29,6 +35,50 @@ export const invoiceService = {
 
     if (error) throw error;
     return data.map(toInvoice);
+  },
+
+  // One page of the tenant's invoices, newest first, searchable by invoice
+  // number. Same shape as bookingsService.listPage.
+  async listPage(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    request: PageRequest,
+  ): Promise<Page<InvoiceListItem>> {
+    // head: true -> count only (used when the page is past the end).
+    const filtered = (head: boolean) => {
+      let query = supabase
+        .from("invoices")
+        .select("*, customer:customers(full_name)", { count: "exact", head })
+        .eq("tenant_id", tenantId)
+        .is("deleted_at", null);
+
+      if (request.search) {
+        query = query.or(ilikeAny(["invoice_number"], request.search));
+      }
+      return query;
+    };
+
+    const [from, to] = toRange(request);
+    const { data, count, error } = await filtered(false)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error?.code === RANGE_NOT_SATISFIABLE) {
+      const { count: total, error: countError } = await filtered(true);
+      if (countError) throw countError;
+      return { items: [], total: total ?? 0, page: request.page, pageSize: request.pageSize };
+    }
+    if (error) throw error;
+    return {
+      items: data.map(({ customer, ...row }) => ({
+        ...toInvoice(row),
+        customerName: customer?.full_name ?? null,
+      })),
+      total: count ?? 0,
+      page: request.page,
+      pageSize: request.pageSize,
+    };
   },
 
   async listByCustomer(
