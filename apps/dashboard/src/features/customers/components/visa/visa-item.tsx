@@ -1,6 +1,8 @@
 import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
-import { cn, formatDate } from "@travio/utils";
+import { cn } from "@travio/utils";
 import type { VisaApplication, VisaStatus } from "@travio/api";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 // Single source of truth for visa status labels - exported so
 // create-visa-dialog.tsx/edit-visa-dialog.tsx reuse it for their
@@ -15,6 +17,14 @@ export const VISA_STATUS_LABELS: Record<VisaStatus, string> = {
 
 // Reuses only existing design tokens, matching LeadStatusBadge/
 // BookingStatusBadge's approach - no new colors introduced.
+// Message keys for the same statuses, for translated display.
+export const VISA_STATUS_KEYS: Record<VisaStatus, MessageKey> = {
+  draft: "visa.status.draft",
+  submitted: "visa.status.submitted",
+  approved: "visa.status.approved",
+  rejected: "visa.status.rejected",
+};
+
 const VISA_STATUS_STYLES: Record<VisaStatus, string> = {
   draft: "bg-secondary text-secondary-foreground",
   submitted: "bg-accent text-accent-foreground",
@@ -24,6 +34,7 @@ const VISA_STATUS_STYLES: Record<VisaStatus, string> = {
 
 // Shared by VisaItem and the Visa Center workspace table.
 export function VisaStatusBadge({ status }: { status: VisaStatus }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -31,7 +42,7 @@ export function VisaStatusBadge({ status }: { status: VisaStatus }) {
         VISA_STATUS_STYLES[status],
       )}
     >
-      {VISA_STATUS_LABELS[status]}
+      {t(VISA_STATUS_KEYS[status])}
     </span>
   );
 }
@@ -51,12 +62,14 @@ type VisaItemProps = {
 
 export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) {
   const readOnly = !onEdit && !onDelete;
+  const t = useT();
+  const format = useFormat();
 
   return (
     <ServiceItem>
       <ServiceItemHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium">{visa.visaType ?? "Unknown visa type"}</span>
+          <span className="text-sm font-medium">{visa.visaType ?? t("visa.unknownType")}</span>
           {visa.status && <VisaStatusBadge status={visa.status} />}
         </div>
         {!readOnly && (
@@ -66,9 +79,9 @@ export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) 
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(visa)}
-                aria-label="Edit visa application"
+                aria-label={t("visa.editLabel")}
               >
-                Edit
+                {t("common.edit")}
               </Button>
             )}
             {onDelete && (
@@ -77,9 +90,9 @@ export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) 
                 size="sm"
                 onClick={() => onDelete(visa.id)}
                 disabled={isDeleting}
-                aria-label="Delete visa application"
+                aria-label={t("visa.deleteLabel")}
               >
-                {isDeleting ? "Deleting…" : "Delete"}
+                {isDeleting ? t("common.deleting") : t("common.delete")}
               </Button>
             )}
           </ServiceItemActions>
@@ -88,12 +101,12 @@ export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) 
       <ServiceItemContent>
         <p className="text-sm text-muted-foreground">{visa.country ?? "—"}</p>
         <p className="text-xs text-muted-foreground">
-          {visa.submittedAt ? `Submitted ${formatDate(visa.submittedAt)}` : "Not submitted yet"}
-          {visa.createdAt ? ` · Created ${formatDate(visa.createdAt)}` : ""}
+          {visa.submittedAt ? t("visa.submittedOn", { date: format.date(visa.submittedAt) }) : t("visa.notSubmitted")}
+          {visa.createdAt ? ` · ${t("visa.createdOn", { date: format.date(visa.createdAt) })}` : ""}
         </p>
         <p className="text-xs text-muted-foreground">
           {/* Raw id, not a resolved name - no profiles join exists yet. */}
-          Assigned Officer: {visa.assignedTo ?? "Unassigned"}
+          {t("visa.assignedOfficer", { name: visa.assignedTo ?? t("common.unassigned") })}
         </p>
       </ServiceItemContent>
     </ServiceItem>

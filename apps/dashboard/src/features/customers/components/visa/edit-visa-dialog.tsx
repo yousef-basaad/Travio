@@ -4,7 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog, FormField, Input, Select } from "@travio/ui";
 import type { VisaApplication, VisaStatus } from "@travio/api";
 import { useUpdateVisa, useCustomerBookings } from "../../api/customers.api";
-import { VISA_STATUS_LABELS } from "./visa-item";
+import { VISA_STATUS_KEYS } from "./visa-item";
+import { useT } from "@/lib/i18n/i18n-provider";
 import { isVisaStatus } from "./create-visa-dialog";
 
 const VISA_STATUS_OPTIONS: VisaStatus[] = ["draft", "submitted", "approved", "rejected"];
@@ -57,6 +58,7 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
   const updateVisa = useUpdateVisa();
   const { data: bookings } = useCustomerBookings(customerId);
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open && visa) {
@@ -105,11 +107,11 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-visa-title" className="text-lg font-semibold">
-          Edit Visa Application
+          {t("visa.editTitle")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Country" htmlFor="edit-visa-country">
+          <FormField label={t("visa.country")} htmlFor="edit-visa-country">
             <Input
               id="edit-visa-country"
               value={form.country}
@@ -117,7 +119,7 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
             />
           </FormField>
 
-          <FormField label="Visa Type" htmlFor="edit-visa-type">
+          <FormField label={t("visa.visaType")} htmlFor="edit-visa-type">
             <Input
               id="edit-visa-type"
               value={form.visaType}
@@ -125,7 +127,7 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
             />
           </FormField>
 
-          <FormField label="Submitted At" htmlFor="edit-visa-submitted-at">
+          <FormField label={t("visa.submittedAt")} htmlFor="edit-visa-submitted-at">
             <Input
               id="edit-visa-submitted-at"
               type="datetime-local"
@@ -134,13 +136,13 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
             />
           </FormField>
 
-          <FormField label="Booking" htmlFor="edit-visa-booking">
+          <FormField label={t("visa.booking")} htmlFor="edit-visa-booking">
             <Select
               id="edit-visa-booking"
               value={form.bookingId}
               onChange={(event) => setForm({ ...form, bookingId: event.target.value })}
             >
-              <option value="">No specific booking</option>
+              <option value="">{t("visa.noBooking")}</option>
               {bookings?.map((booking) => (
                 <option key={booking.id} value={booking.id}>
                   {booking.bookingNumber} · {booking.title}
@@ -150,7 +152,7 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
           </FormField>
         </div>
 
-        <FormField label="Status" htmlFor="edit-visa-status">
+        <FormField label={t("common.status")} htmlFor="edit-visa-status">
           <Select
             id="edit-visa-status"
             value={form.status}
@@ -161,10 +163,10 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
               }
             }}
           >
-            <option value="">Select a status</option>
+            <option value="">{t("common.selectStatus")}</option>
             {VISA_STATUS_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {VISA_STATUS_LABELS[option]}
+                {t(VISA_STATUS_KEYS[option])}
               </option>
             ))}
           </Select>
@@ -173,10 +175,10 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
         {/* Raw id, not a user-picker - same convention as EditLeadDialog's/
             EditBookingDialog's assignedTo field (no profiles join/picker
             exists yet). */}
-        <FormField label="Assigned To" htmlFor="edit-visa-assigned-to">
+        <FormField label={t("visa.assignedTo")} htmlFor="edit-visa-assigned-to">
           <Input
             id="edit-visa-assigned-to"
-            placeholder="Unassigned"
+            placeholder={t("common.unassigned")}
             value={form.assignedTo}
             onChange={(event) => setForm({ ...form, assignedTo: event.target.value })}
           />
@@ -184,7 +186,7 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
 
         {updateVisa.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -195,10 +197,10 @@ export function EditVisaDialog({ visa, customerId, open, onOpenChange }: EditVis
             onClick={() => onOpenChange(false)}
             disabled={updateVisa.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateVisa.isPending}>
-            {updateVisa.isPending ? "Saving…" : "Save Changes"}
+            {updateVisa.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

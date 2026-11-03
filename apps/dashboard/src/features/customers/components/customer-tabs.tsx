@@ -9,6 +9,8 @@ import { CustomerBookingsTable } from "./bookings/customer-bookings-table";
 import { VisaList } from "./visa/visa-list";
 import { InvoiceList } from "@/features/finance";
 import { DocumentsPage } from "@/features/documents";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 // Phase UI-3: Customer 360 tabs, matching the spec's lettered sections
 // A-F exactly. "Invoices" and "Payments" (previously two tabs, the
@@ -28,18 +30,29 @@ const TABS = [
 
 type CustomerTab = (typeof TABS)[number];
 
+const TAB_LABELS: Record<CustomerTab, MessageKey> = {
+  Overview: "customers.tab.overview",
+  Bookings: "customers.tab.bookings",
+  Finance: "customers.tab.finance",
+  Documents: "customers.tab.documents",
+  "Visa Applications": "customers.tab.visas",
+  Timeline: "customers.tab.timeline",
+};
+
 // Uses the design system's shared DetailLayout (Card + Tabs) instead of
 // the raw role="tablist" markup this file previously defined for
 // itself.
 export function CustomerTabs({ customer }: { customer: Customer }) {
   const [activeTab, setActiveTab] = useState<CustomerTab>("Overview");
+  const t = useT();
 
   return (
     <DetailLayout
       tabs={TABS}
       activeTab={activeTab}
       onTabChange={(tab) => setActiveTab(tab as CustomerTab)}
-      ariaLabel="Customer sections"
+      ariaLabel={t("customers.sections")}
+      tabLabel={(tab) => t(TAB_LABELS[tab as CustomerTab])}
     >
       {activeTab === "Overview" ? (
         <CustomerOverviewTab customer={customer} />
@@ -54,7 +67,7 @@ export function CustomerTabs({ customer }: { customer: Customer }) {
       ) : activeTab === "Timeline" ? (
         <CustomerTimeline customerId={customer.id} />
       ) : (
-        <p className="text-sm text-muted-foreground">Coming soon</p>
+        <p className="text-sm text-muted-foreground">{t("common.comingSoon")}</p>
       )}
     </DetailLayout>
   );

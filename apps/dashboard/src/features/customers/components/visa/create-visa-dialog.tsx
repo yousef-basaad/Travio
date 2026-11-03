@@ -4,7 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog, FormField, Input, Select } from "@travio/ui";
 import type { VisaStatus } from "@travio/api";
 import { useCreateVisa, useCustomerBookings } from "../../api/customers.api";
-import { VISA_STATUS_LABELS } from "./visa-item";
+import { VISA_STATUS_KEYS } from "./visa-item";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const VISA_STATUS_OPTIONS: VisaStatus[] = ["draft", "submitted", "approved", "rejected"];
 
@@ -40,6 +41,7 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
   const createVisa = useCreateVisa();
   const { data: bookings } = useCustomerBookings(customerId);
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open) {
@@ -84,11 +86,11 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-visa-title" className="text-lg font-semibold">
-          Add Visa Application
+          {t("visa.add")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Country" htmlFor="visa-country">
+          <FormField label={t("visa.country")} htmlFor="visa-country">
             <Input
               id="visa-country"
               value={form.country}
@@ -96,7 +98,7 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
             />
           </FormField>
 
-          <FormField label="Visa Type" htmlFor="visa-type">
+          <FormField label={t("visa.visaType")} htmlFor="visa-type">
             <Input
               id="visa-type"
               value={form.visaType}
@@ -104,7 +106,7 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
             />
           </FormField>
 
-          <FormField label="Submitted At" htmlFor="visa-submitted-at">
+          <FormField label={t("visa.submittedAt")} htmlFor="visa-submitted-at">
             <Input
               id="visa-submitted-at"
               type="datetime-local"
@@ -113,13 +115,13 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
             />
           </FormField>
 
-          <FormField label="Booking" htmlFor="visa-booking">
+          <FormField label={t("visa.booking")} htmlFor="visa-booking">
             <Select
               id="visa-booking"
               value={form.bookingId}
               onChange={(event) => setForm({ ...form, bookingId: event.target.value })}
             >
-              <option value="">No specific booking</option>
+              <option value="">{t("visa.noBooking")}</option>
               {bookings?.map((booking) => (
                 <option key={booking.id} value={booking.id}>
                   {booking.bookingNumber} · {booking.title}
@@ -129,7 +131,7 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
           </FormField>
         </div>
 
-        <FormField label="Status" htmlFor="visa-status">
+        <FormField label={t("common.status")} htmlFor="visa-status">
           <Select
             id="visa-status"
             value={form.status}
@@ -140,10 +142,10 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
               }
             }}
           >
-            <option value="">Select a status</option>
+            <option value="">{t("common.selectStatus")}</option>
             {VISA_STATUS_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {VISA_STATUS_LABELS[option]}
+                {t(VISA_STATUS_KEYS[option])}
               </option>
             ))}
           </Select>
@@ -151,7 +153,7 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
 
         {createVisa.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the visa application. Please try again.
+            {t("visa.addError")}
           </p>
         )}
 
@@ -162,10 +164,10 @@ export function CreateVisaDialog({ customerId, open, onOpenChange }: CreateVisaD
             onClick={() => onOpenChange(false)}
             disabled={createVisa.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createVisa.isPending}>
-            {createVisa.isPending ? "Adding…" : "Add Visa Application"}
+            {createVisa.isPending ? t("common.adding") : t("visa.add")}
           </Button>
         </div>
       </form>

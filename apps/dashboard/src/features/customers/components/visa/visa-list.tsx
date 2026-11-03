@@ -9,10 +9,12 @@ import { useCustomerVisas, useBookingVisas, useDeleteVisa } from "../../api/cust
 import { VisaItem } from "./visa-item";
 import { CreateVisaDialog } from "./create-visa-dialog";
 import { EditVisaDialog } from "./edit-visa-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function VisasSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading visa applications" className="space-y-2">
+    <div role="status" aria-label={t("visa.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -21,12 +23,13 @@ function VisasSkeleton() {
 }
 
 function VisasErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading visa applications. Please try again later.
+      {t("visa.error")}
     </div>
   );
 }
@@ -58,16 +61,17 @@ export function VisaList({ customerId, bookingId }: VisaListProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingVisa, setEditingVisa] = useState<VisaApplication | null>(null);
   const readOnly = !customerId;
+  const t = useT();
 
   const hasVisas = !isLoading && !isError && !!visas && visas.length > 0;
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <h2 className="text-sm font-medium">Visa Applications</h2>
+        <h2 className="text-sm font-medium">{t("visa.title")}</h2>
         {!readOnly && (
           <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-            Add Visa Application
+            {t("visa.add")}
           </Button>
         )}
       </CardHeader>
@@ -77,7 +81,7 @@ export function VisaList({ customerId, bookingId }: VisaListProps) {
         ) : isError ? (
           <VisasErrorState />
         ) : !hasVisas ? (
-          <EmptyState icon={<Stamp size={20} />} message="No visa applications yet" />
+          <EmptyState icon={<Stamp size={20} />} message={t("visa.empty")} />
         ) : (
           <ul className="space-y-2">
             {visas.map((visa) => (
@@ -96,9 +100,9 @@ export function VisaList({ customerId, bookingId }: VisaListProps) {
 
         {readOnly && hasVisas && (
           <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-            Manage visa applications from{" "}
+            {t("visa.manageFrom")}{" "}
             <Link href={`/customers/${visas![0]!.customerId}`} className="underline hover:text-foreground">
-              the customer&apos;s profile
+              {t("visa.customerProfile")}
             </Link>
             .
           </p>

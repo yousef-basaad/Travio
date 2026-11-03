@@ -14,21 +14,30 @@ import {
   TableRow,
   TableCell,
   SearchInput,
-  Pagination,
   LtrText,
 } from "@travio/ui";
-import { formatDate } from "@travio/utils";
+import { AppPagination } from "@/components/app-pagination";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import { useCustomersPage } from "../api/customers.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { CreateCustomerDialog } from "./create-customer-dialog";
 
-const COLUMNS = ["Full Name", "Email", "Phone", "Passport Expiry", "Preferred Language"];
+const COLUMNS: MessageKey[] = [
+  "field.fullName",
+  "field.email",
+  "field.phone",
+  "field.passportExpiry",
+  "field.preferredLanguage",
+];
 
 // openCreate comes from /customers?new=1 (the Quick add menu's "New
 // Customer"). It opens the dialog, then the param is dropped from the URL
 // so a refresh or closing the dialog doesn't reopen it.
 export function CustomersTable({ openCreate = false }: { openCreate?: boolean }) {
   const router = useRouter();
+  const t = useT();
+  const format = useFormat();
   // Server-side paging + search (name/email/phone), so the list isn't
   // capped at the 1000 rows a single response can carry.
   const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging();
@@ -47,14 +56,14 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Customers"
-        description="Everyone your agency has booked travel for"
-        actions={<Button onClick={() => setIsCreateOpen(true)}>New Customer</Button>}
+        title={t("customers.title")}
+        description={t("customers.description")}
+        actions={<Button onClick={() => setIsCreateOpen(true)}>{t("customers.new")}</Button>}
       />
 
       <SearchInput
-        placeholder="Search by name, email, or phone"
-        aria-label="Search customers"
+        placeholder={t("customers.searchPlaceholder")}
+        aria-label={t("customers.searchLabel")}
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         containerClassName="max-w-sm"
@@ -64,25 +73,25 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
         isLoading={isLoading}
         isError={isError}
         isEmpty={!isLoading && customers.length === 0}
-        loadingLabel="Loading customers"
-        errorMessage="Something went wrong loading customers. Please try again later."
-        emptyMessage={debouncedSearch ? "No customers match your search" : "No customers yet"}
+        loadingLabel={t("customers.loading")}
+        errorMessage={t("customers.loadError")}
+        emptyMessage={debouncedSearch ? t("customers.emptySearch") : t("customers.empty")}
         emptyAction={
-          !debouncedSearch ? <Button onClick={() => setIsCreateOpen(true)}>New Customer</Button> : undefined
+          !debouncedSearch ? <Button onClick={() => setIsCreateOpen(true)}>{t("customers.new")}</Button> : undefined
         }
         emptyIcon={<Users size={20} />}
         size="page"
       >
-        <Table aria-label="Customers" caption="List of customers">
+        <Table aria-label={t("customers.title")} caption={t("customers.tableCaption")}>
           <TableHeader>
             <TableRow>
               {COLUMNS.map((column) => (
                 <TableCell key={column} header>
-                  {column}
+                  {t(column)}
                 </TableCell>
               ))}
               <TableCell header>
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t("common.actions")}</span>
               </TableCell>
             </TableRow>
           </TableHeader>
@@ -93,15 +102,15 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
                 <TableCell className="text-muted-foreground">{customer.email ?? "—"}</TableCell>
                 <TableCell className="text-muted-foreground">{customer.phone ? <LtrText>{customer.phone}</LtrText> : "—"}</TableCell>
                 <TableCell className="text-muted-foreground">
-                  {customer.passportExpiry ? formatDate(customer.passportExpiry) : "—"}
+                  {customer.passportExpiry ? format.date(customer.passportExpiry) : "—"}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {customer.preferredLanguage ?? "—"}
                 </TableCell>
                 <TableCell align="end">
                   <Button asChild variant="ghost" size="sm">
-                    <Link href={`/customers/${customer.id}`} aria-label={`View ${customer.fullName}`}>
-                      View
+                    <Link href={`/customers/${customer.id}`} aria-label={t("customers.viewNamed", { name: customer.fullName })}>
+                      {t("common.view")}
                     </Link>
                   </Button>
                 </TableCell>
@@ -112,7 +121,7 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
       </DataTableState>
 
       {data && (
-        <Pagination
+        <AppPagination
           page={page}
           pageSize={pageSize}
           total={data.total}
