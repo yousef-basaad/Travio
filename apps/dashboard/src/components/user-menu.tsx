@@ -13,6 +13,10 @@ import {
   DropdownMenuItem,
 } from "@travio/ui";
 import { useSession, signOut } from "@travio/auth";
+import type { UserRole } from "@travio/types";
+import { AGENCY_OWNER_ROLES as OWNER_ROLES } from "@/lib/auth/domain-roles";
+
+const AGENCY_OWNER_ROLES: readonly UserRole[] = OWNER_ROLES;
 
 // Design System v2.5 (Product-8.2 Phase 2): extracted so the header's
 // own user menu and the sidebar's new bottom user card (the reference's
@@ -75,12 +79,15 @@ export function UserMenu({ variant = "header" }: { variant?: "header" | "sidebar
           <User size={15} />
           Profile
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="gap-2">
-          <Link href="/settings">
-            <SettingsIcon size={15} />
-            Settings
-          </Link>
-        </DropdownMenuItem>
+        {/* Agency settings are owner-only (same list as the API guard). */}
+        {AGENCY_OWNER_ROLES.includes(profile.role) && (
+          <DropdownMenuItem asChild className="gap-2">
+            <Link href="/settings">
+              <SettingsIcon size={15} />
+              Settings
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem danger className="gap-2" onSelect={handleLogout}>
           <LogOut size={15} />
