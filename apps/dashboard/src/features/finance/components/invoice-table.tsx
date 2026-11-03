@@ -12,21 +12,27 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  SearchInput,
+  Pagination,
 } from "@travio/ui";
 import { cn, formatCurrency, formatDate } from "@travio/utils";
-import { useCustomers } from "@/features/customers";
-import { useInvoices } from "../api/invoices.api";
+import { useInvoicesPage } from "../api/invoices.api";
+import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
+import { FINANCE_CARD_PAGE_SIZE } from "./finance-paging";
 import { INVOICE_STATUS_LABELS, INVOICE_STATUS_STYLES } from "./invoice-item";
 
 // Tenant-wide invoice list - the Finance workspace's counterpart to the
 // existing customer/booking-scoped InvoiceList (which stays untouched;
 // this is a new, separate component, not a replacement). Reuses
 // INVOICE_STATUS_LABELS/STYLES from invoice-item.tsx instead of a second
-// status-color map.
+// status-color map. Paged and searched on the server (each row carries
+// its customer's name), so it isn't capped at the 1000 rows one response
+// can hold and doesn't need every customer loaded.
 export function InvoiceTable() {
-  const { data: invoices, isLoading, isError } = useInvoices();
-  const { data: customers } = useCustomers();
-  const customerNameById = new Map(customers?.map((customer) => [customer.id, customer.fullName]));
+  const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(undefined, FINANCE_CARD_PAGE_SIZE);
+  const { data, isLoading, isError, isFetching } = useInvoicesPage({ page, pageSize, search: debouncedSearch });
+  const invoices = data?.items ?? [];
+  usePageClamp(page, setPage, pageSize, data?.total);
 
   return (
     <Card>
@@ -34,14 +40,20 @@ export function InvoiceTable() {
         <h2 className="text-sm font-semibold text-foreground">Invoices</h2>
         <p className="text-xs text-muted-foreground">All invoices across your agency</p>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="space-y-3 pt-0">
+        <SearchInput
+          placeholder="Search by invoice number"
+          aria-label="Search invoices"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <DataTableState
           isLoading={isLoading}
           isError={isError}
-          isEmpty={!invoices || invoices.length === 0}
+          isEmpty={!isLoading && invoices.length === 0}
           loadingLabel="Loading invoices"
           errorMessage="Something went wrong loading invoices. Please try again later."
-          emptyMessage="No invoices yet"
+          emptyMessage={debouncedSearch ? "No invoices match your search" : "No invoices yet"}
           emptyIcon={<FileText size={20} />}
         >
           <Table aria-label="Invoices" caption="All invoices across the tenant">
@@ -56,14 +68,10 @@ export function InvoiceTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(invoices ?? []).map((invoice) => (
+              {invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
-                  <TableCell>
-                    {invoice.customerId
-                      ? (customerNameById.get(invoice.customerId) ?? "—")
-                      : "—"}
-                  </TableCell>
+                  <TableCell>{invoice.customerName ?? "—"}</TableCell>
                   <TableCell>
                     <span
                       className={cn(
@@ -82,6 +90,9 @@ export function InvoiceTable() {
             </TableBody>
           </Table>
         </DataTableState>
+        {data && (
+          <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+        )}
       </CardContent>
       <div className="border-t px-6 py-3 text-xs text-muted-foreground">
         Manage individual invoices from a customer&apos;s or booking&apos;s own Invoices tab.{" "}

@@ -11,8 +11,8 @@ import {
   ServiceItemContent,
 } from "@travio/ui";
 import { formatCurrency, formatRelativeTime } from "@travio/utils";
-import { useInvoices, usePayments } from "../api/invoices.api";
-import { useExpenses } from "../api/expenses.api";
+import { useInvoicesPage, usePaymentsPage } from "../api/invoices.api";
+import { useExpensesPage } from "../api/expenses.api";
 
 const ACTIVITY_LIMIT = 8;
 
@@ -25,26 +25,28 @@ type ActivityEvent = {
 };
 
 // Not a dedicated activity/audit table (none exists) - this merges the
-// three real, already-fetched lists (invoices/payments/expenses) into
-// one feed by date, client-side. No new metric or endpoint, just a
-// different view of data already surfaced elsewhere in this workspace.
+// newest ACTIVITY_LIMIT invoices, payments and expenses (each list is
+// newest first) into one feed by date. That's enough: the latest
+// ACTIVITY_LIMIT events overall are always among them.
+const LATEST = { page: 1, pageSize: ACTIVITY_LIMIT };
+
 export function FinancialActivity() {
-  const invoicesQuery = useInvoices();
-  const paymentsQuery = usePayments();
-  const expensesQuery = useExpenses();
+  const invoicesQuery = useInvoicesPage(LATEST);
+  const paymentsQuery = usePaymentsPage(LATEST);
+  const expensesQuery = useExpensesPage(LATEST);
 
   const isLoading = invoicesQuery.isLoading || paymentsQuery.isLoading || expensesQuery.isLoading;
   const isError = invoicesQuery.isError || paymentsQuery.isError || expensesQuery.isError;
 
   const events: ActivityEvent[] = [
-    ...(invoicesQuery.data ?? []).map((invoice) => ({
+    ...(invoicesQuery.data?.items ?? []).map((invoice) => ({
       id: `invoice-${invoice.id}`,
       at: invoice.createdAt,
       label: `Invoice ${invoice.invoiceNumber} created`,
       amount: invoice.total,
       currency: invoice.currency,
     })),
-    ...(paymentsQuery.data ?? [])
+    ...(paymentsQuery.data?.items ?? [])
       .filter((payment) => payment.createdAt)
       .map((payment) => ({
         id: `payment-${payment.id}`,
@@ -52,7 +54,7 @@ export function FinancialActivity() {
         label: "Payment received",
         amount: payment.amount,
       })),
-    ...(expensesQuery.data ?? [])
+    ...(expensesQuery.data?.items ?? [])
       .filter((expense) => expense.createdAt)
       .map((expense) => ({
         id: `expense-${expense.id}`,

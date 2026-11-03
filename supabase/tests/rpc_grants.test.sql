@@ -18,7 +18,8 @@ insert into rpc_names values
   ('analytics_revenue_by_month'),
   ('analytics_booking_status_counts'),
   ('analytics_top_customers'),
-  ('usage_document_totals');
+  ('usage_document_totals'),
+  ('finance_expense_total');
 
 select is(
   (select count(*)::int from pg_proc p join rpc_names r on r.name = p.proname

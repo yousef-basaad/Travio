@@ -1,7 +1,8 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Expense } from "@travio/api";
+import { fetchPage, type PageQuery } from "@/lib/api/fetch-page";
 
 // A separate file (not folded into invoices.api.ts) - expenses is a
 // flat, independent resource with no FK relationship to invoices/
@@ -9,25 +10,38 @@ import type { Expense } from "@travio/api";
 // under a specific invoice.
 export const EXPENSES_QUERY_KEY = ["expenses"];
 
-async function fetchExpenses(): Promise<Expense[]> {
-  const response = await fetch("/api/expenses");
+// One page of the agency's expenses (newest first), searchable by title
+// and category.
+export function useExpensesPage(query: Pick<PageQuery, "page" | "pageSize" | "search">) {
+  return useQuery({
+    queryKey: [...EXPENSES_QUERY_KEY, "page", query],
+    queryFn: () => fetchPage<Expense>("/api/expenses", query),
+    placeholderData: keepPreviousData,
+  });
+}
+
+async function fetchExpenseTotal(): Promise<number> {
+  const response = await fetch("/api/expenses/total");
 
   if (!response.ok) {
-    throw new Error(`Failed to load expenses (${response.status})`);
+    throw new Error(`Failed to load the expense total (${response.status})`);
   }
 
   const data: unknown = await response.json();
-  if (!Array.isArray(data)) {
-    throw new Error("Unexpected response from /api/expenses");
+  if (typeof data !== "object" || data === null || typeof (data as { total: unknown }).total !== "number") {
+    throw new Error("Unexpected response from /api/expenses/total");
   }
 
-  return data as Expense[];
+  return (data as { total: number }).total;
 }
 
-export function useExpenses() {
+// Sum of all the agency's expenses, computed in Postgres (summing a
+// fetched list stops at the 1000-row response cap). Under
+// EXPENSES_QUERY_KEY, so adding an expense refreshes it.
+export function useExpenseTotal() {
   return useQuery({
-    queryKey: EXPENSES_QUERY_KEY,
-    queryFn: fetchExpenses,
+    queryKey: [...EXPENSES_QUERY_KEY, "total"],
+    queryFn: fetchExpenseTotal,
   });
 }
 

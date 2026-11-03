@@ -1621,6 +1621,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      finance_expense_total: { Args: never; Returns: number }
       update_team_member_role: {
         Args: { new_role: Database["public"]["Enums"]["user_role"]; target_user_id: string }
         Returns: {

@@ -17,9 +17,13 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  SearchInput,
+  Pagination,
 } from "@travio/ui";
 import { formatCurrency, formatDate } from "@travio/utils";
-import { useExpenses, useCreateExpense } from "../api/expenses.api";
+import { useExpensesPage, useCreateExpense } from "../api/expenses.api";
+import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
+import { FINANCE_CARD_PAGE_SIZE } from "./finance-paging";
 
 const EMPTY_FORM = {
   title: "",
@@ -167,8 +171,13 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   );
 }
 
+// Paged and searched (title/category) on the server, so it isn't capped
+// at the 1000 rows one response can hold.
 export function ExpenseOverview() {
-  const { data: expenses, isLoading, isError } = useExpenses();
+  const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(undefined, FINANCE_CARD_PAGE_SIZE);
+  const { data, isLoading, isError, isFetching } = useExpensesPage({ page, pageSize, search: debouncedSearch });
+  const expenses = data?.items ?? [];
+  usePageClamp(page, setPage, pageSize, data?.total);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
@@ -182,19 +191,27 @@ export function ExpenseOverview() {
           Add Expense
         </Button>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="space-y-3 pt-0">
+        <SearchInput
+          placeholder="Search by title or category"
+          aria-label="Search expenses"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <DataTableState
           isLoading={isLoading}
           isError={isError}
-          isEmpty={!expenses || expenses.length === 0}
+          isEmpty={!isLoading && expenses.length === 0}
           loadingLabel="Loading expenses"
           errorMessage="Something went wrong loading expenses. Please try again later."
-          emptyMessage="No expenses logged yet"
+          emptyMessage={debouncedSearch ? "No expenses match your search" : "No expenses logged yet"}
           emptyIcon={<Wallet size={20} />}
           emptyAction={
-            <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-              Add Expense
-            </Button>
+            !debouncedSearch ? (
+              <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+                Add Expense
+              </Button>
+            ) : undefined
           }
         >
           <Table aria-label="Expenses" caption="All logged expenses, most recent first">
@@ -207,7 +224,7 @@ export function ExpenseOverview() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(expenses ?? []).map((expense) => (
+              {expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">{expense.title}</TableCell>
                   <TableCell>{expense.category ?? "—"}</TableCell>
@@ -218,6 +235,9 @@ export function ExpenseOverview() {
             </TableBody>
           </Table>
         </DataTableState>
+        {data && (
+          <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+        )}
       </CardContent>
 
       <CreateExpenseDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />

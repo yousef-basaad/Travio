@@ -11,19 +11,26 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  SearchInput,
+  Pagination,
 } from "@travio/ui";
 import { cn, formatCurrency, formatDate } from "@travio/utils";
-import { useInvoices, usePayments } from "../api/invoices.api";
+import { usePaymentsPage } from "../api/invoices.api";
+import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
+import { FINANCE_CARD_PAGE_SIZE } from "./finance-paging";
 import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_STYLES } from "./payments/payment-item";
 
 // Tenant-wide payment list - the Finance workspace's counterpart to the
 // existing per-invoice PaymentsList (which stays untouched; this is a
 // new, separate component). Reuses PAYMENT_METHOD_LABELS/STYLES from
-// payment-item.tsx instead of a second method-color map.
+// payment-item.tsx instead of a second method-color map. Paged and
+// searched (by reference) on the server; each row carries its invoice
+// number, so every invoice doesn't have to be loaded to label it.
 export function PaymentStatus() {
-  const { data: payments, isLoading, isError } = usePayments();
-  const { data: invoices } = useInvoices();
-  const invoiceNumberById = new Map(invoices?.map((invoice) => [invoice.id, invoice.invoiceNumber]));
+  const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(undefined, FINANCE_CARD_PAGE_SIZE);
+  const { data, isLoading, isError, isFetching } = usePaymentsPage({ page, pageSize, search: debouncedSearch });
+  const payments = data?.items ?? [];
+  usePageClamp(page, setPage, pageSize, data?.total);
 
   return (
     <Card>
@@ -31,14 +38,20 @@ export function PaymentStatus() {
         <h2 className="text-sm font-semibold text-foreground">Payments</h2>
         <p className="text-xs text-muted-foreground">Recent payments across your agency</p>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="space-y-3 pt-0">
+        <SearchInput
+          placeholder="Search by reference"
+          aria-label="Search payments"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <DataTableState
           isLoading={isLoading}
           isError={isError}
-          isEmpty={!payments || payments.length === 0}
+          isEmpty={!isLoading && payments.length === 0}
           loadingLabel="Loading payments"
           errorMessage="Something went wrong loading payments. Please try again later."
-          emptyMessage="No payments yet"
+          emptyMessage={debouncedSearch ? "No payments match your search" : "No payments yet"}
           emptyIcon={<Receipt size={20} />}
         >
           <Table aria-label="Payments" caption="All payments across the tenant, most recent first">
@@ -52,10 +65,10 @@ export function PaymentStatus() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(payments ?? []).map((payment) => (
+              {payments.map((payment) => (
                 <TableRow key={payment.id}>
                   <TableCell className="font-medium">
-                    {invoiceNumberById.get(payment.invoiceId) ?? "—"}
+                    {payment.invoiceNumber ?? "—"}
                   </TableCell>
                   <TableCell>{formatCurrency(payment.amount)}</TableCell>
                   <TableCell>
@@ -75,6 +88,9 @@ export function PaymentStatus() {
             </TableBody>
           </Table>
         </DataTableState>
+        {data && (
+          <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+        )}
       </CardContent>
     </Card>
   );
