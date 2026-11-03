@@ -6,6 +6,7 @@ import { AppHeader } from "@travio/ui";
 import { NotificationCenter } from "@/features/notifications";
 import { HeaderGreeting } from "@/features/dashboard-home";
 import { getNavTitle } from "./dashboard-sidebar";
+import { useT } from "@/lib/i18n/i18n-provider";
 import { UserMenu } from "./user-menu";
 import { GlobalSearch } from "./global-search";
 import { QuickAddMenu } from "./quick-add-menu";
@@ -24,7 +25,8 @@ import { DatePickerButton } from "./date-picker-button";
 // this one shared component; no other route's markup changes.
 export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
-  const title = getNavTitle(pathname);
+  const t = useT();
+  const title = t(getNavTitle(pathname));
   const isHome = pathname === "/";
 
   return (
@@ -36,8 +38,8 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
           <button
             type="button"
             onClick={onMenuClick}
-            aria-label="Open navigation"
-            className="-ml-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-foreground transition-colors duration-fast hover:bg-accent md:hidden"
+            aria-label={t("header.openNavigation")}
+            className="-ms-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-foreground transition-colors duration-fast hover:bg-accent md:hidden"
           >
             <Menu size={20} />
           </button>

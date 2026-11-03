@@ -14,6 +14,7 @@ import {
   TableCell,
   SearchInput,
   Pagination,
+  LtrText,
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useLeadsPage } from "../api/leads.api";
@@ -84,7 +85,7 @@ export function LeadsTable() {
             {leads.map((lead) => (
               <TableRow key={lead.id}>
                 <TableCell className="font-medium text-foreground">{lead.fullName}</TableCell>
-                <TableCell className="text-muted-foreground">{lead.phone ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{lead.phone ? <LtrText>{lead.phone}</LtrText> : "—"}</TableCell>
                 <TableCell className="text-muted-foreground">{lead.email ?? "—"}</TableCell>
                 <TableCell>
                   <LeadStatusBadge status={lead.status} />

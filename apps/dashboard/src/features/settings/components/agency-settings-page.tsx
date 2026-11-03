@@ -111,7 +111,7 @@ export function AgencySettingsPage() {
               <form onSubmit={onSubmit} className="space-y-4" noValidate>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField label="Phone" htmlFor="agency-phone" error={errors.phone?.message}>
-                    <Input id="agency-phone" {...register("phone")} />
+                    <Input id="agency-phone" type="tel" {...register("phone")} />
                   </FormField>
 
                   <FormField label="Email" htmlFor="agency-email" error={errors.email?.message}>

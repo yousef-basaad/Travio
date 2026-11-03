@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { SearchX } from "lucide-react";
-import { Button, EmptyState, Skeleton, toast } from "@travio/ui";
+import { Button, EmptyState, LtrText, Skeleton, toast } from "@travio/ui";
 import { useCustomer, useInviteCustomerToPortal, CustomerNotFoundError } from "../api/customers.api";
 import { CustomerProfileCard } from "./customer-profile-card";
 import { CustomerStatusBadge } from "./customer-status-badge";
@@ -107,7 +107,7 @@ export function CustomerDetails({ id }: { id: string }) {
             <CustomerStatusBadge customer={customer} />
           </div>
           <p className="text-sm text-muted-foreground">
-            {customer.email ?? "No email"} · {customer.phone ?? "No phone"}
+            {customer.email ?? "No email"} · {customer.phone ? <LtrText>{customer.phone}</LtrText> : "No phone"}
           </p>
         </div>
         <div className="flex items-center gap-2">

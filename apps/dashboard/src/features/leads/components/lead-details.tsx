@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SearchX } from "lucide-react";
-import { Button, Card, CardContent, CardHeader, EmptyState, InfoRow, Skeleton } from "@travio/ui";
+import { Button, Card, CardContent, CardHeader, EmptyState, InfoRow, LtrText, Skeleton } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useLead, LeadNotFoundError } from "../api/leads.api";
 import { LeadStatusBadge } from "./lead-status-badge";
@@ -102,7 +102,7 @@ export function LeadDetails({ id }: { id: string }) {
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <InfoRow label="Full Name" value={lead.fullName} />
             <InfoRow label="Email" value={lead.email ?? "—"} />
-            <InfoRow label="Phone" value={lead.phone ?? "—"} />
+            <InfoRow label="Phone" value={lead.phone ? <LtrText>{lead.phone}</LtrText> : "—"} />
             <InfoRow label="Source" value={lead.source ? humanize(lead.source) : "—"} />
             <InfoRow label="Status" value={<LeadStatusBadge status={lead.status} />} />
             <InfoRow

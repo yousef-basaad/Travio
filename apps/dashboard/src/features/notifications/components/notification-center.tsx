@@ -4,6 +4,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@travio/ui";
 import { useNotifications } from "../api/notifications.api";
 import { NotificationBell } from "./notification-bell";
 import { NotificationList } from "./notification-list";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.4 (Product-8.1): migrated onto @travio/ui's new
 // Popover (Radix-based) - was a hand-rolled toggle panel with its own
@@ -14,6 +15,7 @@ import { NotificationList } from "./notification-list";
 // role="menu" would have been the wrong semantics here even hand-rolled.
 export function NotificationCenter() {
   const { data: notifications } = useNotifications();
+  const t = useT();
   const unreadCount = (notifications ?? []).filter((notification) => notification.readAt === null).length;
 
   return (
@@ -21,7 +23,7 @@ export function NotificationCenter() {
       <PopoverTrigger asChild>
         <NotificationBell unreadCount={unreadCount} />
       </PopoverTrigger>
-      <PopoverContent aria-label="Notifications" className="p-0">
+      <PopoverContent aria-label={t("notifications.title")} className="p-0">
         <NotificationList />
       </PopoverContent>
     </Popover>

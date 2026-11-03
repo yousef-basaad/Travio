@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card, CardContent, CardHeader, InfoRow } from "@travio/ui";
+import { Card, CardContent, CardHeader, InfoRow, LtrText } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import type { Customer } from "@travio/api";
 import type { Booking } from "../types/booking";
@@ -53,7 +53,7 @@ export function BookingProfileCard({
             }
           />
           {customer?.email ? <InfoRow label="Email" value={customer.email} /> : null}
-          {customer?.phone ? <InfoRow label="Phone" value={customer.phone} /> : null}
+          {customer?.phone ? <InfoRow label="Phone" value={<LtrText>{customer.phone}</LtrText>} /> : null}
         </dl>
       </CardContent>
     </Card>
