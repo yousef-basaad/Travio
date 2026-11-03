@@ -85,7 +85,7 @@ export function DonutChart({ segments, centerLabel, centerValue, size = 160, cla
             <span className="shrink-0 font-medium text-foreground">
               {segment.value}
               {total > 0 ? (
-                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                <span className="ms-1 text-xs font-normal text-muted-foreground">
                   ({Math.round((segment.value / total) * 100)}%)
                 </span>
               ) : null}

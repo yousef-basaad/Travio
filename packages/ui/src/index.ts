@@ -2,6 +2,7 @@ export * from "./components/button";
 export * from "./components/card";
 export * from "./components/empty-state";
 export * from "./components/info-row";
+export * from "./components/ltr-text";
 export * from "./components/service-item";
 export * from "./components/dialog";
 export * from "./components/badge";

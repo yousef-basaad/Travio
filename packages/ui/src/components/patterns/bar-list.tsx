@@ -38,7 +38,7 @@ export function BarList({ rows, className }: BarListProps) {
               style={{ width: `${(row.value / maxValue) * 100}%` }}
             />
           </div>
-          <span className="w-10 shrink-0 text-right font-medium text-foreground">{row.value}</span>
+          <span className="w-10 shrink-0 text-end font-medium text-foreground">{row.value}</span>
         </li>
       ))}
     </ul>

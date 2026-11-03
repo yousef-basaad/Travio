@@ -57,7 +57,7 @@ export function Calendar({ selected, onSelect, defaultMonth, className }: Calend
           aria-label="Previous month"
           className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors duration-fast hover:bg-accent hover:text-accent-foreground"
         >
-          <ChevronLeft size={14} />
+          <ChevronLeft size={14} className="rtl:rotate-180" />
         </button>
         <p className="text-sm font-medium text-foreground">
           {viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
@@ -68,7 +68,7 @@ export function Calendar({ selected, onSelect, defaultMonth, className }: Calend
           aria-label="Next month"
           className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors duration-fast hover:bg-accent hover:text-accent-foreground"
         >
-          <ChevronRight size={14} />
+          <ChevronRight size={14} className="rtl:rotate-180" />
         </button>
       </div>
       <div className="grid grid-cols-7 gap-y-1 text-center">

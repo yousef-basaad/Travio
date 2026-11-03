@@ -82,8 +82,9 @@ export function MobileNavDrawer({
         aria-modal="true"
         aria-label="Navigation"
         className={cn(
-          "absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-sidebar text-sidebar-foreground shadow-xl transition-transform duration-base ease-default",
-          open ? "translate-x-0" : "-translate-x-full",
+          "absolute inset-y-0 start-0 flex w-72 max-w-[85vw] flex-col bg-sidebar text-sidebar-foreground shadow-xl transition-transform duration-base ease-default",
+          // Slides out toward its own edge: left in LTR, right in RTL.
+          open ? "translate-x-0" : "-translate-x-full rtl:translate-x-full",
         )}
       >
         <div className="flex h-16 items-center justify-between gap-2 border-b border-sidebar-border px-5">

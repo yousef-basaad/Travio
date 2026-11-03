@@ -54,7 +54,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-border text-left transition-colors duration-fast ease-default last:border-0 [tbody_&]:hover:bg-muted/40",
+      "border-b border-border text-start transition-colors duration-fast ease-default last:border-0 [tbody_&]:hover:bg-muted/40",
       className,
     )}
     {...props}
@@ -93,9 +93,9 @@ export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
           // left inset at all and sat flush against the table's border.
           // This gives it the same 16px breathing room every other
           // column already has.
-          "whitespace-nowrap py-3 pr-4 first:pl-4",
+          "whitespace-nowrap py-3 pe-4 first:ps-4",
           header && "text-xs font-semibold uppercase tracking-wide text-muted-foreground",
-          align === "end" && "text-right",
+          align === "end" && "text-end",
           align === "center" && "text-center",
           className,
         )}

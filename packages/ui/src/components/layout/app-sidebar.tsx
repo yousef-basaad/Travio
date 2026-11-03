@@ -76,7 +76,7 @@ export function AppSidebar({ brand, items, pathname, renderLink, footer, classNa
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex md:w-[72px] lg:w-60",
+        "hidden shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground md:flex md:w-[72px] lg:w-60",
         "[&_[data-sidebar-label]]:hidden [&_[data-sidebar-block]]:hidden",
         "lg:[&_[data-sidebar-label]]:inline lg:[&_[data-sidebar-block]]:block",
         className,

@@ -79,13 +79,13 @@ export const CustomSelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-md py-1.5 pl-7 pr-2.5 text-sm outline-none transition-colors duration-fast ease-default",
+      "relative flex w-full cursor-pointer select-none items-center rounded-md py-1.5 ps-7 pe-2.5 text-sm outline-none transition-colors duration-fast ease-default",
       "focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute start-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
         <Check size={14} />
       </SelectPrimitive.ItemIndicator>
