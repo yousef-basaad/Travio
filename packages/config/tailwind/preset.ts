@@ -22,7 +22,10 @@ export const travioPreset: Partial<Config> = {
       // app except dashboard, for now) safely falls back to its own
       // --font-sans instead of an invalid/empty font-family.
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "Tahoma", "system-ui", "sans-serif"],
+        // --font-heading (Tajawal, where an app loads it) after Inter: Inter has
+        // no Arabic glyphs, so Arabic text falls through to Tajawal. The
+        // fallback keeps the list valid in apps that don't define it.
+        sans: ["var(--font-sans)", "Inter", "var(--font-heading, Tahoma)", "Tahoma", "system-ui", "sans-serif"],
         heading: [
           "var(--font-heading, var(--font-sans))",
           "Inter",

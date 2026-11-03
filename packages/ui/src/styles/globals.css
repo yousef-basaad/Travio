@@ -50,19 +50,22 @@
   }
 }
 
-/* ---- RTL foundation (Product-8.2 Phase 1) ----
-   Not yet switched on anywhere (every app still renders dir="ltr" -
-   see each app's root layout, which now derives `dir` from a single
-   named constant instead of a hardcoded literal, so flipping it later
-   is a one-line change, not a hunt-and-replace). This phase's actual
-   RTL work is at the token/config level only:
-     - Tajawal is loaded with an Arabic-capable subset (dashboard's
-       root layout), ready the moment real Arabic copy exists.
-     - New/touched components going forward should prefer Tailwind's
-       logical-property utilities (ms-/me-, ps-/pe-, start-/end-,
-       rounded-s-/rounded-e-, border-s-/border-e-, text-start/text-end)
-       over physical ones (ml-/mr-, pl-/pr-, left-/right-) so they
-       render correctly the moment dir flips to rtl, without a second
-       pass. This is *not* a retroactive sweep of every existing file -
-       physical-property call sites get converted screen-by-screen as
-       Phase 2/3 actually touch each one, not all at once here. */
+/* ---- RTL ----
+   The dashboard switches to dir="rtl" when the user picks Arabic (root
+   layout, from the travio_locale cookie). Components use Tailwind's
+   logical utilities (ms-/me-, ps-/pe-, start-/end-, border-s-/border-e-,
+   text-start/text-end) so they mirror automatically; physical ones
+   (ml-/mr-, pl-/pr-, left-/right-) don't, so avoid them. Icons that point
+   a direction get rtl:rotate-180.
+
+   Phone numbers, emails and URLs are left-to-right text even inside
+   Arabic, otherwise "+966..." renders as "...966+". Their inputs stay
+   LTR but keep the RTL alignment; displayed values use <LtrText>. */
+@layer base {
+  [dir="rtl"] input[type="tel"],
+  [dir="rtl"] input[type="email"],
+  [dir="rtl"] input[type="url"] {
+    direction: ltr;
+    text-align: right;
+  }
+}

@@ -15,6 +15,7 @@ import {
   TableCell,
   SearchInput,
   Pagination,
+  LtrText,
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { useCustomersPage } from "../api/customers.api";
@@ -90,7 +91,7 @@ export function CustomersTable({ openCreate = false }: { openCreate?: boolean })
               <TableRow key={customer.id}>
                 <TableCell className="font-medium text-foreground">{customer.fullName}</TableCell>
                 <TableCell className="text-muted-foreground">{customer.email ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{customer.phone ?? "—"}</TableCell>
+                <TableCell className="text-muted-foreground">{customer.phone ? <LtrText>{customer.phone}</LtrText> : "—"}</TableCell>
                 <TableCell className="text-muted-foreground">
                   {customer.passportExpiry ? formatDate(customer.passportExpiry) : "—"}
                 </TableCell>

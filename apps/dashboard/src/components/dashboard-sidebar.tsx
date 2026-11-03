@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { AppSidebar, isRouteActive, type AppNavItem } from "@travio/ui";
 import { useSession } from "@travio/auth";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import {
   AGENCY_OWNER_ROLES,
   ANALYTICS_ROLES,
@@ -55,51 +57,57 @@ const ICON_SIZE = 18;
 
 export type DashboardNavItem = AppNavItem & RoleScopedItem;
 
+// A nav entry as defined here: a message key instead of display text,
+// translated into the signed-in user's language by useNavItems().
+export type NavDefinition = Omit<AppNavItem, "label"> & RoleScopedItem & { labelKey: MessageKey };
+
 // Each item lists the roles that may use it - the same lists the API
 // guards enforce (lib/auth/domain-roles.ts) - so nobody is offered a page
 // whose data would answer 403. Placeholder pages ("Coming soon") are open
 // to every dashboard role.
-export const NAV_ITEMS: readonly DashboardNavItem[] = [
-  { label: "Operations Center", href: "/", icon: <LayoutDashboard size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
-  { label: "CRM", href: "/customers", icon: <Users size={ICON_SIZE} />, roles: CUSTOMERS_ROLES },
-  { label: "Leads", href: "/leads", icon: <UserPlus size={ICON_SIZE} />, roles: LEADS_ROLES },
-  { label: "Bookings", href: "/bookings", icon: <CalendarCheck size={ICON_SIZE} />, roles: BOOKINGS_ROLES },
-  { label: "Visa Center", href: "/visa", icon: <Stamp size={ICON_SIZE} />, roles: VISA_ROLES },
-  { label: "Finance", href: "/finance", icon: <Receipt size={ICON_SIZE} />, roles: FINANCE_ROLES },
-  { label: "Analytics", href: "/analytics", icon: <BarChart3 size={ICON_SIZE} />, roles: ANALYTICS_ROLES },
-  { label: "Documents", href: "/documents", icon: <FileText size={ICON_SIZE} />, roles: DOCUMENTS_ROLES },
-  { label: "Calendar", href: "/calendar", icon: <CalendarDays size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
-  { label: "Inbox", href: "/inbox", icon: <Inbox size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
-  { label: "Activities", href: "/activities", icon: <Activity size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
-  { label: "AI Assistant", href: "/ai-assistant", icon: <Sparkles size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
-  { label: "Team", href: "/team", icon: <UsersRound size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
-  { label: "Subscription", href: "/subscription", icon: <CreditCard size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
-  { label: "Settings", href: "/settings", icon: <SettingsIcon size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
-  { label: "Help Center", href: "/help-center", icon: <HelpCircle size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+export const NAV_ITEMS: readonly NavDefinition[] = [
+  { labelKey: "nav.operationsCenter", href: "/", icon: <LayoutDashboard size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { labelKey: "nav.crm", href: "/customers", icon: <Users size={ICON_SIZE} />, roles: CUSTOMERS_ROLES },
+  { labelKey: "nav.leads", href: "/leads", icon: <UserPlus size={ICON_SIZE} />, roles: LEADS_ROLES },
+  { labelKey: "nav.bookings", href: "/bookings", icon: <CalendarCheck size={ICON_SIZE} />, roles: BOOKINGS_ROLES },
+  { labelKey: "nav.visa", href: "/visa", icon: <Stamp size={ICON_SIZE} />, roles: VISA_ROLES },
+  { labelKey: "nav.finance", href: "/finance", icon: <Receipt size={ICON_SIZE} />, roles: FINANCE_ROLES },
+  { labelKey: "nav.analytics", href: "/analytics", icon: <BarChart3 size={ICON_SIZE} />, roles: ANALYTICS_ROLES },
+  { labelKey: "nav.documents", href: "/documents", icon: <FileText size={ICON_SIZE} />, roles: DOCUMENTS_ROLES },
+  { labelKey: "nav.calendar", href: "/calendar", icon: <CalendarDays size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { labelKey: "nav.inbox", href: "/inbox", icon: <Inbox size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { labelKey: "nav.activities", href: "/activities", icon: <Activity size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { labelKey: "nav.aiAssistant", href: "/ai-assistant", icon: <Sparkles size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
+  { labelKey: "nav.team", href: "/team", icon: <UsersRound size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { labelKey: "nav.subscription", href: "/subscription", icon: <CreditCard size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { labelKey: "nav.settings", href: "/settings", icon: <SettingsIcon size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { labelKey: "nav.helpCenter", href: "/help-center", icon: <HelpCircle size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
 ];
 
 // The items the signed-in user may use. Shared by the desktop sidebar and
 // the mobile drawer so both always show the same list.
 export function useNavItems(): DashboardNavItem[] {
   const { profile } = useSession();
-  return itemsForRole(NAV_ITEMS, profile?.role);
+  const t = useT();
+  return itemsForRole(NAV_ITEMS, profile?.role).map(({ labelKey, ...item }) => ({ ...item, label: t(labelKey) }));
 }
 
 // Exported so DashboardHeader can show the current section's title
 // without a second, duplicated route->label array - NAV_ITEMS above
-// stays the single source of truth. Falls back to "Dashboard" for
+// stays the single source of truth. Returns a message key (the header
+// translates it). Falls back to "Dashboard" for
 // routes with no nav entry (e.g. "/login", "/forbidden", which never
 // render inside this layout anyway, or a customer/lead/booking detail
 // page nested under a listed route). Uses the same isRouteActive
 // @travio/ui export AppSidebar itself uses - one matching algorithm,
 // not two.
-export function getNavTitle(pathname: string): string {
+export function getNavTitle(pathname: string): MessageKey {
   for (const item of NAV_ITEMS) {
     if (isRouteActive(pathname, item.href)) {
-      return item.label;
+      return item.labelKey;
     }
   }
-  return "Dashboard";
+  return "nav.dashboard";
 }
 
 // Brand lockup (mark + wordmark). Travio-specific copy, so it's built
@@ -109,6 +117,7 @@ export function getNavTitle(pathname: string): string {
 // automatically - only the mark stays visible in rail mode, matching
 // the reference's own collapsed treatment.
 export function Brand() {
+  const t = useT();
   return (
     <>
       <span
@@ -119,7 +128,7 @@ export function Brand() {
       </span>
       <div data-sidebar-block className="min-w-0 leading-tight">
         <p className="truncate text-sm font-semibold text-sidebar-foreground">Travio</p>
-        <p className="truncate text-xs text-sidebar-foreground/60">Agency Platform</p>
+        <p className="truncate text-xs text-sidebar-foreground/60">{t("brand.tagline")}</p>
       </div>
     </>
   );

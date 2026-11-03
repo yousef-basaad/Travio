@@ -1,21 +1,24 @@
 "use client";
 
 import { useSession } from "@travio/auth";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 // Time-of-day greeting - pure presentation, no data fetch beyond the
 // already-loaded session profile ((dashboard)/layout.tsx already
 // requires an authenticated profile to reach this page at all, so
 // profile is only ever null for the one render before SessionProvider
 // hydrates).
-function greetingForHour(hour: number): string {
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+function greetingForHour(hour: number): MessageKey {
+  if (hour < 12) return "greeting.morning";
+  if (hour < 18) return "greeting.afternoon";
+  return "greeting.evening";
 }
 
 function useGreeting() {
   const { profile } = useSession();
-  const greeting = greetingForHour(new Date().getHours());
+  const t = useT();
+  const greeting = t(greetingForHour(new Date().getHours()));
   const firstName = profile?.fullName.trim().split(/\s+/)[0];
   return { greeting, firstName };
 }
@@ -33,14 +36,14 @@ function useGreeting() {
 // row instead of a page-level heading.
 export function HeaderGreeting() {
   const { greeting, firstName } = useGreeting();
+  const t = useT();
 
   return (
     <div className="min-w-0">
       <p className="truncate text-sm font-semibold text-foreground">
-        {greeting}
-        {firstName ? `, ${firstName}` : ""} 👋
+        {firstName ? t("greeting.withName", { greeting, name: firstName }) : greeting} 👋
       </p>
-      <p className="truncate text-xs text-muted-foreground">Here&rsquo;s an overview of your agency today.</p>
+      <p className="truncate text-xs text-muted-foreground">{t("greeting.subtitle")}</p>
     </div>
   );
 }

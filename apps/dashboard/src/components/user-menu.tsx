@@ -1,7 +1,9 @@
 "use client";
 
+import { useTransition } from "react";
 import Link from "next/link";
-import { ChevronDown, User, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, User, Settings as SettingsIcon, LogOut, Languages } from "lucide-react";
 import {
   Avatar,
   Button,
@@ -15,6 +17,8 @@ import {
 import { useSession, signOut } from "@travio/auth";
 import type { UserRole } from "@travio/types";
 import { AGENCY_OWNER_ROLES as OWNER_ROLES } from "@/lib/auth/domain-roles";
+import { useI18n } from "@/lib/i18n/i18n-provider";
+import { setLocale } from "@/lib/i18n/set-locale";
 
 const AGENCY_OWNER_ROLES: readonly UserRole[] = OWNER_ROLES;
 
@@ -30,6 +34,18 @@ const AGENCY_OWNER_ROLES: readonly UserRole[] = OWNER_ROLES;
 // real route, Logout calls the already-existing signOut() server action.
 export function UserMenu({ variant = "header" }: { variant?: "header" | "sidebar" }) {
   const { profile } = useSession();
+  const { locale, t } = useI18n();
+  const router = useRouter();
+  const [isSwitching, startSwitch] = useTransition();
+
+  // Saves the other language in the cookie, then re-renders from the
+  // server so <html lang dir> and every translated string update.
+  const handleSwitchLanguage = () => {
+    startSwitch(async () => {
+      await setLocale(locale === "ar" ? "en" : "ar");
+      router.refresh();
+    });
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -47,15 +63,15 @@ export function UserMenu({ variant = "header" }: { variant?: "header" | "sidebar
         {variant === "sidebar" ? (
           <button
             type="button"
-            className="flex w-full items-center gap-2.5 overflow-hidden rounded-md p-1.5 text-left transition-colors duration-fast ease-default hover:bg-sidebar-hover"
+            className="flex w-full items-center gap-2.5 overflow-hidden rounded-md p-1.5 text-start transition-colors duration-fast ease-default hover:bg-sidebar-hover"
           >
             <Avatar name={profile.fullName} size="sm" />
             <span data-sidebar-block className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium text-sidebar-foreground">
                 {profile.fullName}
               </span>
-              <span className="block truncate text-xs capitalize text-sidebar-foreground/60">
-                {profile.role.replace(/_/g, " ")}
+              <span className="block truncate text-xs text-sidebar-foreground/60">
+                {t(`role.${profile.role}`)}
               </span>
             </span>
             <ChevronDown
@@ -77,21 +93,26 @@ export function UserMenu({ variant = "header" }: { variant?: "header" | "sidebar
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled className="gap-2">
           <User size={15} />
-          Profile
+          {t("userMenu.profile")}
         </DropdownMenuItem>
         {/* Agency settings are owner-only (same list as the API guard). */}
         {AGENCY_OWNER_ROLES.includes(profile.role) && (
           <DropdownMenuItem asChild className="gap-2">
             <Link href="/settings">
               <SettingsIcon size={15} />
-              Settings
+              {t("userMenu.settings")}
             </Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem className="gap-2" disabled={isSwitching} onSelect={handleSwitchLanguage}>
+          <Languages size={15} />
+          {/* Labelled in the target language, so it reads either way. */}
+          <span lang={locale === "ar" ? "en" : "ar"}>{t("userMenu.switchLanguage")}</span>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem danger className="gap-2" onSelect={handleLogout}>
           <LogOut size={15} />
-          Logout
+          {t("userMenu.logout")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

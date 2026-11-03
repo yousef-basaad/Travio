@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { cn } from "@travio/utils";
 import { formatDateTime } from "@travio/utils";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 2): the reference's shell
 // footer. "Last updated" is the real moment this bar last rendered/
@@ -18,6 +19,7 @@ import { formatDateTime } from "@travio/utils";
 // Phase 2's own placeholder pages) rather than a dead href.
 export function DashboardFooter() {
   const router = useRouter();
+  const t = useT();
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -31,23 +33,23 @@ export function DashboardFooter() {
   return (
     <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 px-6 py-3 text-xs text-muted-foreground">
       <div className="flex items-center gap-1.5">
-        <span>Last updated: {formatDateTime(lastUpdated.toISOString())}</span>
+        <span>{t("footer.lastUpdated", { time: formatDateTime(lastUpdated.toISOString()) })}</span>
         <button
           type="button"
           onClick={handleRefresh}
-          aria-label="Refresh"
+          aria-label={t("footer.refresh")}
           className="rounded-md p-1 transition-colors duration-fast hover:bg-accent hover:text-accent-foreground"
         >
           <RefreshCw size={12} className={cn(isRefreshing && "animate-spin")} />
         </button>
       </div>
       <div className="flex items-center gap-4">
-        <span>© {new Date().getFullYear()} Travio. All rights reserved.</span>
+        <span>{t("footer.rights", { year: new Date().getFullYear() })}</span>
         <Link href="/terms" className="hover:text-foreground hover:underline">
-          Terms
+          {t("footer.terms")}
         </Link>
         <Link href="/privacy" className="hover:text-foreground hover:underline">
-          Privacy
+          {t("footer.privacy")}
         </Link>
       </div>
     </footer>

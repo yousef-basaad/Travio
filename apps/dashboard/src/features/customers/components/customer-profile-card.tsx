@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, InfoRow } from "@travio/ui";
+import { Card, CardContent, CardHeader, InfoRow, LtrText } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import type { Customer } from "@travio/api";
 
@@ -18,7 +18,7 @@ export function CustomerProfileCard({ customer }: { customer: Customer }) {
         <dl className="space-y-4">
           <InfoRow label="Full Name" value={customer.fullName} />
           <InfoRow label="Email" value={customer.email ?? "—"} />
-          <InfoRow label="Phone" value={customer.phone ?? "—"} />
+          <InfoRow label="Phone" value={customer.phone ? <LtrText>{customer.phone}</LtrText> : "—"} />
           <InfoRow
             label="Passport Expiry"
             value={customer.passportExpiry ? formatDate(customer.passportExpiry) : "—"}

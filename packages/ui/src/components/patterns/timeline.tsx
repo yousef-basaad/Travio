@@ -46,7 +46,7 @@ export function TimelineItem({
       {!isLast ? (
         <span
           aria-hidden="true"
-          className="absolute bottom-0 left-[15px] top-8 w-px bg-border"
+          className="absolute bottom-0 start-[15px] top-8 w-px bg-border"
         />
       ) : null}
       <span

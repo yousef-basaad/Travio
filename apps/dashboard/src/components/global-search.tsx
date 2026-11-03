@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Input, Popover, PopoverAnchor, PopoverContent } from "@travio/ui";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 2): the reference's header
 // search bar, with real Cmd/Ctrl+K interaction (focuses the input from
@@ -21,6 +22,7 @@ import { Input, Popover, PopoverAnchor, PopoverContent } from "@travio/ui";
 export function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,19 +49,19 @@ export function GlobalSearch() {
           <Search
             aria-hidden="true"
             size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             ref={inputRef}
             type="search"
-            placeholder="Search bookings, customers, visa requests…"
-            aria-label="Search"
+            placeholder={t("search.placeholder")}
+            aria-label={t("search.label")}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => setOpen(true)}
-            className="h-9 pl-9 pr-14"
+            className="h-9 ps-9 pe-14"
           />
-          <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
+          <kbd className="pointer-events-none absolute end-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded border border-border bg-surface-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
             ⌘K
           </kbd>
         </div>
@@ -70,9 +72,7 @@ export function GlobalSearch() {
         className="w-96 p-3"
       >
         <p className="text-sm text-muted-foreground">
-          {query
-            ? `Search isn't connected yet - "${query}" can't be looked up here.`
-            : "Start typing to search across your workspace."}
+          {query ? t("search.notConnected", { query }) : t("search.hint")}
         </p>
       </PopoverContent>
     </Popover>
