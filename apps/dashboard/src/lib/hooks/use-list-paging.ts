@@ -7,8 +7,9 @@ import { DEFAULT_PAGE_SIZE } from "@travio/api";
 // Page + search state for a server-paged table. `search` is what the
 // input shows; `debouncedSearch` is what's sent to the server (300ms
 // after typing stops). Any change to the debounced search or to `resetKey`
-// (e.g. a status filter) goes back to page 1.
-export function useListPaging(resetKey?: string) {
+// (e.g. a status filter) goes back to page 1. Smaller cards (e.g. the
+// Finance page's) pass a smaller pageSize.
+export function useListPaging(resetKey?: string, pageSize: number = DEFAULT_PAGE_SIZE) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
@@ -17,7 +18,7 @@ export function useListPaging(resetKey?: string) {
     setPage(1);
   }, [debouncedSearch, resetKey]);
 
-  return { page, setPage, pageSize: DEFAULT_PAGE_SIZE, search, setSearch, debouncedSearch };
+  return { page, setPage, pageSize, search, setSearch, debouncedSearch };
 }
 
 // If the list shrank under the current page (rows deleted, or a narrower

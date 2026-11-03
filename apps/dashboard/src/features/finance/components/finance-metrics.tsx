@@ -3,7 +3,7 @@
 import { StatsCard, SkeletonCard } from "@travio/ui";
 import { formatCurrency } from "@travio/utils";
 import { useDashboardStats } from "@/features/analytics";
-import { useExpenses } from "../api/expenses.api";
+import { useExpenseTotal } from "../api/expenses.api";
 
 function MetricsSkeleton() {
   return (
@@ -32,19 +32,16 @@ function MetricsErrorState() {
 
 // Headline finance metrics. Revenue/paid/outstanding are reused directly
 // from analyticsService.getDashboardStats() (via @/features/analytics) -
-// no second aggregation of the same numbers. Total Expenses/Net Income
-// are the two genuinely new figures this workspace adds, computed from
-// the real expenses list (useExpenses()) rather than a new aggregate
-// endpoint - a client-side sum of already-fetched rows, same reasoning
-// analyticsService itself uses (aggregate in JS after a bounded select).
+// no second aggregation of the same numbers. Total Expenses comes from
+// Postgres too (useExpenseTotal -> finance_expense_total): summing the
+// fetched expenses list stopped at the 1000-row response cap.
 export function FinanceMetrics() {
   const { data: stats, isLoading: isLoadingStats, isError: isStatsError } = useDashboardStats();
-  const { data: expenses, isLoading: isLoadingExpenses, isError: isExpensesError } = useExpenses();
+  const { data: totalExpenses, isLoading: isLoadingExpenses, isError: isExpensesError } = useExpenseTotal();
 
   if (isLoadingStats || isLoadingExpenses) return <MetricsSkeleton />;
-  if (isStatsError || isExpensesError || !stats) return <MetricsErrorState />;
+  if (isStatsError || isExpensesError || !stats || totalExpenses === undefined) return <MetricsErrorState />;
 
-  const totalExpenses = (expenses ?? []).reduce((sum, expense) => sum + expense.amount, 0);
   const netIncome = stats.paidAmount - totalExpenses;
 
   return (

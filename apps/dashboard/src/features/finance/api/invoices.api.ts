@@ -1,8 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchPage, type PageQuery } from "@/lib/api/fetch-page";
 import type {
   Invoice,
+  InvoiceListItem,
+  PaymentListItem,
   InvoiceStatus,
   InvoiceItem,
   InvoiceItemType,
@@ -52,32 +55,20 @@ export function useCustomerInvoices(customerId: string) {
 }
 
 // Tenant-wide - no customer/booking scoping, used by the Finance
-// workspace's InvoiceTable. Same INVOICES_QUERY_KEY prefix as the
-// customer/booking-scoped variants, suffixed "all" to keep its own cache
-// entry distinct from customerInvoicesQueryKey/bookingInvoicesQueryKey.
+// workspace. Same INVOICES_QUERY_KEY prefix as the customer/booking-scoped
+// variants, suffixed "all" to keep its own cache entries distinct from
+// customerInvoicesQueryKey/bookingInvoicesQueryKey.
 function allInvoicesQueryKey() {
   return [...INVOICES_QUERY_KEY, "all"];
 }
 
-async function fetchInvoices(): Promise<Invoice[]> {
-  const response = await fetch("/api/invoices");
-
-  if (!response.ok) {
-    throw new Error(`Failed to load invoices (${response.status})`);
-  }
-
-  const data: unknown = await response.json();
-  if (!Array.isArray(data)) {
-    throw new Error("Unexpected response from /api/invoices");
-  }
-
-  return data as Invoice[];
-}
-
-export function useInvoices() {
+// One page of the agency's invoices (newest first), each with its
+// customer's name - the Finance page's Invoices card and activity feed.
+export function useInvoicesPage(query: Pick<PageQuery, "page" | "pageSize" | "search">) {
   return useQuery({
-    queryKey: allInvoicesQueryKey(),
-    queryFn: fetchInvoices,
+    queryKey: [...allInvoicesQueryKey(), "page", query],
+    queryFn: () => fetchPage<InvoiceListItem>("/api/invoices", query),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -553,29 +544,16 @@ export function useBookingPayments(bookingId: string) {
 
 // Tenant-wide - a separate top-level key (not nested under
 // INVOICES_QUERY_KEY, unlike per-invoice payments) since this isn't
-// scoped to any single invoice. Used by the Finance workspace's
-// PaymentStatus.
+// scoped to any single invoice. Used by the Finance workspace.
 export const PAYMENTS_QUERY_KEY = ["payments"];
 
-async function fetchPayments(): Promise<Payment[]> {
-  const response = await fetch("/api/payments");
-
-  if (!response.ok) {
-    throw new Error(`Failed to load payments (${response.status})`);
-  }
-
-  const data: unknown = await response.json();
-  if (!Array.isArray(data)) {
-    throw new Error("Unexpected response from /api/payments");
-  }
-
-  return data as Payment[];
-}
-
-export function usePayments() {
+// One page of the agency's payments (newest first), each with its
+// invoice number - the Finance page's Payments card and activity feed.
+export function usePaymentsPage(query: Pick<PageQuery, "page" | "pageSize" | "search">) {
   return useQuery({
-    queryKey: PAYMENTS_QUERY_KEY,
-    queryFn: fetchPayments,
+    queryKey: [...PAYMENTS_QUERY_KEY, "page", query],
+    queryFn: () => fetchPage<PaymentListItem>("/api/payments", query),
+    placeholderData: keepPreviousData,
   });
 }
 
