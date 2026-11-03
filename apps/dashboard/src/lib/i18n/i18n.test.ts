@@ -3,6 +3,7 @@ import { dirOf, parseLocale } from "./locales";
 import { translate } from "./translate";
 import { en } from "./messages/en";
 import { ar } from "./messages/ar";
+import { createFormatters, intlLocale } from "./format";
 
 describe("locales", () => {
   it("accepts only supported locales, defaulting to English", () => {
@@ -46,5 +47,32 @@ describe("Arabic messages", () => {
     for (const key of Object.keys(en) as (keyof typeof en)[]) {
       expect(placeholders(ar[key]), key).toEqual(placeholders(en[key]));
     }
+  });
+});
+
+describe("createFormatters", () => {
+  const iso = "2026-11-03T12:00:00Z";
+
+  it("Arabic: Gregorian calendar, Arabic month names, Latin digits", () => {
+    const format = createFormatters("ar");
+    expect(intlLocale("ar")).toBe("ar-SA-u-ca-gregory-nu-latn");
+    expect(format.date(iso)).toContain("نوفمبر");
+    expect(format.date(iso)).toContain("2026");
+    expect(format.date(iso)).not.toMatch(/[٠-٩]/);
+    expect(format.currency(1234.5)).toContain("1,234.50");
+    expect(format.currency(1234.5)).not.toMatch(/[٠-٩]/);
+  });
+
+  it("English stays en-US", () => {
+    const format = createFormatters("en");
+    expect(format.date(iso)).toBe("Nov 3, 2026");
+    // Intl puts a non-breaking space between the code and the amount.
+    expect(format.currency(1234.5)).toBe("SAR 1,234.50");
+  });
+
+  it("today/yesterday labels follow the language", () => {
+    const now = new Date().toISOString();
+    expect(createFormatters("en").dayLabel(now)).toBe("Today");
+    expect(createFormatters("ar").dayLabel(now)).toBe("اليوم");
   });
 });

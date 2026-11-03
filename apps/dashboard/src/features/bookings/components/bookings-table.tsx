@@ -14,8 +14,8 @@ import {
   TableCell,
   SearchInput,
   Select,
-  Pagination,
 } from "@travio/ui";
+import { AppPagination } from "@/components/app-pagination";
 import { formatDate } from "@travio/utils";
 import { useBookingsPage } from "../api/bookings.api";
 import type { BookingStatus } from "../types/booking";
@@ -143,7 +143,7 @@ export function BookingsTable() {
       </DataTableState>
 
       {data && (
-        <Pagination
+        <AppPagination
           page={page}
           pageSize={pageSize}
           total={data.total}

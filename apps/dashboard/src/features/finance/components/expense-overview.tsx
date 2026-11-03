@@ -18,8 +18,8 @@ import {
   TableRow,
   TableCell,
   SearchInput,
-  Pagination,
 } from "@travio/ui";
+import { AppPagination } from "@/components/app-pagination";
 import { formatCurrency, formatDate } from "@travio/utils";
 import { useExpensesPage, useCreateExpense } from "../api/expenses.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
@@ -236,7 +236,7 @@ export function ExpenseOverview() {
           </Table>
         </DataTableState>
         {data && (
-          <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+          <AppPagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
         )}
       </CardContent>
 

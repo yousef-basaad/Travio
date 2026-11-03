@@ -13,8 +13,8 @@ import {
   TableRow,
   TableCell,
   SearchInput,
-  Pagination,
 } from "@travio/ui";
+import { AppPagination } from "@/components/app-pagination";
 import { cn, formatCurrency, formatDate } from "@travio/utils";
 import { useInvoicesPage } from "../api/invoices.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
@@ -91,7 +91,7 @@ export function InvoiceTable() {
           </Table>
         </DataTableState>
         {data && (
-          <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+          <AppPagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
         )}
       </CardContent>
       <div className="border-t px-6 py-3 text-xs text-muted-foreground">

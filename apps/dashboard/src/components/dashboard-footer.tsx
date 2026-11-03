@@ -5,8 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { cn } from "@travio/utils";
-import { formatDateTime } from "@travio/utils";
-import { useT } from "@/lib/i18n/i18n-provider";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 2): the reference's shell
 // footer. "Last updated" is the real moment this bar last rendered/
@@ -20,6 +19,7 @@ import { useT } from "@/lib/i18n/i18n-provider";
 export function DashboardFooter() {
   const router = useRouter();
   const t = useT();
+  const format = useFormat();
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -33,7 +33,7 @@ export function DashboardFooter() {
   return (
     <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 px-6 py-3 text-xs text-muted-foreground">
       <div className="flex items-center gap-1.5">
-        <span>{t("footer.lastUpdated", { time: formatDateTime(lastUpdated.toISOString()) })}</span>
+        <span>{t("footer.lastUpdated", { time: format.dateTime(lastUpdated.toISOString()) })}</span>
         <button
           type="button"
           onClick={handleRefresh}
