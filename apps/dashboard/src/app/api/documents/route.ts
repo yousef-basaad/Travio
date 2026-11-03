@@ -6,8 +6,9 @@ import {
   bookingsService,
   invoiceService,
 } from "@travio/api";
-import { ownerTypeSchema, type OwnerType } from "@travio/types";
+import { documentTypeSchema, ownerTypeSchema, type DocumentType, type OwnerType } from "@travio/types";
 import { requireDocumentsAccess } from "@/lib/auth/require-domain-access";
+import { parsePageRequest } from "@/lib/api/page-request";
 import { createDocumentSchema } from "./_lib/schemas";
 
 const ROUTE = "/api/documents";
@@ -32,7 +33,35 @@ export async function GET(request: Request) {
     ownerType = parsed.data;
   }
 
+  // ?page= -> one page of the whole agency's documents for the Documents
+  // workspace ({ items, total, page, pageSize }), optionally filtered by
+  // ownerType/documentType and searched by file name (q). Without it, the
+  // per-owner list as before.
+  const pageParse = parsePageRequest(url.searchParams);
+  if (pageParse.kind === "invalid") {
+    return NextResponse.json({ error: "invalid_input", issues: pageParse.issues }, { status: 400 });
+  }
+
+  let documentType: DocumentType | undefined;
+  const documentTypeParam = url.searchParams.get("documentType");
+  if (documentTypeParam) {
+    const parsed = documentTypeSchema.safeParse(documentTypeParam);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "invalid_document_type" }, { status: 400 });
+    }
+    documentType = parsed.data;
+  }
+
   try {
+    if (pageParse.kind === "page") {
+      const page = await documentService.listPage(auth.access.supabase, auth.access.tenantId, {
+        ...pageParse.request,
+        ownerType,
+        documentType,
+      });
+      return NextResponse.json(page);
+    }
+
     const documents = await documentService.list(auth.access.supabase, {
       ownerType,
       ownerId: ownerIdParam ?? undefined,
