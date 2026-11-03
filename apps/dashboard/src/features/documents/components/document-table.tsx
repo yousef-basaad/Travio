@@ -12,24 +12,17 @@ import {
 } from "@travio/ui";
 import { formatDate } from "@travio/utils";
 import { DOCUMENT_TYPE_LABELS } from "@travio/types";
-import type { Document, OwnerType } from "@travio/api";
+import type { Document } from "@travio/api";
 import { useDeleteDocument } from "../api/documents.api";
 import { DocumentsEmptyState } from "./empty-state";
 import { DocumentPreview } from "./document-preview";
 import type { DocumentTypeFilter } from "./document-filters";
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+import { formatFileSize } from "../utils/format-file-size";
 
 export interface DocumentTableProps {
   documents: Document[] | undefined;
   isLoading: boolean;
   isError: boolean;
-  ownerType: OwnerType;
-  ownerId: string;
   typeFilter: DocumentTypeFilter;
   onUploadClick: () => void;
 }
@@ -38,8 +31,6 @@ export function DocumentTable({
   documents,
   isLoading,
   isError,
-  ownerType,
-  ownerId,
   typeFilter,
   onUploadClick,
 }: DocumentTableProps) {
@@ -103,7 +94,7 @@ export function DocumentTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteDocument.mutate({ id: document.id, ownerType, ownerId })}
+                        onClick={() => deleteDocument.mutate({ id: document.id })}
                         disabled={deleteDocument.isPending && deleteDocument.variables?.id === document.id}
                         aria-label={`Delete ${document.fileName}`}
                       >

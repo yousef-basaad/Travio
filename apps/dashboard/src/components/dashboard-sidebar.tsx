@@ -42,11 +42,11 @@ import { UserMenu } from "./user-menu";
 // single flat list (no grouped/labeled sections, unlike the previous
 // Overview/CRM/Operations/Finance/Reports/Settings grouping) - this is
 // the exact 13-item list the phase brief specifies, in that order.
-// Routes point at the real existing page wherever one exists; the six
-// that don't (Documents, Calendar, Inbox, Activities, AI Assistant,
-// Help Center) point at a real route rendering an honest "not available
-// yet" placeholder (ComingSoon, see app/(dashboard)/documents/page.tsx
-// etc.) - never a dead link and never a faked feature. CRM points at
+// Routes point at the real existing page wherever one exists; the five
+// that don't (Calendar, Inbox, Activities, AI Assistant, Help Center)
+// point at a real route rendering an honest "not available yet"
+// placeholder (ComingSoon, see app/(dashboard)/calendar/page.tsx etc.) -
+// never a dead link and never a faked feature. CRM points at
 // /customers (the reference's own "CRM & Customer Management" screen
 // shows the customer list/detail as its main content) rather than
 // /leads - Leads stays reachable from within the Customers page's own

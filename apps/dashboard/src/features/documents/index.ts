@@ -1,6 +1,7 @@
 // Feature public API. Other features/apps must import from here only -
 // never reach into features/documents/components/* directly.
 export * from "./components/documents-page";
+export * from "./components/documents-workspace";
 export * from "./components/document-table";
 export * from "./components/upload-document-dialog";
 export * from "./components/document-preview";
