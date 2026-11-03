@@ -7,7 +7,15 @@
     "./eslint/next": "./eslint/next.js",
     "./tailwind": "./tailwind/preset.ts",
     "./tsconfig": "../../tsconfig.base.json",
-    "./vitest": "./vitest/base.ts"
+    "./vitest": "./vitest/base.ts",
+    "./next/security-headers": {
+      "types": "./next/security-headers.d.mts",
+      "default": "./next/security-headers.mjs"
+    },
+    "./next/env": {
+      "types": "./next/env.d.mts",
+      "default": "./next/env.mjs"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

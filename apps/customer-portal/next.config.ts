@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { securityHeaders } from "@travio/config/next/security-headers";
 
 // Customer self-service portal - authenticated end-customers.
 const nextConfig: NextConfig = {
@@ -11,9 +12,10 @@ const nextConfig: NextConfig = {
     "@travio/hooks",
     "@travio/utils",
   ],
-  experimental: {
-    typedRoutes: true,
-  },
+  typedRoutes: true,
+  // Shared security headers (packages/config/next/security-headers.mjs).
+  headers: securityHeaders,
+  poweredByHeader: false,
 };
 
 export default nextConfig;
