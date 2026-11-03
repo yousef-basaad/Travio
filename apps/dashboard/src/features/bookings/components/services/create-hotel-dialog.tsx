@@ -4,7 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { BoardType } from "../../types/booking";
 import { useCreateHotel } from "../../api/bookings.api";
-import { BOARD_TYPE_LABELS } from "./hotel-item";
+import { BOARD_TYPE_KEYS } from "./hotel-item";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 const BOARD_TYPE_OPTIONS: BoardType[] = [
   "room_only",
@@ -44,6 +46,7 @@ type CreateHotelDialogProps = {
 export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotelDialogProps) {
   const createHotel = useCreateHotel();
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open) {
@@ -95,13 +98,13 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-hotel-title" className="text-lg font-semibold">
-          Add Hotel
+          {t("services.hotel.add")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="hotel-name" className="text-sm font-medium">
-              Hotel Name
+              {t("services.hotel.hotelName" satisfies MessageKey)}
             </label>
             <input
               id="hotel-name"
@@ -113,7 +116,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-city" className="text-sm font-medium">
-              City
+              {t("services.hotel.city" satisfies MessageKey)}
             </label>
             <input
               id="hotel-city"
@@ -125,7 +128,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-country" className="text-sm font-medium">
-              Country
+              {t("services.hotel.country" satisfies MessageKey)}
             </label>
             <input
               id="hotel-country"
@@ -137,7 +140,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-rooms" className="text-sm font-medium">
-              Rooms
+              {t("services.hotel.roomsLabel" satisfies MessageKey)}
             </label>
             <input
               id="hotel-rooms"
@@ -151,7 +154,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-check-in" className="text-sm font-medium">
-              Check-in
+              {t("services.hotel.checkIn" satisfies MessageKey)}
             </label>
             <input
               id="hotel-check-in"
@@ -164,7 +167,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-check-out" className="text-sm font-medium">
-              Check-out
+              {t("services.hotel.checkOut" satisfies MessageKey)}
             </label>
             <input
               id="hotel-check-out"
@@ -177,7 +180,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-room-type" className="text-sm font-medium">
-              Room Type
+              {t("services.hotel.roomType" satisfies MessageKey)}
             </label>
             <input
               id="hotel-room-type"
@@ -189,7 +192,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
           <div className="space-y-1">
             <label htmlFor="hotel-confirmation-number" className="text-sm font-medium">
-              Confirmation Number
+              {t("services.confirmationNumber" satisfies MessageKey)}
             </label>
             <input
               id="hotel-confirmation-number"
@@ -202,7 +205,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
         <div className="space-y-1">
           <label htmlFor="hotel-board-type" className="text-sm font-medium">
-            Board Type
+            {t("services.hotel.boardType" satisfies MessageKey)}
           </label>
           <select
             id="hotel-board-type"
@@ -215,10 +218,10 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
               }
             }}
           >
-            <option value="">Select a board type</option>
+            <option value="">{t("services.hotel.selectBoard")}</option>
             {BOARD_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {BOARD_TYPE_LABELS[option]}
+                {t(BOARD_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
@@ -226,7 +229,7 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
 
         {createHotel.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the hotel. Please try again.
+            {t("services.hotel.addError")}
           </p>
         )}
 
@@ -237,10 +240,10 @@ export function CreateHotelDialog({ bookingId, open, onOpenChange }: CreateHotel
             onClick={() => onOpenChange(false)}
             disabled={createHotel.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createHotel.isPending}>
-            {createHotel.isPending ? "Adding…" : "Add Hotel"}
+            {createHotel.isPending ? t("common.adding") : t("services.hotel.add")}
           </Button>
         </div>
       </form>

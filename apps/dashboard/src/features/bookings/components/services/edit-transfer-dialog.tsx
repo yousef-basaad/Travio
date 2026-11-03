@@ -4,7 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { BookingTransfer, TransferType } from "../../types/booking";
 import { useUpdateTransfer } from "../../api/bookings.api";
-import { TRANSFER_TYPE_LABELS } from "./transfer-item";
+import { TRANSFER_TYPE_KEYS } from "./transfer-item";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import { isTransferType } from "./create-transfer-dialog";
 
 const TRANSFER_TYPE_OPTIONS: TransferType[] = [
@@ -68,6 +70,7 @@ export function EditTransferDialog({
 }: EditTransferDialogProps) {
   const updateTransfer = useUpdateTransfer();
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open && transfer) {
@@ -122,13 +125,13 @@ export function EditTransferDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-transfer-title" className="text-lg font-semibold">
-          Edit Transfer
+          {t("services.transfer.edit")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="edit-transfer-provider-name" className="text-sm font-medium">
-              Provider Name
+              {t("services.transfer.providerName" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-provider-name"
@@ -140,7 +143,7 @@ export function EditTransferDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-transfer-vehicle-type" className="text-sm font-medium">
-              Vehicle Type
+              {t("services.transfer.vehicleType" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-vehicle-type"
@@ -152,7 +155,7 @@ export function EditTransferDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-transfer-pickup-location" className="text-sm font-medium">
-              Pickup Location
+              {t("services.transfer.pickupLocation" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-pickup-location"
@@ -164,7 +167,7 @@ export function EditTransferDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-transfer-dropoff-location" className="text-sm font-medium">
-              Dropoff Location
+              {t("services.transfer.dropoffLocation" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-dropoff-location"
@@ -176,7 +179,7 @@ export function EditTransferDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-transfer-pickup-time" className="text-sm font-medium">
-              Pickup Time
+              {t("services.transfer.pickupTime" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-pickup-time"
@@ -189,7 +192,7 @@ export function EditTransferDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-transfer-passenger-count" className="text-sm font-medium">
-              Passenger Count
+              {t("services.transfer.passengerCount" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-passenger-count"
@@ -203,7 +206,7 @@ export function EditTransferDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-transfer-confirmation-number" className="text-sm font-medium">
-              Confirmation Number
+              {t("services.confirmationNumber" satisfies MessageKey)}
             </label>
             <input
               id="edit-transfer-confirmation-number"
@@ -216,7 +219,7 @@ export function EditTransferDialog({
 
         <div className="space-y-1">
           <label htmlFor="edit-transfer-type" className="text-sm font-medium">
-            Transfer Type
+            {t("services.transfer.transferType" satisfies MessageKey)}
           </label>
           <select
             id="edit-transfer-type"
@@ -229,10 +232,10 @@ export function EditTransferDialog({
               }
             }}
           >
-            <option value="">Select a transfer type</option>
+            <option value="">{t("services.transfer.selectType")}</option>
             {TRANSFER_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {TRANSFER_TYPE_LABELS[option]}
+                {t(TRANSFER_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
@@ -240,7 +243,7 @@ export function EditTransferDialog({
 
         {updateTransfer.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -251,10 +254,10 @@ export function EditTransferDialog({
             onClick={() => onOpenChange(false)}
             disabled={updateTransfer.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateTransfer.isPending}>
-            {updateTransfer.isPending ? "Saving…" : "Save Changes"}
+            {updateTransfer.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { CalendarPlus, Pencil, ArrowRightLeft, Circle } from "lucide-react";
 import { TimelineItem } from "@travio/ui";
 import type { BookingTimelineEvent, BookingTimelineEventType } from "../../types/booking";
-import { formatDate, formatRelativeTime } from "@travio/utils";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import { isMessageKey } from "@/lib/i18n/translate";
 
 // Centralized here - the only place booking timeline icons/titles are
 // mapped. booking_timeline has no title column (see the migration), so
@@ -23,11 +24,6 @@ const BOOKING_TIMELINE_ICONS: Record<string, ReactNode> = {
   status_changed: <ArrowRightLeft size={ICON_SIZE} />,
 };
 
-const BOOKING_TIMELINE_TITLES: Record<string, string> = {
-  booking_created: "Booking created",
-  booking_updated: "Booking updated",
-  status_changed: "Status changed",
-};
 
 const FALLBACK_ICON = <Circle size={ICON_SIZE} />;
 
@@ -35,9 +31,6 @@ function getTimelineIcon(type: BookingTimelineEventType): ReactNode {
   return BOOKING_TIMELINE_ICONS[type] ?? FALLBACK_ICON;
 }
 
-function getTimelineTitle(type: BookingTimelineEventType): string {
-  return BOOKING_TIMELINE_TITLES[type] ?? type;
-}
 
 export function BookingTimelineItem({
   event,
@@ -46,13 +39,18 @@ export function BookingTimelineItem({
   event: BookingTimelineEvent;
   isLast?: boolean;
 }) {
+  const t = useT();
+  const format = useFormat();
+  // Known event types have a translated title; anything else shows its raw type.
+  const titleKey = `bookings.timeline.${event.type}`;
+  const title = isMessageKey(titleKey) ? t(titleKey) : event.type;
   return (
     <TimelineItem
       icon={getTimelineIcon(event.type)}
-      title={getTimelineTitle(event.type)}
+      title={title}
       description={event.description}
-      timestamp={event.createdAt ? formatRelativeTime(event.createdAt) : null}
-      timestampTitle={event.createdAt ? formatDate(event.createdAt) : undefined}
+      timestamp={event.createdAt ? format.relativeTime(event.createdAt) : null}
+      timestampTitle={event.createdAt ? format.date(event.createdAt) : undefined}
       // Raw id - no profiles join exists anywhere yet (same convention
       // as assignedTo elsewhere), never fabricated as a display name.
       actor={event.createdBy}

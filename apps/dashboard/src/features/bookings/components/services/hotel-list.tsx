@@ -8,10 +8,12 @@ import { useBookingHotels, useDeleteHotel } from "../../api/bookings.api";
 import { HotelItem } from "./hotel-item";
 import { CreateHotelDialog } from "./create-hotel-dialog";
 import { EditHotelDialog } from "./edit-hotel-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function HotelsSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading hotels" className="space-y-2">
+    <div role="status" aria-label={t("services.hotel.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -20,12 +22,13 @@ function HotelsSkeleton() {
 }
 
 function HotelsErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading hotels. Please try again later.
+      {t("services.hotel.error")}
     </div>
   );
 }
@@ -40,6 +43,7 @@ export function HotelList({ bookingId }: { bookingId: string }) {
   const { data: hotels, isLoading, isError } = useBookingHotels(bookingId);
   const deleteHotel = useDeleteHotel();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const t = useT();
   const [editingHotel, setEditingHotel] = useState<BookingHotel | null>(null);
 
   const hasHotels = !isLoading && !isError && !!hotels && hotels.length > 0;
@@ -47,9 +51,9 @@ export function HotelList({ bookingId }: { bookingId: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <h2 className="text-sm font-medium">Hotels</h2>
+        <h2 className="text-sm font-medium">{t("services.hotel.title")}</h2>
         <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          Add Hotel
+          {t("services.hotel.add")}
         </Button>
       </CardHeader>
       <CardContent>
@@ -58,7 +62,7 @@ export function HotelList({ bookingId }: { bookingId: string }) {
         ) : isError ? (
           <HotelsErrorState />
         ) : !hasHotels ? (
-          <EmptyState icon={<Bed size={20} />} message="No hotels added yet" />
+          <EmptyState icon={<Bed size={20} />} message={t("services.hotel.empty")} />
         ) : (
           <ul className="space-y-2">
             {hotels.map((hotel) => (

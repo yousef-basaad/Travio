@@ -4,7 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { BookingHotel, BoardType } from "../../types/booking";
 import { useUpdateHotel } from "../../api/bookings.api";
-import { BOARD_TYPE_LABELS } from "./hotel-item";
+import { BOARD_TYPE_KEYS } from "./hotel-item";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import { isBoardType } from "./create-hotel-dialog";
 
 const BOARD_TYPE_OPTIONS: BoardType[] = [
@@ -66,6 +68,7 @@ type EditHotelDialogProps = {
 export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHotelDialogProps) {
   const updateHotel = useUpdateHotel();
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open && hotel) {
@@ -118,13 +121,13 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-hotel-title" className="text-lg font-semibold">
-          Edit Hotel
+          {t("services.hotel.edit")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="edit-hotel-name" className="text-sm font-medium">
-              Hotel Name
+              {t("services.hotel.hotelName" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-name"
@@ -136,7 +139,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-city" className="text-sm font-medium">
-              City
+              {t("services.hotel.city" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-city"
@@ -148,7 +151,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-country" className="text-sm font-medium">
-              Country
+              {t("services.hotel.country" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-country"
@@ -160,7 +163,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-rooms" className="text-sm font-medium">
-              Rooms
+              {t("services.hotel.roomsLabel" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-rooms"
@@ -174,7 +177,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-check-in" className="text-sm font-medium">
-              Check-in
+              {t("services.hotel.checkIn" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-check-in"
@@ -187,7 +190,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-check-out" className="text-sm font-medium">
-              Check-out
+              {t("services.hotel.checkOut" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-check-out"
@@ -200,7 +203,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-room-type" className="text-sm font-medium">
-              Room Type
+              {t("services.hotel.roomType" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-room-type"
@@ -212,7 +215,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
           <div className="space-y-1">
             <label htmlFor="edit-hotel-confirmation-number" className="text-sm font-medium">
-              Confirmation Number
+              {t("services.confirmationNumber" satisfies MessageKey)}
             </label>
             <input
               id="edit-hotel-confirmation-number"
@@ -225,7 +228,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
         <div className="space-y-1">
           <label htmlFor="edit-hotel-board-type" className="text-sm font-medium">
-            Board Type
+            {t("services.hotel.boardType" satisfies MessageKey)}
           </label>
           <select
             id="edit-hotel-board-type"
@@ -238,10 +241,10 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
               }
             }}
           >
-            <option value="">Select a board type</option>
+            <option value="">{t("services.hotel.selectBoard")}</option>
             {BOARD_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {BOARD_TYPE_LABELS[option]}
+                {t(BOARD_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
@@ -249,7 +252,7 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
 
         {updateHotel.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -260,10 +263,10 @@ export function EditHotelDialog({ hotel, bookingId, open, onOpenChange }: EditHo
             onClick={() => onOpenChange(false)}
             disabled={updateHotel.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateHotel.isPending}>
-            {updateHotel.isPending ? "Saving…" : "Save Changes"}
+            {updateHotel.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

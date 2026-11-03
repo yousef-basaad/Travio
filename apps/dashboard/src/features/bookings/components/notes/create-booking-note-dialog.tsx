@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@travio/ui";
 import { useCreateBookingNote } from "../../api/bookings.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 type CreateBookingNoteDialogProps = {
   bookingId: string;
@@ -20,6 +21,7 @@ export function CreateBookingNoteDialog({ bookingId, open, onOpenChange }: Creat
   const createNote = useCreateBookingNote();
   const [body, setBody] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const t = useT();
 
   useEffect(() => {
     const dialogEl = dialogRef.current;
@@ -41,7 +43,7 @@ export function CreateBookingNoteDialog({ bookingId, open, onOpenChange }: Creat
 
     const trimmed = body.trim();
     if (trimmed.length === 0) {
-      setValidationError("Note cannot be empty.");
+      setValidationError(t("bookings.notes.emptyError"));
       return;
     }
     setValidationError(null);
@@ -73,12 +75,12 @@ export function CreateBookingNoteDialog({ bookingId, open, onOpenChange }: Creat
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-booking-note-title" className="text-lg font-semibold">
-          Add Note
+          {t("bookings.notes.add")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="booking-note-body" className="text-sm font-medium">
-            Note
+            {t("bookings.notes.note")}
           </label>
           <textarea
             id="booking-note-body"
@@ -98,7 +100,7 @@ export function CreateBookingNoteDialog({ bookingId, open, onOpenChange }: Creat
 
         {createNote.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the note. Please try again.
+            {t("bookings.notes.addError")}
           </p>
         )}
 
@@ -109,10 +111,10 @@ export function CreateBookingNoteDialog({ bookingId, open, onOpenChange }: Creat
             onClick={() => onOpenChange(false)}
             disabled={createNote.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createNote.isPending}>
-            {createNote.isPending ? "Adding…" : "Add Note"}
+            {createNote.isPending ? t("common.adding") : t("bookings.notes.add")}
           </Button>
         </div>
       </form>

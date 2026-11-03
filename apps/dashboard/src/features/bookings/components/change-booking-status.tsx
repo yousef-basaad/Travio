@@ -3,7 +3,8 @@
 import { Select } from "@travio/ui";
 import { cn } from "@travio/utils";
 import type { Booking, BookingStatus } from "../types/booking";
-import { BOOKING_STATUS_LABELS, BOOKING_STATUS_STYLES } from "./booking-status-badge";
+import { BOOKING_STATUS_KEYS, BOOKING_STATUS_STYLES } from "./booking-status-badge";
+import { useT } from "@/lib/i18n/i18n-provider";
 import { useUpdateBooking } from "../api/bookings.api";
 
 const STATUS_OPTIONS: BookingStatus[] = [
@@ -32,10 +33,11 @@ const STATUS_OPTIONS: BookingStatus[] = [
 // to a colored pill.
 export function ChangeBookingStatus({ booking }: { booking: Booking }) {
   const updateBooking = useUpdateBooking();
+  const t = useT();
 
   return (
     <Select
-      aria-label="Change booking status"
+      aria-label={t("bookings.changeStatus")}
       className={cn(
         "h-8 w-auto border-transparent text-xs font-medium",
         BOOKING_STATUS_STYLES[booking.status],
@@ -51,7 +53,7 @@ export function ChangeBookingStatus({ booking }: { booking: Booking }) {
     >
       {STATUS_OPTIONS.map((status) => (
         <option key={status} value={status}>
-          {BOOKING_STATUS_LABELS[status]}
+          {t(BOOKING_STATUS_KEYS[status])}
         </option>
       ))}
     </Select>

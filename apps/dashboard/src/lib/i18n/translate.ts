@@ -21,3 +21,9 @@ export function translate(locale: Locale, key: MessageKey, vars?: TranslateVars)
 export function messagesFor(locale: Locale): Messages {
   return MESSAGES[locale];
 }
+
+// For text that may be a message key (e.g. a zod error message written
+// as a key in a form schema): true when it names a known message.
+export function isMessageKey(value: string): value is MessageKey {
+  return Object.prototype.hasOwnProperty.call(en, value);
+}

@@ -1,5 +1,7 @@
 import type { BookingStatus } from "../types/booking";
 import { cn } from "@travio/utils";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 // Reuses only existing design tokens (secondary/accent/primary/destructive
 // from packages/ui/src/styles/globals.css), matching LeadStatusBadge's
@@ -24,7 +26,17 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   cancelled: "Cancelled",
 };
 
+// Message keys for the same statuses, for translated display.
+export const BOOKING_STATUS_KEYS: Record<BookingStatus, MessageKey> = {
+  draft: "bookingStatus.draft",
+  pending: "bookingStatus.pending",
+  confirmed: "bookingStatus.confirmed",
+  completed: "bookingStatus.completed",
+  cancelled: "bookingStatus.cancelled",
+};
+
 export function BookingStatusBadge({ status }: { status: BookingStatus }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -32,7 +44,7 @@ export function BookingStatusBadge({ status }: { status: BookingStatus }) {
         BOOKING_STATUS_STYLES[status],
       )}
     >
-      {BOOKING_STATUS_LABELS[status]}
+      {t(BOOKING_STATUS_KEYS[status])}
     </span>
   );
 }

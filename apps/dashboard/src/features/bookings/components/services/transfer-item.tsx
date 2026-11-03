@@ -1,5 +1,7 @@
 import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
-import { formatDateTime } from "@travio/utils";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
+import { RouteText } from "./route-text";
 import type { BookingTransfer, TransferType } from "../../types/booking";
 
 // Single source of truth for transfer type labels - exported so
@@ -12,6 +14,13 @@ export const TRANSFER_TYPE_LABELS: Record<TransferType, string> = {
   shared_transfer: "Shared Transfer",
 };
 
+export const TRANSFER_TYPE_KEYS: Record<TransferType, MessageKey> = {
+  airport_transfer: "transferType.airport_transfer",
+  hotel_transfer: "transferType.hotel_transfer",
+  private_transfer: "transferType.private_transfer",
+  shared_transfer: "transferType.shared_transfer",
+};
+
 type TransferItemProps = {
   transfer: BookingTransfer;
   onEdit: (transfer: BookingTransfer) => void;
@@ -20,14 +29,16 @@ type TransferItemProps = {
 };
 
 export function TransferItem({ transfer, onEdit, onDelete, isDeleting }: TransferItemProps) {
+  const t = useT();
+  const format = useFormat();
   return (
     <ServiceItem>
       <ServiceItemHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium">{transfer.providerName ?? "Unknown provider"}</span>
+          <span className="text-sm font-medium">{transfer.providerName ?? t("services.transfer.unknown")}</span>
           {transfer.transferType && (
             <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-              {TRANSFER_TYPE_LABELS[transfer.transferType]}
+              {t(TRANSFER_TYPE_KEYS[transfer.transferType])}
             </span>
           )}
         </div>
@@ -36,32 +47,34 @@ export function TransferItem({ transfer, onEdit, onDelete, isDeleting }: Transfe
             variant="ghost"
             size="sm"
             onClick={() => onEdit(transfer)}
-            aria-label="Edit transfer"
+            aria-label={t("services.transfer.editLabel")}
           >
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete(transfer.id)}
             disabled={isDeleting}
-            aria-label="Delete transfer"
+            aria-label={t("services.transfer.deleteLabel")}
           >
-            {isDeleting ? "Deleting…" : "Delete"}
+            {isDeleting ? t("common.deleting") : t("common.delete")}
           </Button>
         </ServiceItemActions>
       </ServiceItemHeader>
       <ServiceItemContent>
         <p className="text-sm text-muted-foreground">
-          {transfer.pickupLocation ?? "—"} → {transfer.dropoffLocation ?? "—"}
+          <RouteText from={transfer.pickupLocation ?? "—"} to={transfer.dropoffLocation ?? "—"} />
         </p>
         <p className="text-xs text-muted-foreground">
-          {transfer.pickupTime ? formatDateTime(transfer.pickupTime) : "Pickup time not set"}
+          {transfer.pickupTime ? format.dateTime(transfer.pickupTime) : t("services.transfer.noPickup")}
           {transfer.vehicleType ? ` · ${transfer.vehicleType}` : ""}
           {transfer.passengerCount
-            ? ` · ${transfer.passengerCount} passenger${transfer.passengerCount === 1 ? "" : "s"}`
+            ? ` · ${transfer.passengerCount === 1 ? t("services.transfer.onePassenger") : t("services.transfer.passengers", { count: transfer.passengerCount })}`
             : ""}
-          {transfer.confirmationNumber ? ` · Confirmation #${transfer.confirmationNumber}` : ""}
+          {transfer.confirmationNumber
+            ? ` · ${t("services.confirmation", { number: transfer.confirmationNumber })}`
+            : ""}
         </p>
       </ServiceItemContent>
     </ServiceItem>

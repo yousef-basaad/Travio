@@ -4,7 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { TransferType } from "../../types/booking";
 import { useCreateTransfer } from "../../api/bookings.api";
-import { TRANSFER_TYPE_LABELS } from "./transfer-item";
+import { TRANSFER_TYPE_KEYS } from "./transfer-item";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 const TRANSFER_TYPE_OPTIONS: TransferType[] = [
   "airport_transfer",
@@ -42,6 +44,7 @@ type CreateTransferDialogProps = {
 export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTransferDialogProps) {
   const createTransfer = useCreateTransfer();
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open) {
@@ -96,13 +99,13 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-transfer-title" className="text-lg font-semibold">
-          Add Transfer
+          {t("services.transfer.add")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="transfer-provider-name" className="text-sm font-medium">
-              Provider Name
+              {t("services.transfer.providerName" satisfies MessageKey)}
             </label>
             <input
               id="transfer-provider-name"
@@ -114,7 +117,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
           <div className="space-y-1">
             <label htmlFor="transfer-vehicle-type" className="text-sm font-medium">
-              Vehicle Type
+              {t("services.transfer.vehicleType" satisfies MessageKey)}
             </label>
             <input
               id="transfer-vehicle-type"
@@ -126,7 +129,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
           <div className="space-y-1">
             <label htmlFor="transfer-pickup-location" className="text-sm font-medium">
-              Pickup Location
+              {t("services.transfer.pickupLocation" satisfies MessageKey)}
             </label>
             <input
               id="transfer-pickup-location"
@@ -138,7 +141,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
           <div className="space-y-1">
             <label htmlFor="transfer-dropoff-location" className="text-sm font-medium">
-              Dropoff Location
+              {t("services.transfer.dropoffLocation" satisfies MessageKey)}
             </label>
             <input
               id="transfer-dropoff-location"
@@ -150,7 +153,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
           <div className="space-y-1">
             <label htmlFor="transfer-pickup-time" className="text-sm font-medium">
-              Pickup Time
+              {t("services.transfer.pickupTime" satisfies MessageKey)}
             </label>
             <input
               id="transfer-pickup-time"
@@ -163,7 +166,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
           <div className="space-y-1">
             <label htmlFor="transfer-passenger-count" className="text-sm font-medium">
-              Passenger Count
+              {t("services.transfer.passengerCount" satisfies MessageKey)}
             </label>
             <input
               id="transfer-passenger-count"
@@ -177,7 +180,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
           <div className="space-y-1">
             <label htmlFor="transfer-confirmation-number" className="text-sm font-medium">
-              Confirmation Number
+              {t("services.confirmationNumber" satisfies MessageKey)}
             </label>
             <input
               id="transfer-confirmation-number"
@@ -190,7 +193,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
         <div className="space-y-1">
           <label htmlFor="transfer-type" className="text-sm font-medium">
-            Transfer Type
+            {t("services.transfer.transferType" satisfies MessageKey)}
           </label>
           <select
             id="transfer-type"
@@ -203,10 +206,10 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
               }
             }}
           >
-            <option value="">Select a transfer type</option>
+            <option value="">{t("services.transfer.selectType")}</option>
             {TRANSFER_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {TRANSFER_TYPE_LABELS[option]}
+                {t(TRANSFER_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
@@ -214,7 +217,7 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
 
         {createTransfer.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the transfer. Please try again.
+            {t("services.transfer.addError")}
           </p>
         )}
 
@@ -225,10 +228,10 @@ export function CreateTransferDialog({ bookingId, open, onOpenChange }: CreateTr
             onClick={() => onOpenChange(false)}
             disabled={createTransfer.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createTransfer.isPending}>
-            {createTransfer.isPending ? "Adding…" : "Add Transfer"}
+            {createTransfer.isPending ? t("common.adding") : t("services.transfer.add")}
           </Button>
         </div>
       </form>

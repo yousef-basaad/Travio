@@ -1,7 +1,7 @@
 "use client";
 
 import { Receipt } from "lucide-react";
-import { cn, formatCurrency, formatDate } from "@travio/utils";
+import { cn } from "@travio/utils";
 import {
   Card,
   CardContent,
@@ -16,9 +16,18 @@ import {
 import {
   useBookingPayments,
   useBookingInvoices,
-  PAYMENT_METHOD_LABELS,
   PAYMENT_METHOD_STYLES,
 } from "@/features/finance";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
+import type { PaymentMethod } from "@travio/api";
+
+const PAYMENT_METHOD_KEYS: Record<PaymentMethod, MessageKey> = {
+  cash: "paymentMethod.cash",
+  card: "paymentMethod.card",
+  bank_transfer: "paymentMethod.bank_transfer",
+  online: "paymentMethod.online",
+};
 
 // Reuses useBookingPayments (paymentService.listByBooking, Product-3) and
 // the same useBookingInvoices BookingFinancialSummary already fetches
@@ -32,39 +41,41 @@ import {
 export function BookingPaymentHistory({ bookingId }: { bookingId: string }) {
   const { data: payments, isLoading, isError } = useBookingPayments(bookingId);
   const { data: invoices } = useBookingInvoices(bookingId);
+  const t = useT();
+  const format = useFormat();
   const invoiceNumberById = new Map(invoices?.map((invoice) => [invoice.id, invoice.invoiceNumber]));
 
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-medium">Payment History</h2>
+        <h2 className="text-sm font-medium">{t("bookings.payments.title")}</h2>
       </CardHeader>
       <CardContent>
         <DataTableState
           isLoading={isLoading}
           isError={isError}
           isEmpty={!isLoading && (!payments || payments.length === 0)}
-          loadingLabel="Loading payments"
-          errorMessage="Something went wrong loading payments. Please try again later."
-          emptyMessage="No payments recorded yet"
+          loadingLabel={t("bookings.payments.loading")}
+          errorMessage={t("bookings.payments.error")}
+          emptyMessage={t("bookings.payments.empty")}
           emptyIcon={<Receipt size={20} />}
         >
-          <Table aria-label="Payment history" caption="Payments recorded against this booking's invoices">
+          <Table aria-label={t("bookings.payments.title")} caption={t("bookings.payments.caption")}>
             <TableHeader>
               <TableRow className="text-muted-foreground">
-                <TableCell header>Date</TableCell>
-                <TableCell header>Invoice</TableCell>
-                <TableCell header>Method</TableCell>
-                <TableCell header>Reference</TableCell>
+                <TableCell header>{t("bookings.payments.date")}</TableCell>
+                <TableCell header>{t("bookings.payments.invoice")}</TableCell>
+                <TableCell header>{t("bookings.payments.method")}</TableCell>
+                <TableCell header>{t("bookings.payments.reference")}</TableCell>
                 <TableCell header align="end">
-                  Amount
+                  {t("bookingField.amount")}
                 </TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(payments ?? []).map((payment) => (
                 <TableRow key={payment.id}>
-                  <TableCell>{payment.paidAt ? formatDate(payment.paidAt) : "—"}</TableCell>
+                  <TableCell>{payment.paidAt ? format.date(payment.paidAt) : "—"}</TableCell>
                   <TableCell className="font-medium">
                     {invoiceNumberById.get(payment.invoiceId) ?? "—"}
                   </TableCell>
@@ -75,11 +86,11 @@ export function BookingPaymentHistory({ bookingId }: { bookingId: string }) {
                         PAYMENT_METHOD_STYLES[payment.method],
                       )}
                     >
-                      {PAYMENT_METHOD_LABELS[payment.method]}
+                      {t(PAYMENT_METHOD_KEYS[payment.method])}
                     </span>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{payment.reference ?? "—"}</TableCell>
-                  <TableCell align="end">{formatCurrency(payment.amount)}</TableCell>
+                  <TableCell align="end">{format.currency(payment.amount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

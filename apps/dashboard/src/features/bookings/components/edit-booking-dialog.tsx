@@ -11,6 +11,8 @@ import {
   updateBookingFormSchema,
   type UpdateBookingFormValues,
 } from "../schemas/update-booking.schema";
+import { useT } from "@/lib/i18n/i18n-provider";
+import { isMessageKey } from "@/lib/i18n/translate";
 
 type EditBookingDialogProps = {
   booking: Booking;
@@ -39,6 +41,9 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
   // customer fetch, same as CreateBookingForm.
   const { data: customers, isLoading: isLoadingCustomers } = useCustomers();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const t = useT();
+  // Schema errors are message keys; anything else is shown as-is.
+  const fieldError = (message?: string) => (message && isMessageKey(message) ? t(message) : message);
 
   const {
     register,
@@ -74,7 +79,7 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
     } catch {
       // Keep the dialog open and the entered values intact (reset() is
       // only called on success, same as EditLeadDialog).
-      setSubmitError("Couldn't save changes. Please try again.");
+      setSubmitError(t("common.saveError"));
     }
   });
 
@@ -87,10 +92,10 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
     >
       <form onSubmit={onSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-booking-title" className="text-lg font-semibold">
-          Edit Booking
+          {t("bookings.edit")}
         </h2>
 
-        <FormField label="Customer" htmlFor="edit-booking-customer" error={errors.customerId?.message}>
+        <FormField label={t("common.customer")} htmlFor="edit-booking-customer" error={fieldError(errors.customerId?.message)}>
           <Select
             id="edit-booking-customer"
             aria-invalid={errors.customerId ? "true" : "false"}
@@ -99,7 +104,7 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
             {...register("customerId")}
           >
             <option value="">
-              {isLoadingCustomers ? "Loading customers…" : "Select a customer"}
+              {isLoadingCustomers ? t("common.loadingCustomers") : t("common.selectCustomer")}
             </option>
             {customers?.map((customer) => (
               <option key={customer.id} value={customer.id}>
@@ -109,7 +114,7 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
           </Select>
         </FormField>
 
-        <FormField label="Title" htmlFor="edit-booking-title-input" error={errors.title?.message}>
+        <FormField label={t("bookingField.title")} htmlFor="edit-booking-title-input" error={fieldError(errors.title?.message)}>
           <Input
             id="edit-booking-title-input"
             aria-invalid={errors.title ? "true" : "false"}
@@ -119,7 +124,7 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
         </FormField>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Start Date" htmlFor="edit-booking-start-date" error={errors.startDate?.message}>
+          <FormField label={t("bookings.field.startDate")} htmlFor="edit-booking-start-date" error={fieldError(errors.startDate?.message)}>
             <Input
               id="edit-booking-start-date"
               type="date"
@@ -129,7 +134,7 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
             />
           </FormField>
 
-          <FormField label="End Date" htmlFor="edit-booking-end-date" error={errors.endDate?.message}>
+          <FormField label={t("bookings.field.endDate")} htmlFor="edit-booking-end-date" error={fieldError(errors.endDate?.message)}>
             <Input
               id="edit-booking-end-date"
               type="date"
@@ -140,20 +145,20 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
           </FormField>
         </div>
 
-        <FormField label="Notes" htmlFor="edit-booking-notes">
+        <FormField label={t("common.notes")} htmlFor="edit-booking-notes">
           <Textarea id="edit-booking-notes" rows={4} {...register("notes")} />
         </FormField>
 
         {/* Raw id, not a user-picker - same convention as EditLeadDialog's
             assignedTo field (no profiles join/picker exists yet). */}
         <FormField
-          label="Assigned To"
+          label={t("bookings.field.assignedTo")}
           htmlFor="edit-booking-assigned-to"
-          error={errors.assignedTo?.message}
+          error={fieldError(errors.assignedTo?.message)}
         >
           <Input
             id="edit-booking-assigned-to"
-            placeholder="Unassigned"
+            placeholder={t("common.unassigned")}
             aria-invalid={errors.assignedTo ? "true" : "false"}
             aria-describedby={errors.assignedTo ? "edit-booking-assigned-to-error" : undefined}
             {...register("assignedTo")}
@@ -173,10 +178,10 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving…" : "Save Changes"}
+            {isSubmitting ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

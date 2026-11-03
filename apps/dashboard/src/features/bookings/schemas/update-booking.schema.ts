@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Error messages are i18n message keys (lib/i18n/messages); the form
+// translates them when it shows the error.
+
 function emptyToUndefined(value: unknown) {
   return value === "" ? undefined : value;
 }
@@ -30,19 +33,19 @@ export const updateBookingFormSchema = z
     customerId: z.preprocess(emptyToUndefined, z.string().trim().min(1).optional()),
     title: z.preprocess(
       emptyToUndefined,
-      z.string().trim().min(1, "Title is required").optional(),
+      z.string().trim().min(1, "validation.titleRequired").optional(),
     ),
-    startDate: z.preprocess(emptyToNull, z.string().date("Enter a valid date").nullable().optional()),
-    endDate: z.preprocess(emptyToNull, z.string().date("Enter a valid date").nullable().optional()),
+    startDate: z.preprocess(emptyToNull, z.string().date("validation.invalidDate").nullable().optional()),
+    endDate: z.preprocess(emptyToNull, z.string().date("validation.invalidDate").nullable().optional()),
     notes: z.preprocess(emptyToNull, z.string().nullable().optional()),
-    assignedTo: z.preprocess(emptyToNull, z.string().uuid("Enter a valid id").nullable().optional()),
+    assignedTo: z.preprocess(emptyToNull, z.string().uuid("validation.invalidId").nullable().optional()),
     status: bookingStatusSchema.optional(),
   })
   // Mirrors the server-side updateBookingSchema's same check - catches it
   // client-side first so the error shows next to the End Date field
   // instead of round-tripping to the server.
   .refine((data) => !data.startDate || !data.endDate || data.endDate >= data.startDate, {
-    message: "End date must be on or after the start date",
+    message: "validation.endBeforeStart",
     path: ["endDate"],
   });
 

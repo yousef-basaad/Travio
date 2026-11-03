@@ -2,14 +2,16 @@
 
 import { History } from "lucide-react";
 import { Timeline, EmptyState, Skeleton } from "@travio/ui";
-import { formatDayLabel } from "@travio/utils";
 import { useBookingTimeline } from "../../api/bookings.api";
 import type { BookingTimelineEvent } from "../../types/booking";
 import { BookingTimelineItem } from "./booking-timeline-item";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { Formatters } from "@/lib/i18n/format";
 
 function TimelineSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading timeline" className="space-y-2">
+    <div role="status" aria-label={t("timeline.loading")} className="space-y-2">
       {Array.from({ length: 3 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -18,22 +20,24 @@ function TimelineSkeleton() {
 }
 
 function TimelineErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading the timeline. Please try again later.
+      {t("timeline.error")}
     </div>
   );
 }
 
 function TimelineEmptyState() {
+  const t = useT();
   return (
     <EmptyState
       icon={<History size={20} />}
-      title="No activity yet"
-      description="Updates to this booking (created, edited, status changes) will appear here automatically."
+      title={t("bookings.timeline.empty")}
+      description={t("bookings.timeline.emptyDescription")}
     />
   );
 }
@@ -45,11 +49,15 @@ function TimelineEmptyState() {
 // from the server, so buckets themselves are also naturally newest-first
 // since the first event in each new bucket is the newest not yet
 // assigned to one.
-function groupByDay(events: BookingTimelineEvent[]): { label: string; events: BookingTimelineEvent[] }[] {
+function groupByDay(
+  events: BookingTimelineEvent[],
+  format: Formatters,
+  unknownDate: string,
+): { label: string; events: BookingTimelineEvent[] }[] {
   const groups: { label: string; events: BookingTimelineEvent[] }[] = [];
 
   for (const event of events) {
-    const label = event.createdAt ? formatDayLabel(event.createdAt) : "Unknown date";
+    const label = event.createdAt ? format.dayLabel(event.createdAt) : unknownDate;
     const currentGroup = groups[groups.length - 1];
 
     if (currentGroup && currentGroup.label === label) {
@@ -68,6 +76,8 @@ function groupByDay(events: BookingTimelineEvent[]): { label: string; events: Bo
 // applied server-side by bookingTimelineService - never sorted here.
 export function BookingTimeline({ bookingId }: { bookingId: string }) {
   const { data: timeline, isLoading, isError } = useBookingTimeline(bookingId);
+  const t = useT();
+  const format = useFormat();
 
   const hasItems = !isLoading && !isError && !!timeline && timeline.length > 0;
 
@@ -83,7 +93,7 @@ export function BookingTimeline({ bookingId }: { bookingId: string }) {
     return <TimelineEmptyState />;
   }
 
-  const groups = groupByDay(timeline);
+  const groups = groupByDay(timeline, format, t("common.unknownDate"));
 
   return (
     <div className="space-y-6">
