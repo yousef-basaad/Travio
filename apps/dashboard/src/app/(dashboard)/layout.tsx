@@ -4,6 +4,7 @@ import { SessionProvider } from "@travio/auth";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { getAgencySetupRedirect, getDashboardGateRedirect } from "@/lib/auth/dashboard-gate";
 import { completeAgencySetup } from "@/lib/auth/complete-agency-setup";
+import { DASHBOARD_ROLES } from "@/lib/auth/domain-roles";
 
 // Route-group guard: every page under (dashboard) requires agency staff.
 // Individual feature pages don't re-check auth - this is the single
@@ -15,14 +16,7 @@ import { completeAgencySetup } from "@/lib/auth/complete-agency-setup";
 // own domain-specific routes to reach (Visa, Finance) even though neither
 // role could enter this app before.
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const result = await requireRole([
-    "travio_admin",
-    "agency_owner",
-    "branch_manager",
-    "sales_agent",
-    "visa_officer",
-    "accountant",
-  ]);
+  const result = await requireRole([...DASHBOARD_ROLES]);
 
   // Investigation finding: previously both "unauthenticated" and
   // "forbidden" were sent to /login, which masks a real authorization
