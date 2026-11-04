@@ -1,16 +1,17 @@
-import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
-import { cn, formatDate, formatSar } from "@travio/utils";
-import type { Payment, PaymentMethod } from "@travio/api";
+"use client";
 
-// Single source of truth for payment method labels - exported so
-// create-payment-dialog.tsx/edit-payment-dialog.tsx reuse it for their
-// <select> options instead of duplicating it. Matches the real
-// payment_method enum (cash/card/bank_transfer/online).
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  cash: "Cash",
-  card: "Card",
-  bank_transfer: "Bank Transfer",
-  online: "Online",
+import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
+import { cn } from "@travio/utils";
+import type { Payment, PaymentMethod } from "@travio/api";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
+
+// Message keys for the same methods, for translated display.
+export const PAYMENT_METHOD_KEYS: Record<PaymentMethod, MessageKey> = {
+  cash: "paymentMethod.cash",
+  card: "paymentMethod.card",
+  bank_transfer: "paymentMethod.bank_transfer",
+  online: "paymentMethod.online",
 };
 
 // Reuses only existing design tokens, matching InvoiceItemRow/
@@ -32,18 +33,20 @@ type PaymentItemProps = {
 };
 
 export function PaymentItem({ payment, onEdit, onDelete, isDeleting }: PaymentItemProps) {
+  const t = useT();
+  const format = useFormat();
   return (
     <ServiceItem>
       <ServiceItemHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium">{formatSar(payment.amount)}</span>
+          <span className="text-sm font-medium">{format.currency(payment.amount)}</span>
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
               PAYMENT_METHOD_STYLES[payment.method],
             )}
           >
-            {PAYMENT_METHOD_LABELS[payment.method]}
+            {t(PAYMENT_METHOD_KEYS[payment.method])}
           </span>
         </div>
         <ServiceItemActions>
@@ -51,18 +54,18 @@ export function PaymentItem({ payment, onEdit, onDelete, isDeleting }: PaymentIt
             variant="ghost"
             size="sm"
             onClick={() => onEdit(payment)}
-            aria-label="Edit payment"
+            aria-label={t("finance.payments.editLabel")}
           >
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete(payment.id)}
             disabled={isDeleting}
-            aria-label="Delete payment"
+            aria-label={t("finance.payments.deleteLabel")}
           >
-            {isDeleting ? "Deleting…" : "Delete"}
+            {isDeleting ? t("common.deleting") : t("common.delete")}
           </Button>
         </ServiceItemActions>
       </ServiceItemHeader>
@@ -71,7 +74,7 @@ export function PaymentItem({ payment, onEdit, onDelete, isDeleting }: PaymentIt
           <p className="text-sm text-muted-foreground">Ref: {payment.reference}</p>
         )}
         <p className="text-xs text-muted-foreground">
-          {payment.paidAt ? `Paid ${formatDate(payment.paidAt)}` : "Paid date not set"}
+          {payment.paidAt ? t("finance.payments.paidOn", { date: format.date(payment.paidAt) }) : t("finance.payments.noPaidDate")}
         </p>
       </ServiceItemContent>
     </ServiceItem>

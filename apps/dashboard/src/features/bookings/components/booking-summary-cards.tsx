@@ -1,3 +1,5 @@
+"use client";
+
 import { StatsCard } from "@travio/ui";
 import type { Booking } from "../types/booking";
 import { BOOKING_STATUS_KEYS } from "./booking-status-badge";

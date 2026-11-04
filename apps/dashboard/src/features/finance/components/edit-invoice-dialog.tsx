@@ -4,8 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { Invoice, InvoiceStatus } from "@travio/api";
 import { useUpdateInvoice } from "../api/invoices.api";
-import { INVOICE_STATUS_LABELS } from "./invoice-item";
+import { INVOICE_STATUS_KEYS } from "./invoice-item";
 import { isInvoiceStatus } from "./create-invoice-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const INVOICE_STATUS_OPTIONS: InvoiceStatus[] = [
   "draft",
@@ -57,6 +58,7 @@ export function EditInvoiceDialog({
   open,
   onOpenChange,
 }: EditInvoiceDialogProps) {
+  const t = useT();
   const updateInvoice = useUpdateInvoice();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -76,14 +78,14 @@ export function EditInvoiceDialog({
 
     const trimmedNumber = form.invoiceNumber.trim();
     if (trimmedNumber.length === 0) {
-      setValidationError("Invoice number is required.");
+      setValidationError(t("finance.invoices.numberRequired"));
       return;
     }
 
     const trimmedTotal = form.total.trim();
     const parsedTotal = trimmedTotal === "" ? Number.NaN : Number(trimmedTotal);
     if (!Number.isFinite(parsedTotal) || parsedTotal < 0) {
-      setValidationError("Enter a valid total amount.");
+      setValidationError(t("finance.invoices.invalidTotal"));
       return;
     }
 
@@ -126,13 +128,13 @@ export function EditInvoiceDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-invoice-title" className="text-lg font-semibold">
-          Edit Invoice
+          {t("finance.invoices.edit")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="edit-invoice-number" className="text-sm font-medium">
-              Invoice Number
+              {t("finance.invoices.number")}
             </label>
             <input
               id="edit-invoice-number"
@@ -145,7 +147,7 @@ export function EditInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-invoice-total" className="text-sm font-medium">
-              Total Amount
+              {t("bookings.field.totalAmount")}
             </label>
             <input
               id="edit-invoice-total"
@@ -161,7 +163,7 @@ export function EditInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-invoice-currency" className="text-sm font-medium">
-              Currency
+              {t("finance.invoices.currency")}
             </label>
             <input
               id="edit-invoice-currency"
@@ -173,7 +175,7 @@ export function EditInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-invoice-issue-date" className="text-sm font-medium">
-              Issue Date
+              {t("finance.invoices.issueDate")}
             </label>
             <input
               id="edit-invoice-issue-date"
@@ -186,7 +188,7 @@ export function EditInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-invoice-due-date" className="text-sm font-medium">
-              Due Date
+              {t("finance.invoices.dueDate")}
             </label>
             <input
               id="edit-invoice-due-date"
@@ -200,7 +202,7 @@ export function EditInvoiceDialog({
 
         <div className="space-y-1">
           <label htmlFor="edit-invoice-status" className="text-sm font-medium">
-            Status
+            {t("common.status")}
           </label>
           <select
             id="edit-invoice-status"
@@ -213,10 +215,10 @@ export function EditInvoiceDialog({
               }
             }}
           >
-            <option value="">Select a status</option>
+            <option value="">{t("common.selectStatus")}</option>
             {INVOICE_STATUS_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {INVOICE_STATUS_LABELS[option]}
+                {t(INVOICE_STATUS_KEYS[option])}
               </option>
             ))}
           </select>
@@ -224,7 +226,7 @@ export function EditInvoiceDialog({
 
         <div className="space-y-1">
           <label htmlFor="edit-invoice-notes" className="text-sm font-medium">
-            Notes
+            {t("common.notes")}
           </label>
           <textarea
             id="edit-invoice-notes"
@@ -243,7 +245,7 @@ export function EditInvoiceDialog({
 
         {updateInvoice.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -254,10 +256,10 @@ export function EditInvoiceDialog({
             onClick={() => onOpenChange(false)}
             disabled={updateInvoice.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateInvoice.isPending}>
-            {updateInvoice.isPending ? "Saving…" : "Save Changes"}
+            {updateInvoice.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

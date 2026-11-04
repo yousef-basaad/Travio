@@ -15,23 +15,18 @@ import {
   TableCell,
   SearchInput,
   Select,
+  LtrText,
 } from "@travio/ui";
 import { AppPagination } from "@/components/app-pagination";
-import { formatDate } from "@travio/utils";
-import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, OWNER_TYPES, type OwnerType } from "@travio/types";
+import { DOCUMENT_TYPES, OWNER_TYPES, type OwnerType } from "@travio/types";
+import { DOCUMENT_TYPE_KEYS, OWNER_TYPE_KEYS } from "../utils/label-keys";
 import type { DocumentListItem } from "@travio/api";
 import { useDocumentsPage, useDeleteDocument } from "../api/documents.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { DocumentPreview } from "./document-preview";
 import type { DocumentTypeFilter } from "./document-filters";
 import { formatFileSize } from "../utils/format-file-size";
-
-const OWNER_TYPE_LABELS: Record<OwnerType, string> = {
-  customer: "Customer",
-  booking: "Booking",
-  invoice: "Invoice",
-  agency: "Agency",
-};
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 type OwnerTypeFilter = OwnerType | "all";
 
@@ -44,14 +39,15 @@ function ownerHref(document: DocumentListItem): Route | null {
 }
 
 function AttachedTo({ document }: { document: DocumentListItem }) {
-  const typeLabel = OWNER_TYPE_LABELS[document.ownerType];
-  if (document.ownerType === "agency") return <span className="text-muted-foreground">Agency</span>;
+  const t = useT();
+  const typeLabel = t(OWNER_TYPE_KEYS[document.ownerType]);
+  if (document.ownerType === "agency") return <span className="text-muted-foreground">{typeLabel}</span>;
 
   const name = document.ownerLabel ?? "—";
   const href = ownerHref(document);
   return (
     <span>
-      <span className="text-muted-foreground">{typeLabel}: </span>
+      <span className="text-muted-foreground">{typeLabel}{t("documents.ownerSeparator")}</span>
       {href && document.ownerLabel ? (
         <Link href={href} className="underline-offset-2 hover:underline">
           {name}
@@ -68,6 +64,8 @@ function AttachedTo({ document }: { document: DocumentListItem }) {
 // stay on a customer's or booking's own Documents tab, since every
 // document needs an owner.
 export function DocumentsWorkspace() {
+  const t = useT();
+  const format = useFormat();
   const [ownerType, setOwnerType] = useState<OwnerTypeFilter>("all");
   const [documentType, setDocumentType] = useState<DocumentTypeFilter>("all");
   const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(`${ownerType}|${documentType}`);
@@ -87,39 +85,39 @@ export function DocumentsWorkspace() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Documents" description="Passports, visas, vouchers, and other files across your agency" />
+      <PageHeader title={t("nav.documents")} description={t("documents.description")} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <SearchInput
-          placeholder="Search by file name"
-          aria-label="Search documents"
+          placeholder={t("documents.searchPlaceholder")}
+          aria-label={t("documents.searchLabel")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           containerClassName="max-w-sm flex-1"
         />
         <Select
-          aria-label="Attached to"
+          aria-label={t("documents.attachedTo")}
           className="w-auto"
           value={ownerType}
           onChange={(event) => setOwnerType(event.target.value as OwnerTypeFilter)}
         >
-          <option value="all">Attached to: all</option>
+          <option value="all">{t("documents.attachedToAll")}</option>
           {OWNER_TYPES.map((type) => (
             <option key={type} value={type}>
-              {OWNER_TYPE_LABELS[type]}
+              {t(OWNER_TYPE_KEYS[type])}
             </option>
           ))}
         </Select>
         <Select
-          aria-label="Document type"
+          aria-label={t("documents.type")}
           className="w-auto"
           value={documentType}
           onChange={(event) => setDocumentType(event.target.value as DocumentTypeFilter)}
         >
-          <option value="all">All types</option>
+          <option value="all">{t("documents.allTypes")}</option>
           {DOCUMENT_TYPES.map((type) => (
             <option key={type} value={type}>
-              {DOCUMENT_TYPE_LABELS[type]}
+              {t(DOCUMENT_TYPE_KEYS[type])}
             </option>
           ))}
         </Select>
@@ -129,29 +127,29 @@ export function DocumentsWorkspace() {
         isLoading={isLoading}
         isError={isError}
         isEmpty={!isLoading && documents.length === 0}
-        loadingLabel="Loading documents"
-        errorMessage="Something went wrong loading documents. Please try again later."
-        emptyMessage={isFiltered ? "No documents match these filters" : "No documents yet"}
+        loadingLabel={t("documents.loading")}
+        errorMessage={t("documents.error")}
+        emptyMessage={isFiltered ? t("documents.emptyFiltered") : t("documents.empty")}
         emptyAction={
           !isFiltered ? (
             <Button asChild size="sm" variant="outline">
-              <Link href="/customers">Upload from a customer&apos;s profile</Link>
+              <Link href="/customers">{t("documents.uploadFromProfile")}</Link>
             </Button>
           ) : undefined
         }
         emptyIcon={<FileText size={20} />}
         size="page"
       >
-        <Table aria-label="Documents" caption="All documents across your agency, newest first">
+        <Table aria-label={t("nav.documents")} caption={t("documents.caption")}>
           <TableHeader>
             <TableRow className="text-muted-foreground">
-              <TableCell header>File</TableCell>
-              <TableCell header>Type</TableCell>
-              <TableCell header>Attached to</TableCell>
-              <TableCell header>Size</TableCell>
-              <TableCell header>Uploaded</TableCell>
+              <TableCell header>{t("documents.file")}</TableCell>
+              <TableCell header>{t("documents.typeShort")}</TableCell>
+              <TableCell header>{t("documents.attachedTo")}</TableCell>
+              <TableCell header>{t("documents.size")}</TableCell>
+              <TableCell header>{t("documents.uploaded")}</TableCell>
               <TableCell header>
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t("common.actions")}</span>
               </TableCell>
             </TableRow>
           </TableHeader>
@@ -161,30 +159,30 @@ export function DocumentsWorkspace() {
               return (
                 <TableRow key={document.id}>
                   <TableCell className="font-medium">{document.fileName}</TableCell>
-                  <TableCell>{DOCUMENT_TYPE_LABELS[document.documentType]}</TableCell>
+                  <TableCell>{t(DOCUMENT_TYPE_KEYS[document.documentType])}</TableCell>
                   <TableCell>
                     <AttachedTo document={document} />
                   </TableCell>
-                  <TableCell>{formatFileSize(document.fileSize)}</TableCell>
-                  <TableCell>{formatDate(document.createdAt)}</TableCell>
+                  <TableCell><LtrText>{formatFileSize(document.fileSize)}</LtrText></TableCell>
+                  <TableCell>{format.date(document.createdAt)}</TableCell>
                   <TableCell align="end">
                     <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setPreviewing(document)}
-                        aria-label={`Preview ${document.fileName}`}
+                        aria-label={t("documents.previewNamed", { name: document.fileName })}
                       >
-                        Preview
+                        {t("documents.preview")}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteDocument.mutate({ id: document.id })}
                         disabled={isDeleting}
-                        aria-label={`Delete ${document.fileName}`}
+                        aria-label={t("documents.deleteNamed", { name: document.fileName })}
                       >
-                        {isDeleting ? "Deleting…" : "Delete"}
+                        {isDeleting ? t("common.deleting") : t("common.delete")}
                       </Button>
                     </div>
                   </TableCell>

@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, ServiceItem, ServiceItemHeader, ServiceItemContent } from "@travio/ui";
 import { cn } from "@travio/utils";
 import type { Notification } from "@travio/api";

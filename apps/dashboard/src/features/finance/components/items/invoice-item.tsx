@@ -1,17 +1,18 @@
-import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
-import { cn, formatSar } from "@travio/utils";
-import type { InvoiceItem, InvoiceItemType } from "@travio/api";
+"use client";
 
-// Single source of truth for item type labels - exported so
-// create-invoice-item-dialog.tsx/edit-invoice-item-dialog.tsx reuse it
-// for their <select> options instead of duplicating it. Matches the real
-// invoice_items_item_type_check values.
-export const ITEM_TYPE_LABELS: Record<InvoiceItemType, string> = {
-  flight: "Flight",
-  hotel: "Hotel",
-  transfer: "Transfer",
-  visa: "Visa",
-  manual: "Manual",
+import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
+import { cn } from "@travio/utils";
+import type { InvoiceItem, InvoiceItemType } from "@travio/api";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
+
+// Message keys for the same types, for translated display.
+export const ITEM_TYPE_KEYS: Record<InvoiceItemType, MessageKey> = {
+  flight: "itemType.flight",
+  hotel: "itemType.hotel",
+  transfer: "itemType.transfer",
+  visa: "itemType.visa",
+  manual: "itemType.manual",
 };
 
 // Reuses only existing design tokens - manual items get the neutral
@@ -39,6 +40,8 @@ type InvoiceItemRowProps = {
 };
 
 export function InvoiceItemRow({ item, onEdit, onDelete, isDeleting }: InvoiceItemRowProps) {
+  const t = useT();
+  const format = useFormat();
   return (
     <ServiceItem>
       <ServiceItemHeader>
@@ -50,7 +53,7 @@ export function InvoiceItemRow({ item, onEdit, onDelete, isDeleting }: InvoiceIt
               ITEM_TYPE_STYLES[item.itemType],
             )}
           >
-            {ITEM_TYPE_LABELS[item.itemType]}
+            {t(ITEM_TYPE_KEYS[item.itemType])}
           </span>
         </div>
         <ServiceItemActions>
@@ -58,26 +61,26 @@ export function InvoiceItemRow({ item, onEdit, onDelete, isDeleting }: InvoiceIt
             variant="ghost"
             size="sm"
             onClick={() => onEdit(item)}
-            aria-label="Edit invoice item"
+            aria-label={t("finance.items.editLabel")}
           >
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete(item.id)}
             disabled={isDeleting}
-            aria-label="Delete invoice item"
+            aria-label={t("finance.items.deleteLabel")}
           >
-            {isDeleting ? "Deleting…" : "Delete"}
+            {isDeleting ? t("common.deleting") : t("common.delete")}
           </Button>
         </ServiceItemActions>
       </ServiceItemHeader>
       <ServiceItemContent>
         <p className="text-sm text-muted-foreground">
-          {item.quantity} × {formatSar(item.unitPrice)}
+          {item.quantity} × {format.currency(item.unitPrice)}
         </p>
-        <p className="text-xs text-muted-foreground">{formatSar(item.total)}</p>
+        <p className="text-xs text-muted-foreground">{format.currency(item.total)}</p>
       </ServiceItemContent>
     </ServiceItem>
   );

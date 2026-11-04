@@ -8,10 +8,12 @@ import { useCustomerInvoices, useBookingInvoices, useDeleteInvoice } from "../ap
 import { InvoiceItem } from "./invoice-item";
 import { CreateInvoiceDialog } from "./create-invoice-dialog";
 import { EditInvoiceDialog } from "./edit-invoice-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function InvoicesSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading invoices" className="space-y-2">
+    <div role="status" aria-label={t("finance.invoices.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -20,12 +22,13 @@ function InvoicesSkeleton() {
 }
 
 function InvoicesErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading invoices. Please try again later.
+      {t("finance.invoices.error")}
     </div>
   );
 }
@@ -41,6 +44,7 @@ type InvoiceListProps = {
 // queries are called unconditionally (React hooks rules), but only the
 // one with a truthy id is enabled/actually fetches.
 export function InvoiceList({ customerId, bookingId }: InvoiceListProps) {
+  const t = useT();
   const customerInvoices = useCustomerInvoices(customerId ?? "");
   const bookingInvoices = useBookingInvoices(bookingId ?? "");
   const {
@@ -58,9 +62,9 @@ export function InvoiceList({ customerId, bookingId }: InvoiceListProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <h2 className="text-sm font-medium">Invoices</h2>
+        <h2 className="text-sm font-medium">{t("finance.invoices.title")}</h2>
         <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          Add Invoice
+          {t("finance.invoices.add")}
         </Button>
       </CardHeader>
       <CardContent>
@@ -69,7 +73,7 @@ export function InvoiceList({ customerId, bookingId }: InvoiceListProps) {
         ) : isError ? (
           <InvoicesErrorState />
         ) : !hasInvoices ? (
-          <EmptyState icon={<FileText size={20} />} message="No invoices yet" />
+          <EmptyState icon={<FileText size={20} />} message={t("finance.invoices.empty")} />
         ) : (
           <ul className="space-y-2">
             {invoices.map((invoice) => (

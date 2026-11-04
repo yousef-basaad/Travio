@@ -11,10 +11,12 @@ import {
 import { InvoiceItemRow } from "./invoice-item";
 import { CreateInvoiceItemDialog } from "./create-invoice-item-dialog";
 import { EditInvoiceItemDialog } from "./edit-invoice-item-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function ItemsSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading items" className="space-y-2">
+    <div role="status" aria-label={t("finance.items.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-12 w-full" />
       ))}
@@ -23,12 +25,13 @@ function ItemsSkeleton() {
 }
 
 function ItemsErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading items. Please try again later.
+      {t("finance.items.error")}
     </div>
   );
 }
@@ -41,6 +44,7 @@ type InvoiceItemsListProps = {
 // nested inside invoice-item.tsx's own ServiceItemContent (the invoice
 // row itself), which already provides the outer Card via ServiceItem.
 export function InvoiceItemsList({ invoiceId }: InvoiceItemsListProps) {
+  const t = useT();
   const { data: items, isLoading, isError } = useInvoiceItems(invoiceId);
   const deleteItem = useDeleteInvoiceItem();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -51,9 +55,9 @@ export function InvoiceItemsList({ invoiceId }: InvoiceItemsListProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Items</h3>
+        <h3 className="text-sm font-medium">{t("finance.items.title")}</h3>
         <Button size="sm" variant="outline" onClick={() => setIsCreateOpen(true)}>
-          Add Item
+          {t("finance.items.add")}
         </Button>
       </div>
 
@@ -62,7 +66,7 @@ export function InvoiceItemsList({ invoiceId }: InvoiceItemsListProps) {
       ) : isError ? (
         <ItemsErrorState />
       ) : !hasItems ? (
-        <EmptyState icon={<ListChecks size={20} />} message="No items yet" />
+        <EmptyState icon={<ListChecks size={20} />} message={t("finance.items.empty")} />
       ) : (
         <ul className="space-y-2">
           {items.map((item) => (

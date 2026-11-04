@@ -2,9 +2,11 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog, FormField, Input, Select } from "@travio/ui";
-import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, type DocumentType } from "@travio/types";
+import { DOCUMENT_TYPES, type DocumentType } from "@travio/types";
+import { DOCUMENT_TYPE_KEYS } from "../utils/label-keys";
 import type { OwnerType } from "@travio/api";
 import { useUploadDocument } from "../api/documents.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 export interface UploadDocumentDialogProps {
   ownerType: OwnerType;
@@ -23,6 +25,7 @@ export function UploadDocumentDialog({
   open,
   onOpenChange,
 }: UploadDocumentDialogProps) {
+  const t = useT();
   const uploadDocument = useUploadDocument();
   const [documentType, setDocumentType] = useState<DocumentType>(DOCUMENT_TYPES[0]);
   const [file, setFile] = useState<File | null>(null);
@@ -42,7 +45,7 @@ export function UploadDocumentDialog({
     event.preventDefault();
 
     if (!file) {
-      setValidationError("Choose a file to upload.");
+      setValidationError(t("documents.chooseFile"));
       return;
     }
 
@@ -67,10 +70,10 @@ export function UploadDocumentDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="upload-document-title" className="text-lg font-semibold">
-          Upload Document
+          {t("documents.upload")}
         </h2>
 
-        <FormField label="Document Type" htmlFor="document-type">
+        <FormField label={t("documents.type")} htmlFor="document-type">
           <Select
             id="document-type"
             value={documentType}
@@ -78,27 +81,27 @@ export function UploadDocumentDialog({
           >
             {DOCUMENT_TYPES.map((type) => (
               <option key={type} value={type}>
-                {DOCUMENT_TYPE_LABELS[type]}
+                {t(DOCUMENT_TYPE_KEYS[type])}
               </option>
             ))}
           </Select>
         </FormField>
 
-        <FormField label="File" htmlFor="document-file" error={validationError ?? undefined}>
+        <FormField label={t("documents.file")} htmlFor="document-file" error={validationError ?? undefined}>
           <Input
             id="document-file"
             type="file"
             accept="application/pdf,image/jpeg,image/png,image/webp"
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
           />
-          <p className="mt-1 text-xs text-muted-foreground">PDF, JPEG, PNG, or WebP. Max 10MB.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("documents.fileHint")}</p>
         </FormField>
 
         {uploadDocument.isError && (
           <p role="alert" className="text-sm text-danger">
             {uploadDocument.error instanceof Error
               ? uploadDocument.error.message
-              : "Couldn't upload the document. Please try again."}
+              : t("documents.uploadError")}
           </p>
         )}
 
@@ -109,10 +112,10 @@ export function UploadDocumentDialog({
             onClick={() => onOpenChange(false)}
             disabled={uploadDocument.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={uploadDocument.isPending}>
-            {uploadDocument.isPending ? "Uploading…" : "Upload"}
+            {uploadDocument.isPending ? t("documents.uploading") : t("documents.uploadSubmit")}
           </Button>
         </div>
       </form>
