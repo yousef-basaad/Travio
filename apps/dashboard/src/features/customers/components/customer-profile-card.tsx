@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, InfoRow, LtrText } from "@travio/ui";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 import type { Customer } from "@travio/api";

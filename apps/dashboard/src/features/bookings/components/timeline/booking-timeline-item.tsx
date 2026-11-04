@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { CalendarPlus, Pencil, ArrowRightLeft, Circle } from "lucide-react";
 import { TimelineItem } from "@travio/ui";
