@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, InfoRow, LtrText } from "@travio/ui";
-import { formatDate } from "@travio/utils";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 import type { Customer } from "@travio/api";
 import type { Booking } from "../types/booking";
 import { BookingStatusBadge } from "./booking-status-badge";
@@ -25,23 +25,25 @@ export function BookingProfileCard({
   booking: Booking;
   customer: Customer | null;
 }) {
+  const t = useT();
+  const format = useFormat();
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-medium">Profile</h2>
+        <h2 className="text-sm font-medium">{t("bookings.profile")}</h2>
       </CardHeader>
       <CardContent>
         <dl className="space-y-4">
-          <InfoRow label="Booking Number" value={booking.bookingNumber} />
-          <InfoRow label="Title" value={booking.title} />
-          <InfoRow label="Status" value={<BookingStatusBadge status={booking.status} />} />
+          <InfoRow label={t("bookings.field.number")} value={booking.bookingNumber} />
+          <InfoRow label={t("bookingField.title")} value={booking.title} />
+          <InfoRow label={t("common.status")} value={<BookingStatusBadge status={booking.status} />} />
           <InfoRow
-            label="Start Date"
-            value={booking.startDate ? formatDate(booking.startDate) : "—"}
+            label={t("bookings.field.startDate")}
+            value={booking.startDate ? format.date(booking.startDate) : "—"}
           />
-          <InfoRow label="End Date" value={booking.endDate ? formatDate(booking.endDate) : "—"} />
+          <InfoRow label={t("bookings.field.endDate")} value={booking.endDate ? format.date(booking.endDate) : "—"} />
           <InfoRow
-            label="Customer"
+            label={t("common.customer")}
             value={
               customer ? (
                 <Link href={`/customers/${customer.id}`} className="underline hover:text-foreground">
@@ -52,8 +54,8 @@ export function BookingProfileCard({
               )
             }
           />
-          {customer?.email ? <InfoRow label="Email" value={customer.email} /> : null}
-          {customer?.phone ? <InfoRow label="Phone" value={<LtrText>{customer.phone}</LtrText>} /> : null}
+          {customer?.email ? <InfoRow label={t("field.email")} value={customer.email} /> : null}
+          {customer?.phone ? <InfoRow label={t("field.phone")} value={<LtrText>{customer.phone}</LtrText>} /> : null}
         </dl>
       </CardContent>
     </Card>

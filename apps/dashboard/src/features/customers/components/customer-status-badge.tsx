@@ -1,5 +1,6 @@
 import { StatusBadge } from "@travio/ui";
 import type { Customer } from "@travio/api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Not currently rendered in customers-table.tsx - its column list
 // (Full Name/Email/Phone/Passport Expiry/Preferred Language/Actions) has
@@ -18,6 +19,7 @@ import type { Customer } from "@travio/api";
 // same hue as --destructive). Pixel-identical to the previous markup.
 export function CustomerStatusBadge({ customer }: { customer: Pick<Customer, "deletedAt"> }) {
   const isActive = customer.deletedAt === null;
+  const t = useT();
 
-  return <StatusBadge label={isActive ? "Active" : "Inactive"} variant={isActive ? "neutral" : "danger"} />;
+  return <StatusBadge label={isActive ? t("customers.active") : t("customers.inactive")} variant={isActive ? "neutral" : "danger"} />;
 }

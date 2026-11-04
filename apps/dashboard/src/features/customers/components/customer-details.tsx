@@ -7,18 +7,21 @@ import { useCustomer, useInviteCustomerToPortal, CustomerNotFoundError } from ".
 import { CustomerProfileCard } from "./customer-profile-card";
 import { CustomerStatusBadge } from "./customer-status-badge";
 import { CustomerTabs } from "./customer-tabs";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function BackToCustomersLink() {
+  const t = useT();
   return (
     <Button asChild variant="outline" size="sm">
-      <Link href="/customers">← Back to Customers</Link>
+      <Link href="/customers">{t("customers.back")}</Link>
     </Button>
   );
 }
 
 function CustomerDetailsSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading customer" className="space-y-4">
+    <div role="status" aria-label={t("customers.loadingOne")} className="space-y-4">
       <Skeleton className="h-8 w-40" />
       <Skeleton className="h-48 w-full" />
     </div>
@@ -26,17 +29,19 @@ function CustomerDetailsSkeleton() {
 }
 
 function CustomerNotFoundState() {
+  const t = useT();
   return (
     <EmptyState
       className="p-12"
       icon={<SearchX size={20} />}
-      title="Customer not found"
+      title={t("customers.notFound")}
       action={<BackToCustomersLink />}
     />
   );
 }
 
 function CustomerDetailsErrorState() {
+  const t = useT();
   return (
     <div className="space-y-4">
       <BackToCustomersLink />
@@ -44,7 +49,7 @@ function CustomerDetailsErrorState() {
         role="alert"
         className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
       >
-        Something went wrong loading this customer. Please try again later.
+        {t("customers.loadOneError")}
       </div>
     </div>
   );
@@ -57,6 +62,7 @@ function CustomerDetailsErrorState() {
 export function CustomerDetails({ id }: { id: string }) {
   const { data: customer, isLoading, error } = useCustomer(id);
   const inviteToPortal = useInviteCustomerToPortal();
+  const t = useT();
 
   // Design System v2.4 (Product-8.1): toast() (packages/ui) instead of
   // inline success/error text below the button - same mutation, same
@@ -70,14 +76,14 @@ export function CustomerDetails({ id }: { id: string }) {
       onSuccess: (result) => {
         toast({
           variant: "success",
-          title: "Invite sent",
-          description: `Portal invite sent to ${result.email}.`,
+          title: t("customers.inviteSent"),
+          description: t("customers.inviteSentDescription", { email: result.email }),
         });
       },
       onError: (mutationError) => {
         toast({
           variant: "danger",
-          title: "Couldn't send the invite",
+          title: t("customers.inviteError"),
           description: mutationError instanceof Error ? mutationError.message : undefined,
         });
       },
@@ -107,7 +113,8 @@ export function CustomerDetails({ id }: { id: string }) {
             <CustomerStatusBadge customer={customer} />
           </div>
           <p className="text-sm text-muted-foreground">
-            {customer.email ?? "No email"} · {customer.phone ? <LtrText>{customer.phone}</LtrText> : "No phone"}
+            {customer.email ?? t("customers.noEmail")} ·{" "}
+            {customer.phone ? <LtrText>{customer.phone}</LtrText> : t("customers.noPhone")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -121,26 +128,26 @@ export function CustomerDetails({ id }: { id: string }) {
           <Button
             variant="outline"
             disabled={!customer.email || inviteToPortal.isPending}
-            title={customer.email ? undefined : "This customer has no email on file"}
+            title={customer.email ? undefined : t("customers.noEmailOnFile")}
             onClick={handleInvite}
           >
-            {inviteToPortal.isPending ? "Sending…" : "Invite to Portal"}
+            {inviteToPortal.isPending ? t("common.sending") : t("customers.invite")}
           </Button>
           <Button
             variant="outline"
             disabled
             aria-disabled="true"
-            title="Editing customers isn't available yet"
+            title={t("customers.editUnavailable")}
           >
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="destructive"
             disabled
             aria-disabled="true"
-            title="Deleting customers isn't available yet"
+            title={t("customers.deleteUnavailable")}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </div>
       </div>

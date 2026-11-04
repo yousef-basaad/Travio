@@ -1,10 +1,12 @@
+import type { FormatLocale } from "./date";
+
 // Generic currency formatting. SAR is the default since it's the
 // currency every existing caller (bookings, invoices, payments,
 // analytics) actually formats today.
 export function formatCurrency(
   amount: number,
   currency: string = "SAR",
-  locale: "ar-SA" | "en-US" = "en-US",
+  locale: FormatLocale = "en-US",
 ) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -17,6 +19,6 @@ export function formatCurrency(
 // formal formatCurrency and every existing call site (bookings, invoices,
 // payments, analytics) still uses this name. Kept as a thin wrapper so
 // none of them need touching.
-export function formatSar(amount: number, locale: "ar-SA" | "en-US" = "en-US") {
+export function formatSar(amount: number, locale: FormatLocale = "en-US") {
   return formatCurrency(amount, "SAR", locale);
 }

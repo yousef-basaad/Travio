@@ -14,9 +14,9 @@ import {
   TableRow,
   TableCell,
   SearchInput,
-  Pagination,
   Select,
 } from "@travio/ui";
+import { AppPagination } from "@/components/app-pagination";
 import { formatDate } from "@travio/utils";
 import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, OWNER_TYPES, type OwnerType } from "@travio/types";
 import type { DocumentListItem } from "@travio/api";
@@ -196,7 +196,7 @@ export function DocumentsWorkspace() {
       </DataTableState>
 
       {data && (
-        <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+        <AppPagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
       )}
 
       <DocumentPreview

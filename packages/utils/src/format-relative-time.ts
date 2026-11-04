@@ -1,8 +1,8 @@
 // MDN's standard Intl.RelativeTimeFormat "divisions" approach - no
 // external dependency.
-export function formatRelativeTime(iso: string): string {
+export function formatRelativeTime(iso: string, locale: string = "en"): string {
   const diffSeconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
-  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 
   const divisions: { amount: number; unit: Intl.RelativeTimeFormatUnit }[] = [
     { amount: 60, unit: "seconds" },

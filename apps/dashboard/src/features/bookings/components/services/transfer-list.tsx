@@ -8,10 +8,12 @@ import { useBookingTransfers, useDeleteTransfer } from "../../api/bookings.api";
 import { TransferItem } from "./transfer-item";
 import { CreateTransferDialog } from "./create-transfer-dialog";
 import { EditTransferDialog } from "./edit-transfer-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function TransfersSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading transfers" className="space-y-2">
+    <div role="status" aria-label={t("services.transfer.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -20,12 +22,13 @@ function TransfersSkeleton() {
 }
 
 function TransfersErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading transfers. Please try again later.
+      {t("services.transfer.error")}
     </div>
   );
 }
@@ -39,6 +42,7 @@ export function TransferList({ bookingId }: { bookingId: string }) {
   const { data: transfers, isLoading, isError } = useBookingTransfers(bookingId);
   const deleteTransfer = useDeleteTransfer();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const t = useT();
   const [editingTransfer, setEditingTransfer] = useState<BookingTransfer | null>(null);
 
   const hasTransfers = !isLoading && !isError && !!transfers && transfers.length > 0;
@@ -46,9 +50,9 @@ export function TransferList({ bookingId }: { bookingId: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <h2 className="text-sm font-medium">Transfers</h2>
+        <h2 className="text-sm font-medium">{t("services.transfer.title")}</h2>
         <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          Add Transfer
+          {t("services.transfer.add")}
         </Button>
       </CardHeader>
       <CardContent>
@@ -57,7 +61,7 @@ export function TransferList({ bookingId }: { bookingId: string }) {
         ) : isError ? (
           <TransfersErrorState />
         ) : !hasTransfers ? (
-          <EmptyState icon={<Car size={20} />} message="No transfers added yet" />
+          <EmptyState icon={<Car size={20} />} message={t("services.transfer.empty")} />
         ) : (
           <ul className="space-y-2">
             {transfers.map((transfer) => (

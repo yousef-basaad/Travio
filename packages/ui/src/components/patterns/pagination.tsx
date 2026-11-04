@@ -31,21 +31,40 @@ export interface PaginationProps {
   /** Disables both buttons, e.g. while the next page is loading. */
   disabled?: boolean;
   className?: string;
+  /** Translated text; English by default. */
+  labels?: Partial<PaginationLabels>;
 }
+
+export interface PaginationLabels {
+  navigation: string;
+  range: (from: string, to: string, total: string) => string;
+  previous: string;
+  next: string;
+  page: (page: number, pageCount: number) => string;
+}
+
+const DEFAULT_LABELS: PaginationLabels = {
+  navigation: "Pagination",
+  range: (from, to, total) => `${from}–${to} of ${total}`,
+  previous: "Previous",
+  next: "Next",
+  page: (page, pageCount) => `Page ${page} of ${pageCount}`,
+};
 
 // "1–25 of 1,234" with Previous/Next, for server-paged tables. Renders
 // nothing when everything fits on one page.
-export function Pagination({ page, pageSize, total, onPageChange, disabled, className }: PaginationProps) {
+export function Pagination({ page, pageSize, total, onPageChange, disabled, className, labels }: PaginationProps) {
   const info = pageInfo(total, page, pageSize);
+  const text = { ...DEFAULT_LABELS, ...labels };
   if (info.pageCount <= 1 && page <= 1) return null;
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={text.navigation}
       className={cn("flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground", className)}
     >
       <p aria-live="polite">
-        {info.from.toLocaleString()}–{info.to.toLocaleString()} of {total.toLocaleString()}
+        {text.range(info.from.toLocaleString("en-US"), info.to.toLocaleString("en-US"), total.toLocaleString("en-US"))}
       </p>
       <div className="flex items-center gap-2">
         <Button
@@ -54,18 +73,16 @@ export function Pagination({ page, pageSize, total, onPageChange, disabled, clas
           onClick={() => onPageChange(page - 1)}
           disabled={disabled || !info.hasPrevious}
         >
-          Previous
+          {text.previous}
         </Button>
-        <span>
-          Page {page} of {info.pageCount}
-        </span>
+        <span>{text.page(page, info.pageCount)}</span>
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(page + 1)}
           disabled={disabled || !info.hasNext}
         >
-          Next
+          {text.next}
         </Button>
       </div>
     </nav>

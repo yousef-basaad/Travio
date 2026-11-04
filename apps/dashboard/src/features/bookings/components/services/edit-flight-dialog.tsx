@@ -4,7 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { BookingFlight, CabinClass } from "../../types/booking";
 import { useUpdateFlight } from "../../api/bookings.api";
-import { CABIN_CLASS_LABELS } from "./flight-item";
+import { CABIN_CLASS_KEYS } from "./flight-item";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import { isCabinClass } from "./create-flight-dialog";
 
 const CABIN_CLASS_OPTIONS: CabinClass[] = ["economy", "business", "first"];
@@ -56,6 +58,7 @@ type EditFlightDialogProps = {
 export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: EditFlightDialogProps) {
   const updateFlight = useUpdateFlight();
   const [form, setForm] = useState(EMPTY_FORM);
+  const t = useT();
 
   useEffect(() => {
     if (open && flight) {
@@ -103,13 +106,13 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-flight-title" className="text-lg font-semibold">
-          Edit Flight
+          {t("services.flight.edit")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="edit-flight-airline" className="text-sm font-medium">
-              Airline
+              {t("services.flight.airline" satisfies MessageKey)}
             </label>
             <input
               id="edit-flight-airline"
@@ -121,7 +124,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
           <div className="space-y-1">
             <label htmlFor="edit-flight-number" className="text-sm font-medium">
-              Flight Number
+              {t("services.flight.flightNumber" satisfies MessageKey)}
             </label>
             <input
               id="edit-flight-number"
@@ -133,7 +136,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
           <div className="space-y-1">
             <label htmlFor="edit-flight-departure-airport" className="text-sm font-medium">
-              Departure Airport
+              {t("services.flight.departureAirport" satisfies MessageKey)}
             </label>
             <input
               id="edit-flight-departure-airport"
@@ -145,7 +148,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
           <div className="space-y-1">
             <label htmlFor="edit-flight-arrival-airport" className="text-sm font-medium">
-              Arrival Airport
+              {t("services.flight.arrivalAirport" satisfies MessageKey)}
             </label>
             <input
               id="edit-flight-arrival-airport"
@@ -157,7 +160,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
           <div className="space-y-1">
             <label htmlFor="edit-flight-departure-time" className="text-sm font-medium">
-              Departure Time
+              {t("services.flight.departureTime" satisfies MessageKey)}
             </label>
             <input
               id="edit-flight-departure-time"
@@ -170,7 +173,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
           <div className="space-y-1">
             <label htmlFor="edit-flight-arrival-time" className="text-sm font-medium">
-              Arrival Time
+              {t("services.flight.arrivalTime" satisfies MessageKey)}
             </label>
             <input
               id="edit-flight-arrival-time"
@@ -184,7 +187,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
         <div className="space-y-1">
           <label htmlFor="edit-flight-cabin-class" className="text-sm font-medium">
-            Cabin Class
+            {t("services.flight.cabinClass" satisfies MessageKey)}
           </label>
           <select
             id="edit-flight-cabin-class"
@@ -197,10 +200,10 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
               }
             }}
           >
-            <option value="">Select a cabin class</option>
+            <option value="">{t("services.flight.selectCabin")}</option>
             {CABIN_CLASS_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {CABIN_CLASS_LABELS[option]}
+                {t(CABIN_CLASS_KEYS[option])}
               </option>
             ))}
           </select>
@@ -208,7 +211,7 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
 
         {updateFlight.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -219,10 +222,10 @@ export function EditFlightDialog({ flight, bookingId, open, onOpenChange }: Edit
             onClick={() => onOpenChange(false)}
             disabled={updateFlight.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateFlight.isPending}>
-            {updateFlight.isPending ? "Saving…" : "Save Changes"}
+            {updateFlight.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

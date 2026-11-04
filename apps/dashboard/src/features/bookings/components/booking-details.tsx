@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { SearchX } from "lucide-react";
 import { Button, EmptyState, Skeleton } from "@travio/ui";
-import { formatDate } from "@travio/utils";
 import { useCustomer } from "@/features/customers";
 import { useBooking, BookingNotFoundError } from "../api/bookings.api";
 import { ChangeBookingStatus } from "./change-booking-status";
@@ -12,18 +11,21 @@ import { BookingSummaryCards } from "./booking-summary-cards";
 import { BookingProfileCard } from "./booking-profile-card";
 import { BookingTabs } from "./booking-tabs";
 import { EditBookingDialog } from "./edit-booking-dialog";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 function BackToBookingsLink() {
+  const t = useT();
   return (
     <Button asChild variant="outline" size="sm">
-      <Link href="/bookings">← Back to Bookings</Link>
+      <Link href="/bookings">{t("bookings.back")}</Link>
     </Button>
   );
 }
 
 function BookingDetailsSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading booking" className="space-y-4">
+    <div role="status" aria-label={t("bookings.loadingOne")} className="space-y-4">
       <Skeleton className="h-8 w-40" />
       <Skeleton className="h-48 w-full" />
     </div>
@@ -31,17 +33,19 @@ function BookingDetailsSkeleton() {
 }
 
 function BookingNotFoundState() {
+  const t = useT();
   return (
     <EmptyState
       className="p-12"
       icon={<SearchX size={20} />}
-      title="Booking not found"
+      title={t("bookings.notFound")}
       action={<BackToBookingsLink />}
     />
   );
 }
 
 function BookingDetailsErrorState() {
+  const t = useT();
   return (
     <div className="space-y-4">
       <BackToBookingsLink />
@@ -49,7 +53,7 @@ function BookingDetailsErrorState() {
         role="alert"
         className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
       >
-        Something went wrong loading this booking. Please try again later.
+        {t("bookings.loadOneError")}
       </div>
     </div>
   );
@@ -67,6 +71,8 @@ export function BookingDetails({ id }: { id: string }) {
   // list-wide lookup, scoped to a single customer here).
   const { data: customer } = useCustomer(booking?.customerId ?? "");
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const t = useT();
+  const format = useFormat();
 
   if (isLoading) {
     return <BookingDetailsSkeleton />;
@@ -96,21 +102,21 @@ export function BookingDetails({ id }: { id: string }) {
           </div>
           <p className="text-sm text-muted-foreground">
             {booking.bookingNumber} · {customer?.fullName ?? booking.customerId}
-            {booking.startDate ? ` · ${formatDate(booking.startDate)}` : ""}
-            {booking.endDate ? ` – ${formatDate(booking.endDate)}` : ""}
+            {booking.startDate ? ` · ${format.date(booking.startDate)}` : ""}
+            {booking.endDate ? ` – ${format.date(booking.endDate)}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setIsEditOpen(true)}>
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="destructive"
             disabled
             aria-disabled="true"
-            title="Deleting bookings isn't available yet"
+            title={t("bookings.deleteUnavailable")}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         </div>
       </div>

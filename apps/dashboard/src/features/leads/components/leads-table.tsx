@@ -13,9 +13,9 @@ import {
   TableRow,
   TableCell,
   SearchInput,
-  Pagination,
   LtrText,
 } from "@travio/ui";
+import { AppPagination } from "@/components/app-pagination";
 import { formatDate } from "@travio/utils";
 import { useLeadsPage } from "../api/leads.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
@@ -112,7 +112,7 @@ export function LeadsTable() {
       </DataTableState>
 
       {data && (
-        <Pagination
+        <AppPagination
           page={page}
           pageSize={pageSize}
           total={data.total}

@@ -1,6 +1,10 @@
 // Gregorian date formatting shared across apps. Hijri support can be added
 // here later via a single dependency without touching feature code.
-export function formatDate(iso: string, locale: "ar-SA" | "en-US" = "en-US") {
+//
+// `locale` is any BCP 47 tag. The dashboard passes
+// "ar-SA-u-ca-gregory-nu-latn" for Arabic (Gregorian, Latin digits).
+export type FormatLocale = string;
+export function formatDate(iso: string, locale: FormatLocale = "en-US") {
   return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
@@ -12,7 +16,7 @@ export function formatDate(iso: string, locale: "ar-SA" | "en-US" = "en-US") {
 // this exact function locally for timestamptz fields (departure/arrival
 // time, pickup time) where the time-of-day component matters and
 // formatDate's date-only output isn't enough.
-export function formatDateTime(iso: string, locale: "ar-SA" | "en-US" = "en-US") {
+export function formatDateTime(iso: string, locale: FormatLocale = "en-US") {
   return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
@@ -30,7 +34,11 @@ export function formatDateTime(iso: string, locale: "ar-SA" | "en-US" = "en-US")
 // still both reading as "N hours ago"). Used by BookingTimeline to group
 // events by day; day boundaries are computed in the browser's local
 // timezone, matching every other date display in this app.
-export function formatDayLabel(iso: string, locale: "ar-SA" | "en-US" = "en-US"): string {
+export function formatDayLabel(
+  iso: string,
+  locale: FormatLocale = "en-US",
+  labels: { today: string; yesterday: string } = { today: "Today", yesterday: "Yesterday" },
+): string {
   const date = new Date(iso);
   const today = new Date();
   const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
@@ -39,7 +47,7 @@ export function formatDayLabel(iso: string, locale: "ar-SA" | "en-US" = "en-US")
     (startOfDay(today).getTime() - startOfDay(date).getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
+  if (diffDays === 0) return labels.today;
+  if (diffDays === 1) return labels.yesterday;
   return formatDate(iso, locale);
 }

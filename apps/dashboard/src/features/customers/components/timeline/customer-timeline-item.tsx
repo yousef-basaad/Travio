@@ -1,6 +1,6 @@
 import { TimelineItem } from "@travio/ui";
 import type { CustomerTimelineItem as CustomerTimelineItemData } from "@travio/api";
-import { formatDate, formatRelativeTime } from "@travio/utils";
+import { useFormat } from "@/lib/i18n/i18n-provider";
 
 // Centralized here - the only place customer timeline icons are mapped.
 // A plain lookup (not a Record<CustomerTimelineItemType, string>) so a
@@ -28,13 +28,14 @@ export function CustomerTimelineItem({
   item: CustomerTimelineItemData;
   isLast?: boolean;
 }) {
+  const format = useFormat();
   return (
     <TimelineItem
       icon={getTimelineIcon(item)}
       title={item.title}
       description={item.description}
-      timestamp={formatRelativeTime(item.createdAt)}
-      timestampTitle={formatDate(item.createdAt)}
+      timestamp={format.relativeTime(item.createdAt)}
+      timestampTitle={format.date(item.createdAt)}
       isLast={isLast}
     />
   );

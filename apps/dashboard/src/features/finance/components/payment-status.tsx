@@ -12,8 +12,8 @@ import {
   TableRow,
   TableCell,
   SearchInput,
-  Pagination,
 } from "@travio/ui";
+import { AppPagination } from "@/components/app-pagination";
 import { cn, formatCurrency, formatDate } from "@travio/utils";
 import { usePaymentsPage } from "../api/invoices.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
@@ -89,7 +89,7 @@ export function PaymentStatus() {
           </Table>
         </DataTableState>
         {data && (
-          <Pagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
+          <AppPagination page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} disabled={isFetching} />
         )}
       </CardContent>
     </Card>

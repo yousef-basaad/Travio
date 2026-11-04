@@ -12,6 +12,8 @@ import {
   createBookingFormSchema,
   type CreateBookingFormValues,
 } from "../schemas/create-booking.schema";
+import { useT } from "@/lib/i18n/i18n-provider";
+import { isMessageKey } from "@/lib/i18n/translate";
 
 const DEFAULT_VALUES: CreateBookingFormValues = {
   customerId: "",
@@ -35,6 +37,9 @@ export function CreateBookingForm() {
   // customer fetch, per this issue's explicit instruction.
   const { data: customers, isLoading: isLoadingCustomers } = useCustomers();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const t = useT();
+  // Schema errors are message keys; anything else is shown as-is.
+  const fieldError = (message?: string) => (message && isMessageKey(message) ? t(message) : message);
 
   const {
     register,
@@ -51,23 +56,23 @@ export function CreateBookingForm() {
       const booking = await createBooking.mutateAsync(values);
       router.push(`/bookings/${booking.id}`);
     } catch {
-      setSubmitError("Couldn't create the booking. Please try again.");
+      setSubmitError(t("bookings.createError"));
     }
   });
 
   return (
     <div className="max-w-lg space-y-4">
       <Button asChild variant="outline" size="sm">
-        <Link href="/bookings">← Back to Bookings</Link>
+        <Link href="/bookings">{t("bookings.back")}</Link>
       </Button>
 
       <Card>
         <CardHeader>
-          <h1 className="text-lg font-semibold">New Booking</h1>
+          <h1 className="text-lg font-semibold">{t("bookings.new")}</h1>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
-            <FormField label="Customer" htmlFor="booking-customer" error={errors.customerId?.message}>
+            <FormField label={t("common.customer")} htmlFor="booking-customer" error={fieldError(errors.customerId?.message)}>
               <Select
                 id="booking-customer"
                 aria-invalid={errors.customerId ? "true" : "false"}
@@ -76,7 +81,7 @@ export function CreateBookingForm() {
                 {...register("customerId")}
               >
                 <option value="">
-                  {isLoadingCustomers ? "Loading customers…" : "Select a customer"}
+                  {isLoadingCustomers ? t("common.loadingCustomers") : t("common.selectCustomer")}
                 </option>
                 {customers?.map((customer) => (
                   <option key={customer.id} value={customer.id}>
@@ -86,7 +91,7 @@ export function CreateBookingForm() {
               </Select>
             </FormField>
 
-            <FormField label="Title" htmlFor="booking-title" error={errors.title?.message}>
+            <FormField label={t("bookingField.title")} htmlFor="booking-title" error={fieldError(errors.title?.message)}>
               <Input
                 id="booking-title"
                 aria-invalid={errors.title ? "true" : "false"}
@@ -96,7 +101,7 @@ export function CreateBookingForm() {
             </FormField>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField label="Start Date" htmlFor="booking-start-date" error={errors.startDate?.message}>
+              <FormField label={t("bookings.field.startDate")} htmlFor="booking-start-date" error={fieldError(errors.startDate?.message)}>
                 <Input
                   id="booking-start-date"
                   type="date"
@@ -106,7 +111,7 @@ export function CreateBookingForm() {
                 />
               </FormField>
 
-              <FormField label="End Date" htmlFor="booking-end-date" error={errors.endDate?.message}>
+              <FormField label={t("bookings.field.endDate")} htmlFor="booking-end-date" error={fieldError(errors.endDate?.message)}>
                 <Input
                   id="booking-end-date"
                   type="date"
@@ -117,7 +122,7 @@ export function CreateBookingForm() {
               </FormField>
             </div>
 
-            <FormField label="Notes" htmlFor="booking-notes">
+            <FormField label={t("common.notes")} htmlFor="booking-notes">
               <Textarea id="booking-notes" rows={4} {...register("notes")} />
             </FormField>
 
@@ -134,10 +139,10 @@ export function CreateBookingForm() {
                 onClick={() => router.push("/bookings")}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating…" : "Create Booking"}
+                {isSubmitting ? t("common.creating") : t("bookings.createSubmit")}
               </Button>
             </div>
           </form>

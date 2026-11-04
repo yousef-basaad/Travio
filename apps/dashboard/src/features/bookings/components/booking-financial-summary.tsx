@@ -2,9 +2,9 @@
 
 import { Wallet, CircleCheck, CircleDollarSign } from "lucide-react";
 import { MiniStat } from "@travio/ui";
-import { formatCurrency } from "@travio/utils";
 import type { InvoiceStatus } from "@travio/api";
 import { useBookingInvoices } from "@/features/finance";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const ICON_SIZE = 16;
 
@@ -33,6 +33,8 @@ function isPaid(status: InvoiceStatus): boolean {
 
 export function BookingFinancialSummary({ bookingId }: { bookingId: string }) {
   const { data: invoices, isLoading } = useBookingInvoices(bookingId);
+  const t = useT();
+  const format = useFormat();
 
   const activeInvoices = (invoices ?? []).filter((invoice) => !isCancelled(invoice.status));
   const totalInvoiced = activeInvoices.reduce((sum, invoice) => sum + invoice.total, 0);
@@ -44,22 +46,22 @@ export function BookingFinancialSummary({ bookingId }: { bookingId: string }) {
   return (
     <div className="grid grid-cols-1 gap-4 rounded-lg border border-border/60 bg-surface-muted/40 p-4 sm:grid-cols-3">
       <MiniStat
-        label="Total Invoiced"
-        value={formatCurrency(totalInvoiced)}
+        label={t("bookings.finance.totalInvoiced")}
+        value={format.currency(totalInvoiced)}
         isLoading={isLoading}
         icon={<Wallet size={ICON_SIZE} />}
         tone="primary"
       />
       <MiniStat
-        label="Paid"
-        value={formatCurrency(paidAmount)}
+        label={t("bookings.finance.paid")}
+        value={format.currency(paidAmount)}
         isLoading={isLoading}
         icon={<CircleCheck size={ICON_SIZE} />}
         tone="success"
       />
       <MiniStat
-        label="Outstanding"
-        value={formatCurrency(outstandingAmount)}
+        label={t("bookings.finance.outstanding")}
+        value={format.currency(outstandingAmount)}
         isLoading={isLoading}
         icon={<CircleDollarSign size={ICON_SIZE} />}
         tone={outstandingAmount > 0 ? "warning" : "success"}

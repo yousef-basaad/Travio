@@ -1,18 +1,20 @@
 import { StatsCard } from "@travio/ui";
-import { formatDate } from "@travio/utils";
 import type { Booking } from "../types/booking";
-import { BOOKING_STATUS_LABELS } from "./booking-status-badge";
+import { BOOKING_STATUS_KEYS } from "./booking-status-badge";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { Translate } from "@/lib/i18n/translate";
 
 // Trip duration is derived purely from the booking's own start/end
 // dates (already-fetched fields, no new data) - shown in whole nights,
 // the same unit every travel-industry booking summary uses.
-function tripDuration(startDate: string | null, endDate: string | null): string {
+function tripDuration(startDate: string | null, endDate: string | null, t: Translate): string {
   if (!startDate || !endDate) return "—";
   const nights = Math.round(
     (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24),
   );
-  if (nights <= 0) return "Same day";
-  return `${nights} night${nights === 1 ? "" : "s"}`;
+  if (nights <= 0) return t("bookings.sameDay");
+  if (nights === 1) return t("bookings.oneNight");
+  return t("bookings.nights", { count: nights });
 }
 
 // The four Booking 360 "summary cards" (Customer / Trip Duration /
@@ -28,12 +30,14 @@ export function BookingSummaryCards({
   booking: Booking;
   customerName: string | null;
 }) {
+  const t = useT();
+  const format = useFormat();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <StatsCard label="Customer" value={customerName ?? booking.customerId} />
-      <StatsCard label="Trip Duration" value={tripDuration(booking.startDate, booking.endDate)} />
-      <StatsCard label="Status" value={BOOKING_STATUS_LABELS[booking.status]} />
-      <StatsCard label="Created" value={formatDate(booking.createdAt)} />
+      <StatsCard label={t("common.customer")} value={customerName ?? booking.customerId} />
+      <StatsCard label={t("bookings.tripDuration")} value={tripDuration(booking.startDate, booking.endDate, t)} />
+      <StatsCard label={t("common.status")} value={t(BOOKING_STATUS_KEYS[booking.status])} />
+      <StatsCard label={t("common.created")} value={format.date(booking.createdAt)} />
     </div>
   );
 }

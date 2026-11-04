@@ -7,6 +7,7 @@ import {
   useCreateCustomer,
   type CreateCustomerFieldErrors,
 } from "../api/customers.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const EMPTY_FORM = {
   fullName: "",
@@ -27,6 +28,7 @@ type CreateCustomerDialogProps = {
 // failure the dialog stays open with the entered values intact.
 export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialogProps) {
   const createCustomer = useCreateCustomer();
+  const t = useT();
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState<CreateCustomerFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
 
     const fullName = form.fullName.trim();
     if (!fullName) {
-      setFieldErrors({ fullName: "Full name is required" });
+      setFieldErrors({ fullName: t("customers.fullNameRequired") });
       return;
     }
     setFieldErrors({});
@@ -64,8 +66,8 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
         onSuccess: (customer) => {
           toast({
             variant: "success",
-            title: "Customer created",
-            description: `${customer.fullName} was added to your customers.`,
+            title: t("customers.created"),
+            description: t("customers.createdDescription", { name: customer.fullName }),
           });
           onOpenChange(false);
         },
@@ -74,7 +76,7 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
             setFieldErrors(error.fieldErrors);
             setFormError(error.formError);
           } else {
-            setFormError("Couldn't create the customer. Please try again.");
+            setFormError(t("customers.createError"));
           }
         },
       },
@@ -100,24 +102,24 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-customer-title" className="text-lg font-semibold">
-          New Customer
+          {t("customers.new")}
         </h2>
 
-        <FormField label="Full Name" htmlFor="customer-full-name" error={fieldErrors.fullName}>
+        <FormField label={t("field.fullName")} htmlFor="customer-full-name" error={fieldErrors.fullName}>
           <Input {...fieldProps("fullName", "customer-full-name")} autoComplete="off" required />
         </FormField>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Phone" htmlFor="customer-phone" error={fieldErrors.phone}>
+          <FormField label={t("field.phone")} htmlFor="customer-phone" error={fieldErrors.phone}>
             <Input {...fieldProps("phone", "customer-phone")} type="tel" autoComplete="off" />
           </FormField>
 
-          <FormField label="Email" htmlFor="customer-email" error={fieldErrors.email}>
+          <FormField label={t("field.email")} htmlFor="customer-email" error={fieldErrors.email}>
             <Input {...fieldProps("email", "customer-email")} type="email" autoComplete="off" />
           </FormField>
 
           <FormField
-            label="Passport Expiry"
+            label={t("field.passportExpiry")}
             htmlFor="customer-passport-expiry"
             error={fieldErrors.passportExpiry}
           >
@@ -125,7 +127,7 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
           </FormField>
 
           <FormField
-            label="Preferred Language"
+            label={t("field.preferredLanguage")}
             htmlFor="customer-preferred-language"
             error={fieldErrors.preferredLanguage}
           >
@@ -146,10 +148,10 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
             onClick={() => onOpenChange(false)}
             disabled={createCustomer.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createCustomer.isPending}>
-            {createCustomer.isPending ? "Creating…" : "Create Customer"}
+            {createCustomer.isPending ? t("common.creating") : t("customers.createSubmit")}
           </Button>
         </div>
       </form>

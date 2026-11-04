@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { DetailLayout, InfoRow } from "@travio/ui";
-import { formatDate, formatCurrency } from "@travio/utils";
 import type { Booking } from "../types/booking";
 import { BookingStatusBadge } from "./booking-status-badge";
 import { BookingTimeline } from "./timeline/booking-timeline";
@@ -15,6 +14,8 @@ import { TransferList } from "./services/transfer-list";
 import { InvoiceList } from "@/features/finance";
 import { DocumentsPage } from "@/features/documents";
 import { VisaList } from "@/features/customers";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 // Phase UI-3: Booking 360 tabs, matching the spec's lettered sections
 // A-E exactly. "Invoices" and "Payments" (previously two tabs, the
@@ -23,6 +24,14 @@ import { VisaList } from "@/features/customers";
 const TABS = ["Overview", "Services", "Finance", "Documents", "Timeline"] as const;
 
 type BookingTab = (typeof TABS)[number];
+
+const TAB_LABELS: Record<BookingTab, MessageKey> = {
+  Overview: "bookings.tab.overview",
+  Services: "bookings.tab.services",
+  Finance: "bookings.tab.finance",
+  Documents: "bookings.tab.documents",
+  Timeline: "bookings.tab.timeline",
+};
 
 // Grouped Customer info / Booking details / Notes / Assigned agent, in
 // that order, per the Booking 360 Overview spec - same fields as
@@ -34,41 +43,43 @@ function OverviewTab({
   booking: Booking;
   customerName: string | null;
 }) {
+  const t = useT();
+  const format = useFormat();
   return (
     <div className="space-y-6">
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Customer
+          {t("common.customer")}
         </p>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <InfoRow label="Customer" value={customerName ?? booking.customerId} />
+          <InfoRow label={t("common.customer")} value={customerName ?? booking.customerId} />
           {/* Raw id, not a resolved name - no profiles join exists yet. */}
-          <InfoRow label="Assigned Agent" value={booking.assignedTo ?? "Unassigned"} />
+          <InfoRow label={t("bookings.field.assignedAgent")} value={booking.assignedTo ?? t("common.unassigned")} />
         </dl>
       </div>
 
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Booking Details
+          {t("bookings.details")}
         </p>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <InfoRow label="Booking Number" value={booking.bookingNumber} />
-          <InfoRow label="Title" value={booking.title} />
-          <InfoRow label="Status" value={<BookingStatusBadge status={booking.status} />} />
+          <InfoRow label={t("bookings.field.number")} value={booking.bookingNumber} />
+          <InfoRow label={t("bookingField.title")} value={booking.title} />
+          <InfoRow label={t("common.status")} value={<BookingStatusBadge status={booking.status} />} />
           <InfoRow
-            label="Start Date"
-            value={booking.startDate ? formatDate(booking.startDate) : "—"}
+            label={t("bookings.field.startDate")}
+            value={booking.startDate ? format.date(booking.startDate) : "—"}
           />
-          <InfoRow label="End Date" value={booking.endDate ? formatDate(booking.endDate) : "—"} />
-          <InfoRow label="Total Amount" value={formatCurrency(booking.totalAmount)} />
-          <InfoRow label="Created At" value={formatDate(booking.createdAt)} />
-          <InfoRow label="Updated At" value={formatDate(booking.updatedAt)} />
+          <InfoRow label={t("bookings.field.endDate")} value={booking.endDate ? format.date(booking.endDate) : "—"} />
+          <InfoRow label={t("bookings.field.totalAmount")} value={format.currency(booking.totalAmount)} />
+          <InfoRow label={t("bookings.field.createdAt")} value={format.date(booking.createdAt)} />
+          <InfoRow label={t("bookings.field.updatedAt")} value={format.date(booking.updatedAt)} />
         </dl>
       </div>
 
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Notes
+          {t("common.notes")}
         </p>
         <p className="text-sm text-foreground">{booking.notes ?? "—"}</p>
       </div>
@@ -87,13 +98,15 @@ export function BookingTabs({
   customerName: string | null;
 }) {
   const [activeTab, setActiveTab] = useState<BookingTab>("Overview");
+  const t = useT();
 
   return (
     <DetailLayout
       tabs={TABS}
       activeTab={activeTab}
       onTabChange={(tab) => setActiveTab(tab as BookingTab)}
-      ariaLabel="Booking sections"
+      ariaLabel={t("bookings.sections")}
+      tabLabel={(tab) => t(TAB_LABELS[tab as BookingTab])}
     >
       {activeTab === "Overview" ? (
         <OverviewTab booking={booking} customerName={customerName} />
@@ -118,7 +131,7 @@ export function BookingTabs({
           <BookingTimeline bookingId={booking.id} />
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Coming soon</p>
+        <p className="text-sm text-muted-foreground">{t("common.comingSoon")}</p>
       )}
     </DetailLayout>
   );

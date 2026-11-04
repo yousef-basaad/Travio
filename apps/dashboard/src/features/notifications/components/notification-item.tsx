@@ -1,7 +1,7 @@
 import { Button, ServiceItem, ServiceItemHeader, ServiceItemContent } from "@travio/ui";
-import { cn, formatRelativeTime } from "@travio/utils";
+import { cn } from "@travio/utils";
 import type { Notification } from "@travio/api";
-import { useT } from "@/lib/i18n/i18n-provider";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 export interface NotificationItemProps {
   notification: Notification;
@@ -12,6 +12,7 @@ export interface NotificationItemProps {
 export function NotificationItem({ notification, onMarkRead, isMarkingRead }: NotificationItemProps) {
   const isUnread = notification.readAt === null;
   const t = useT();
+  const format = useFormat();
 
   return (
     <ServiceItem className={cn(isUnread && "bg-accent/50")}>
@@ -33,7 +34,7 @@ export function NotificationItem({ notification, onMarkRead, isMarkingRead }: No
       </ServiceItemHeader>
       <ServiceItemContent>
         <p className="text-sm text-muted-foreground">{notification.message}</p>
-        <p className="text-xs text-muted-foreground">{formatRelativeTime(notification.createdAt)}</p>
+        <p className="text-xs text-muted-foreground">{format.relativeTime(notification.createdAt)}</p>
       </ServiceItemContent>
     </ServiceItem>
   );

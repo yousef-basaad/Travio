@@ -10,12 +10,14 @@ export interface TabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   "aria-label": string;
+  /** Display text for a tab id (e.g. a translation); the id itself by default. */
+  tabLabel?: (tab: string) => string;
 }
 
 // Design System v2.2: shares the same duration-fast/ease-default motion
 // every other interactive primitive (Button/Badge/Card/Table row) uses,
 // and the active tab now uses the design system's rounded-md consistently.
-export function Tabs({ tabs, activeTab, onTabChange, "aria-label": ariaLabel }: TabsProps) {
+export function Tabs({ tabs, activeTab, onTabChange, "aria-label": ariaLabel, tabLabel = (tab) => tab }: TabsProps) {
   return (
     <div role="tablist" aria-label={ariaLabel} className="flex flex-wrap gap-1 border-b p-2">
       {tabs.map((tab) => (
@@ -32,7 +34,7 @@ export function Tabs({ tabs, activeTab, onTabChange, "aria-label": ariaLabel }: 
               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           )}
         >
-          {tab}
+          {tabLabel(tab)}
         </button>
       ))}
     </div>
