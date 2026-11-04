@@ -1,6 +1,9 @@
+"use client";
+
 import type { CrmActivity, CrmActivityType } from "@travio/api";
 import { Button } from "@travio/ui";
-import { formatDate } from "@travio/utils";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import { ACTIVITY_TYPE_KEYS } from "../../utils/label-keys";
 
 // Single source of truth for the type -> icon mapping. Exported so
 // timeline-item.tsx reuses it for activity-type timeline entries instead
@@ -14,15 +17,6 @@ export const ACTIVITY_ICONS: Record<CrmActivityType, string> = {
   follow_up: "🔄",
 };
 
-const ACTIVITY_TYPE_LABELS: Record<CrmActivityType, string> = {
-  call: "Call",
-  email: "Email",
-  meeting: "Meeting",
-  whatsapp: "WhatsApp",
-  task: "Task",
-  follow_up: "Follow-up",
-};
-
 type ActivityItemProps = {
   activity: CrmActivity;
   onEdit: (activity: CrmActivity) => void;
@@ -31,6 +25,8 @@ type ActivityItemProps = {
 };
 
 export function ActivityItem({ activity, onEdit, onDelete, isDeleting }: ActivityItemProps) {
+  const t = useT();
+  const format = useFormat();
   return (
     <li className="space-y-2 rounded-md border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -38,7 +34,7 @@ export function ActivityItem({ activity, onEdit, onDelete, isDeleting }: Activit
           <span aria-hidden="true">{ACTIVITY_ICONS[activity.type]}</span>
           <span className="text-sm font-medium">{activity.title}</span>
           <span className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-            {ACTIVITY_TYPE_LABELS[activity.type]}
+            {t(ACTIVITY_TYPE_KEYS[activity.type])}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -46,18 +42,18 @@ export function ActivityItem({ activity, onEdit, onDelete, isDeleting }: Activit
             variant="ghost"
             size="sm"
             onClick={() => onEdit(activity)}
-            aria-label="Edit activity"
+            aria-label={t("leads.activities.edit")}
           >
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete(activity.id)}
             disabled={isDeleting}
-            aria-label="Delete activity"
+            aria-label={t("leads.activities.delete")}
           >
-            {isDeleting ? "Deleting…" : "Delete"}
+            {isDeleting ? t("common.deleting") : t("common.delete")}
           </Button>
         </div>
       </div>
@@ -67,7 +63,7 @@ export function ActivityItem({ activity, onEdit, onDelete, isDeleting }: Activit
         </p>
       )}
       <p className="text-xs text-muted-foreground">
-        {activity.performedAt ? formatDate(activity.performedAt) : "—"}
+        {activity.performedAt ? format.date(activity.performedAt) : "—"}
       </p>
     </li>
   );

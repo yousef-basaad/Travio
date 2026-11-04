@@ -30,7 +30,7 @@ export function leadToTimelineItem(lead: CrmLead): CrmTimelineItem | null {
     type: "lead_created",
     title: `Lead created: ${lead.fullName}`,
     createdAt: lead.createdAt,
-    metadata: { leadId: lead.id, source: lead.source, status: lead.status },
+    metadata: { leadId: lead.id, fullName: lead.fullName, source: lead.source, status: lead.status },
   };
 }
 

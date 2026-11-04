@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@travio/ui";
 import type { CrmActivityType } from "@travio/api";
 import { useCreateLeadActivity } from "../../api/leads.api";
-import { humanize } from "../../utils/humanize";
+import { ACTIVITY_TYPE_KEYS } from "../../utils/label-keys";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Matches crm_activities_type_check exactly. Exported so
 // edit-activity-dialog.tsx reuses the same list/guard rather than
@@ -33,6 +34,7 @@ type CreateActivityDialogProps = {
 // those files' comments for why: no dialog primitive exists anywhere in
 // the project, and this scope is apps/dashboard only).
 export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActivityDialogProps) {
+  const t = useT();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const createActivity = useCreateLeadActivity();
   const [type, setType] = useState<CrmActivityType>("call");
@@ -62,7 +64,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
 
     const trimmedTitle = title.trim();
     if (trimmedTitle.length === 0) {
-      setValidationError("Title is required.");
+      setValidationError(t("validation.titleRequired"));
       return;
     }
     setValidationError(null);
@@ -94,12 +96,12 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-activity-title" className="text-lg font-semibold">
-          Add Activity
+          {t("leads.activities.add")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="activity-type" className="text-sm font-medium">
-            Activity Type
+            {t("leads.activities.type")}
           </label>
           <select
             id="activity-type"
@@ -114,7 +116,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
           >
             {ACTIVITY_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {humanize(option)}
+                {t(ACTIVITY_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
@@ -122,7 +124,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
 
         <div className="space-y-1">
           <label htmlFor="activity-title-field" className="text-sm font-medium">
-            Title
+            {t("common.title")}
           </label>
           <input
             id="activity-title-field"
@@ -141,7 +143,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
 
         <div className="space-y-1">
           <label htmlFor="activity-description" className="text-sm font-medium">
-            Description
+            {t("common.description")}
           </label>
           <textarea
             id="activity-description"
@@ -154,7 +156,7 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
 
         {createActivity.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the activity. Please try again.
+            {t("leads.activities.addError")}
           </p>
         )}
 
@@ -165,10 +167,10 @@ export function CreateActivityDialog({ leadId, open, onOpenChange }: CreateActiv
             onClick={() => onOpenChange(false)}
             disabled={createActivity.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createActivity.isPending}>
-            {createActivity.isPending ? "Adding…" : "Add Activity"}
+            {createActivity.isPending ? t("common.adding") : t("leads.activities.add")}
           </Button>
         </div>
       </form>

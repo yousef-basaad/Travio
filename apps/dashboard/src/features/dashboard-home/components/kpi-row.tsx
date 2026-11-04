@@ -2,9 +2,9 @@
 
 import { Luggage, UserPlus, Wallet, CircleDollarSign, CalendarClock } from "lucide-react";
 import { KpiCard, SkeletonCard } from "@travio/ui";
-import { formatCurrency } from "@travio/utils";
 import { useDashboardStats, useCustomerAnalytics, useRevenueOverview } from "@/features/analytics";
 import { useBookings } from "@/features/bookings";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const ICON_SIZE = 18;
 const TREND_MONTHS = 6;
@@ -65,6 +65,8 @@ function trendFrom(series: number[]): { value: string; direction: "up" | "down" 
 // monthly series, so they render without a sparkline rather than a
 // fabricated flat line.
 export function KpiRow() {
+  const t = useT();
+  const format = useFormat();
   const { data: stats, isLoading: isLoadingStats } = useDashboardStats();
   const { data: customerAnalytics, isLoading: isLoadingCustomers } = useCustomerAnalytics();
   const { data: revenue, isLoading: isLoadingRevenue } = useRevenueOverview();
@@ -95,40 +97,40 @@ export function KpiRow() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <KpiCard
-        label="Total Bookings"
+        label={t("home.kpi.totalBookings")}
         value={String(stats?.totalBookings ?? 0)}
         icon={<Luggage size={ICON_SIZE} />}
         tone="primary"
         trend={bookingsTrend}
-        trendContext={bookingsTrend ? "vs last month" : undefined}
+        trendContext={bookingsTrend ? t("home.kpi.vsLastMonth") : undefined}
         sparkline={bookingsPerMonth}
       />
       <KpiCard
-        label="New Customers"
+        label={t("home.kpi.newCustomers")}
         value={String(customerAnalytics?.newCustomersThisMonth ?? 0)}
         icon={<UserPlus size={ICON_SIZE} />}
         tone="info"
         trend={customersTrend}
-        trendContext={customersTrend ? "vs last month" : undefined}
+        trendContext={customersTrend ? t("home.kpi.vsLastMonth") : undefined}
       />
       <KpiCard
-        label="Upcoming Bookings"
+        label={t("home.kpi.upcomingBookings")}
         value={String(stats?.upcomingBookings ?? 0)}
         icon={<CalendarClock size={ICON_SIZE} />}
         tone="info"
       />
       <KpiCard
-        label="Total Sales"
-        value={formatCurrency(stats?.totalRevenue ?? 0)}
+        label={t("home.kpi.totalSales")}
+        value={format.currency(stats?.totalRevenue ?? 0)}
         icon={<CircleDollarSign size={ICON_SIZE} />}
         tone="success"
         trend={salesTrend}
-        trendContext={salesTrend ? "vs last month" : undefined}
+        trendContext={salesTrend ? t("home.kpi.vsLastMonth") : undefined}
         sparkline={salesPerMonth}
       />
       <KpiCard
-        label="Outstanding Payments"
-        value={formatCurrency(stats?.outstandingAmount ?? 0)}
+        label={t("home.kpi.outstanding")}
+        value={format.currency(stats?.outstandingAmount ?? 0)}
         icon={<Wallet size={ICON_SIZE} />}
         tone={(stats?.outstandingAmount ?? 0) > 0 ? "danger" : "success"}
       />

@@ -12,7 +12,9 @@ import {
   type EditLeadFormValues,
 } from "../schemas/edit-lead.schema";
 import { CRM_LEAD_SOURCE_OPTIONS } from "../schemas/create-lead.schema";
-import { humanize } from "../utils/humanize";
+import { LEAD_SOURCE_KEYS, LEAD_STATUS_KEYS } from "../utils/label-keys";
+import { isMessageKey } from "@/lib/i18n/translate";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 type EditLeadDialogProps = {
   lead: CrmLead;
@@ -35,6 +37,8 @@ function toFormValues(lead: CrmLead): EditLeadFormValues {
 // comment for why: no dialog primitive exists anywhere in the project,
 // and this issue's scope is apps/dashboard only).
 export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps) {
+  const t = useT();
+  const fieldError = (message?: string) => (message && isMessageKey(message) ? t(message) : message);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const updateLead = useUpdateLead();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -73,7 +77,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
     } catch {
       // Keep the dialog open and the entered values intact (reset() is
       // only called on success, same as CreateLeadDialog).
-      setSubmitError("Couldn't save changes. Please try again.");
+      setSubmitError(t("common.saveError"));
     }
   });
 
@@ -86,12 +90,12 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
     >
       <form onSubmit={onSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-lead-title" className="text-lg font-semibold">
-          Edit Lead
+          {t("leads.edit")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="edit-lead-full-name" className="text-sm font-medium">
-            Full Name
+            {t("field.fullName")}
           </label>
           <input
             id="edit-lead-full-name"
@@ -102,17 +106,18 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
           />
           {errors.fullName && (
             <p id="edit-lead-full-name-error" className="text-sm text-danger">
-              {errors.fullName.message}
+              {fieldError(errors.fullName.message)}
             </p>
           )}
         </div>
 
         <div className="space-y-1">
           <label htmlFor="edit-lead-phone" className="text-sm font-medium">
-            Phone
+            {t("field.phone")}
           </label>
           <input
             id="edit-lead-phone"
+            type="tel"
             className="w-full rounded-md border px-3 py-2 text-sm"
             {...register("phone")}
           />
@@ -120,7 +125,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
 
         <div className="space-y-1">
           <label htmlFor="edit-lead-email" className="text-sm font-medium">
-            Email
+            {t("field.email")}
           </label>
           <input
             id="edit-lead-email"
@@ -132,24 +137,24 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
           />
           {errors.email && (
             <p id="edit-lead-email-error" className="text-sm text-danger">
-              {errors.email.message}
+              {fieldError(errors.email.message)}
             </p>
           )}
         </div>
 
         <div className="space-y-1">
           <label htmlFor="edit-lead-source" className="text-sm font-medium">
-            Source
+            {t("field.source")}
           </label>
           <select
             id="edit-lead-source"
             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
             {...register("source")}
           >
-            <option value="">Select a source</option>
+            <option value="">{t("leads.selectSource")}</option>
             {CRM_LEAD_SOURCE_OPTIONS.map((source) => (
               <option key={source} value={source}>
-                {humanize(source)}
+                {t(LEAD_SOURCE_KEYS[source])}
               </option>
             ))}
           </select>
@@ -157,7 +162,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
 
         <div className="space-y-1">
           <label htmlFor="edit-lead-status" className="text-sm font-medium">
-            Status
+            {t("common.status")}
           </label>
           <select
             id="edit-lead-status"
@@ -166,7 +171,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
           >
             {CRM_LEAD_STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
-                {humanize(status)}
+                {t(LEAD_STATUS_KEYS[status])}
               </option>
             ))}
           </select>
@@ -174,11 +179,11 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
 
         <div className="space-y-1">
           <label htmlFor="edit-lead-assigned-to" className="text-sm font-medium">
-            Assigned To
+            {t("field.assignedTo")}
           </label>
           <input
             id="edit-lead-assigned-to"
-            placeholder="Unassigned"
+            placeholder={t("common.unassigned")}
             className="w-full rounded-md border px-3 py-2 text-sm"
             aria-invalid={errors.assignedTo ? "true" : "false"}
             aria-describedby={errors.assignedTo ? "edit-lead-assigned-to-error" : undefined}
@@ -186,7 +191,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
           />
           {errors.assignedTo && (
             <p id="edit-lead-assigned-to-error" className="text-sm text-danger">
-              {errors.assignedTo.message}
+              {fieldError(errors.assignedTo.message)}
             </p>
           )}
         </div>
@@ -204,10 +209,10 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving…" : "Save Changes"}
+            {isSubmitting ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

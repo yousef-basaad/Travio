@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { Inbox } from "lucide-react";
 import { Widget, DataTableState, Button } from "@travio/ui";
-import { formatRelativeTime } from "@travio/utils";
 import { useNotifications } from "@/features/notifications";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const PREVIEW_LIMIT = 5;
 
@@ -17,16 +17,18 @@ const PREVIEW_LIMIT = 5;
 // placeholder page (Phase 2), which itself points back at the
 // notification bell - never a dead link, never invented messages.
 export function InboxPreview() {
+  const t = useT();
+  const format = useFormat();
   const { data: notifications, isLoading } = useNotifications();
   const recent = (notifications ?? []).slice(0, PREVIEW_LIMIT);
 
   return (
     <Widget
-      title="Inbox"
-      description="Your recent notifications"
+      title={t("nav.inbox")}
+      description={t("home.inbox.description")}
       action={
         <Button asChild variant="ghost" size="sm">
-          <Link href="/inbox">View all</Link>
+          <Link href="/inbox">{t("common.viewAll")}</Link>
         </Button>
       }
     >
@@ -34,7 +36,7 @@ export function InboxPreview() {
         isLoading={isLoading}
         isError={false}
         isEmpty={recent.length === 0}
-        emptyMessage="No notifications yet"
+        emptyMessage={t("notifications.empty")}
         emptyIcon={<Inbox size={20} />}
       >
         <ul className="space-y-3">
@@ -53,7 +55,7 @@ export function InboxPreview() {
                 <p className="truncate text-xs text-muted-foreground">{notification.message}</p>
               </div>
               <span className="shrink-0 text-xs text-muted-foreground">
-                {formatRelativeTime(notification.createdAt)}
+                {format.relativeTime(notification.createdAt)}
               </span>
             </li>
           ))}

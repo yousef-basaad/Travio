@@ -1,5 +1,9 @@
+"use client";
+
 import type { CrmLeadStatus } from "@travio/api";
 import { cn } from "@travio/utils";
+import { useT } from "@/lib/i18n/i18n-provider";
+import { LEAD_STATUS_KEYS } from "../utils/label-keys";
 
 // Phase UI-6: retuned to the design system's semantic status vocabulary
 // (success/warning/danger/info) instead of ad hoc primary-opacity tiers -
@@ -15,16 +19,8 @@ const STATUS_STYLES: Record<CrmLeadStatus, string> = {
   lost: "bg-danger/10 text-danger",
 };
 
-const STATUS_LABELS: Record<CrmLeadStatus, string> = {
-  new: "New",
-  contacted: "Contacted",
-  qualified: "Qualified",
-  proposal_sent: "Proposal Sent",
-  won: "Won",
-  lost: "Lost",
-};
-
 export function LeadStatusBadge({ status }: { status: CrmLeadStatus }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -32,7 +28,7 @@ export function LeadStatusBadge({ status }: { status: CrmLeadStatus }) {
         STATUS_STYLES[status],
       )}
     >
-      {STATUS_LABELS[status]}
+      {t(LEAD_STATUS_KEYS[status])}
     </span>
   );
 }
