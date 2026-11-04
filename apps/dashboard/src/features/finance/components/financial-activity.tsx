@@ -10,9 +10,9 @@ import {
   ServiceItemHeader,
   ServiceItemContent,
 } from "@travio/ui";
-import { formatCurrency, formatRelativeTime } from "@travio/utils";
 import { useInvoicesPage, usePaymentsPage } from "../api/invoices.api";
 import { useExpensesPage } from "../api/expenses.api";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const ACTIVITY_LIMIT = 8;
 
@@ -31,6 +31,8 @@ type ActivityEvent = {
 const LATEST = { page: 1, pageSize: ACTIVITY_LIMIT };
 
 export function FinancialActivity() {
+  const t = useT();
+  const format = useFormat();
   const invoicesQuery = useInvoicesPage(LATEST);
   const paymentsQuery = usePaymentsPage(LATEST);
   const expensesQuery = useExpensesPage(LATEST);
@@ -42,7 +44,7 @@ export function FinancialActivity() {
     ...(invoicesQuery.data?.items ?? []).map((invoice) => ({
       id: `invoice-${invoice.id}`,
       at: invoice.createdAt,
-      label: `Invoice ${invoice.invoiceNumber} created`,
+      label: t("finance.activity.invoiceCreated", { number: invoice.invoiceNumber }),
       amount: invoice.total,
       currency: invoice.currency,
     })),
@@ -51,7 +53,7 @@ export function FinancialActivity() {
       .map((payment) => ({
         id: `payment-${payment.id}`,
         at: payment.createdAt as string,
-        label: "Payment received",
+        label: t("finance.activity.paymentReceived"),
         amount: payment.amount,
       })),
     ...(expensesQuery.data?.items ?? [])
@@ -59,7 +61,7 @@ export function FinancialActivity() {
       .map((expense) => ({
         id: `expense-${expense.id}`,
         at: expense.createdAt as string,
-        label: `Expense logged: ${expense.title}`,
+        label: t("finance.activity.expenseLogged", { title: expense.title }),
         amount: -expense.amount,
       })),
   ]
@@ -69,17 +71,17 @@ export function FinancialActivity() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <h2 className="text-sm font-semibold text-foreground">Financial Activity</h2>
-        <p className="text-xs text-muted-foreground">Latest invoices, payments, and expenses</p>
+        <h2 className="text-sm font-semibold text-foreground">{t("finance.activity.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("finance.activity.subtitle")}</p>
       </CardHeader>
       <CardContent className="pt-0">
         <DataTableState
           isLoading={isLoading}
           isError={isError}
           isEmpty={events.length === 0}
-          loadingLabel="Loading financial activity"
-          errorMessage="Something went wrong loading financial activity. Please try again later."
-          emptyMessage="No financial activity yet"
+          loadingLabel={t("finance.activity.loading")}
+          errorMessage={t("finance.activity.error")}
+          emptyMessage={t("finance.activity.empty")}
           emptyIcon={<Activity size={20} />}
         >
           <ul className="space-y-2">
@@ -89,11 +91,11 @@ export function FinancialActivity() {
                   <span className="text-sm font-medium">{event.label}</span>
                   <span className={event.amount < 0 ? "text-sm text-danger" : "text-sm font-medium"}>
                     {event.amount < 0 ? "-" : ""}
-                    {formatCurrency(Math.abs(event.amount), event.currency)}
+                    {format.currency(Math.abs(event.amount), event.currency)}
                   </span>
                 </ServiceItemHeader>
                 <ServiceItemContent>
-                  <p className="text-xs text-muted-foreground">{formatRelativeTime(event.at)}</p>
+                  <p className="text-xs text-muted-foreground">{format.relativeTime(event.at)}</p>
                 </ServiceItemContent>
               </ServiceItem>
             ))}

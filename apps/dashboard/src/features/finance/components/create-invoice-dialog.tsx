@@ -4,7 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { InvoiceStatus } from "@travio/api";
 import { useCreateInvoice } from "../api/invoices.api";
-import { INVOICE_STATUS_LABELS } from "./invoice-item";
+import { INVOICE_STATUS_KEYS } from "./invoice-item";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const INVOICE_STATUS_OPTIONS: InvoiceStatus[] = [
   "draft",
@@ -47,6 +48,7 @@ export function CreateInvoiceDialog({
   open,
   onOpenChange,
 }: CreateInvoiceDialogProps) {
+  const t = useT();
   const createInvoice = useCreateInvoice();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -65,14 +67,14 @@ export function CreateInvoiceDialog({
 
     const trimmedNumber = form.invoiceNumber.trim();
     if (trimmedNumber.length === 0) {
-      setValidationError("Invoice number is required.");
+      setValidationError(t("finance.invoices.numberRequired"));
       return;
     }
 
     const trimmedTotal = form.total.trim();
     const parsedTotal = trimmedTotal === "" ? Number.NaN : Number(trimmedTotal);
     if (!Number.isFinite(parsedTotal) || parsedTotal < 0) {
-      setValidationError("Enter a valid total amount.");
+      setValidationError(t("finance.invoices.invalidTotal"));
       return;
     }
 
@@ -109,13 +111,13 @@ export function CreateInvoiceDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-invoice-title" className="text-lg font-semibold">
-          Add Invoice
+          {t("finance.invoices.add")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="invoice-number" className="text-sm font-medium">
-              Invoice Number
+              {t("finance.invoices.number")}
             </label>
             <input
               id="invoice-number"
@@ -128,7 +130,7 @@ export function CreateInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="invoice-total" className="text-sm font-medium">
-              Total Amount
+              {t("bookings.field.totalAmount")}
             </label>
             <input
               id="invoice-total"
@@ -144,7 +146,7 @@ export function CreateInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="invoice-currency" className="text-sm font-medium">
-              Currency
+              {t("finance.invoices.currency")}
             </label>
             <input
               id="invoice-currency"
@@ -157,7 +159,7 @@ export function CreateInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="invoice-issue-date" className="text-sm font-medium">
-              Issue Date
+              {t("finance.invoices.issueDate")}
             </label>
             <input
               id="invoice-issue-date"
@@ -170,7 +172,7 @@ export function CreateInvoiceDialog({
 
           <div className="space-y-1">
             <label htmlFor="invoice-due-date" className="text-sm font-medium">
-              Due Date
+              {t("finance.invoices.dueDate")}
             </label>
             <input
               id="invoice-due-date"
@@ -184,7 +186,7 @@ export function CreateInvoiceDialog({
 
         <div className="space-y-1">
           <label htmlFor="invoice-status" className="text-sm font-medium">
-            Status
+            {t("common.status")}
           </label>
           <select
             id="invoice-status"
@@ -197,10 +199,10 @@ export function CreateInvoiceDialog({
               }
             }}
           >
-            <option value="">Select a status</option>
+            <option value="">{t("common.selectStatus")}</option>
             {INVOICE_STATUS_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {INVOICE_STATUS_LABELS[option]}
+                {t(INVOICE_STATUS_KEYS[option])}
               </option>
             ))}
           </select>
@@ -208,7 +210,7 @@ export function CreateInvoiceDialog({
 
         <div className="space-y-1">
           <label htmlFor="invoice-notes" className="text-sm font-medium">
-            Notes
+            {t("common.notes")}
           </label>
           <textarea
             id="invoice-notes"
@@ -227,7 +229,7 @@ export function CreateInvoiceDialog({
 
         {createInvoice.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the invoice. Please try again.
+            {t("finance.invoices.addError")}
           </p>
         )}
 
@@ -238,10 +240,10 @@ export function CreateInvoiceDialog({
             onClick={() => onOpenChange(false)}
             disabled={createInvoice.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createInvoice.isPending}>
-            {createInvoice.isPending ? "Adding…" : "Add Invoice"}
+            {createInvoice.isPending ? t("common.adding") : t("finance.invoices.add")}
           </Button>
         </div>
       </form>

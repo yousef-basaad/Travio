@@ -4,7 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { PaymentMethod } from "@travio/api";
 import { useCreatePayment } from "../../api/invoices.api";
-import { PAYMENT_METHOD_LABELS } from "./payment-item";
+import { PAYMENT_METHOD_KEYS } from "./payment-item";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ["cash", "card", "bank_transfer", "online"];
 
@@ -30,6 +31,7 @@ type CreatePaymentDialogProps = {
 // must be positive (matching createPaymentSchema) - a payment recording
 // 0 money received isn't a meaningful ledger entry.
 export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePaymentDialogProps) {
+  const t = useT();
   const createPayment = useCreatePayment();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
     const trimmedAmount = form.amount.trim();
     const parsedAmount = trimmedAmount === "" ? Number.NaN : Number(trimmedAmount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setValidationError("Enter a valid payment amount.");
+      setValidationError(t("finance.payments.invalidAmount"));
       return;
     }
 
@@ -82,13 +84,13 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-payment-title" className="text-lg font-semibold">
-          Add Payment
+          {t("finance.payments.add")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="payment-amount" className="text-sm font-medium">
-              Amount
+              {t("bookingField.amount")}
             </label>
             <input
               id="payment-amount"
@@ -104,7 +106,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
 
           <div className="space-y-1">
             <label htmlFor="payment-method" className="text-sm font-medium">
-              Payment Method
+              {t("finance.payments.method")}
             </label>
             <select
               id="payment-method"
@@ -119,7 +121,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
             >
               {PAYMENT_METHOD_OPTIONS.map((option) => (
                 <option key={option} value={option}>
-                  {PAYMENT_METHOD_LABELS[option]}
+                  {t(PAYMENT_METHOD_KEYS[option])}
                 </option>
               ))}
             </select>
@@ -127,7 +129,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
 
           <div className="space-y-1">
             <label htmlFor="payment-reference" className="text-sm font-medium">
-              Reference
+              {t("bookings.payments.reference")}
             </label>
             <input
               id="payment-reference"
@@ -139,7 +141,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
 
           <div className="space-y-1">
             <label htmlFor="payment-paid-at" className="text-sm font-medium">
-              Paid Date
+              {t("finance.payments.paidDate")}
             </label>
             <input
               id="payment-paid-at"
@@ -159,7 +161,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
 
         {createPayment.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the payment. Please try again.
+            {t("finance.payments.addError")}
           </p>
         )}
 
@@ -170,10 +172,10 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
             onClick={() => onOpenChange(false)}
             disabled={createPayment.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createPayment.isPending}>
-            {createPayment.isPending ? "Adding…" : "Add Payment"}
+            {createPayment.isPending ? t("common.adding") : t("finance.payments.add")}
           </Button>
         </div>
       </form>

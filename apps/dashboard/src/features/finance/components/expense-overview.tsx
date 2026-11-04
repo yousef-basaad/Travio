@@ -20,10 +20,10 @@ import {
   SearchInput,
 } from "@travio/ui";
 import { AppPagination } from "@/components/app-pagination";
-import { formatCurrency, formatDate } from "@travio/utils";
 import { useExpensesPage, useCreateExpense } from "../api/expenses.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { FINANCE_CARD_PAGE_SIZE } from "./finance-paging";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const EMPTY_FORM = {
   title: "",
@@ -40,6 +40,7 @@ const EMPTY_FORM = {
 // migration), so it's a free-text Input, not a fabricated fixed list of
 // categories.
 function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const t = useT();
   const createExpense = useCreateExpense();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -58,14 +59,14 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
     const trimmedTitle = form.title.trim();
     if (trimmedTitle.length === 0) {
-      setValidationError("Title is required.");
+      setValidationError(t("finance.expenses.titleRequired"));
       return;
     }
 
     const trimmedAmount = form.amount.trim();
     const parsedAmount = trimmedAmount === "" ? Number.NaN : Number(trimmedAmount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setValidationError("Enter a valid expense amount.");
+      setValidationError(t("finance.expenses.invalidAmount"));
       return;
     }
 
@@ -96,10 +97,10 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-expense-title" className="text-lg font-semibold">
-          Add Expense
+          {t("finance.expenses.add")}
         </h2>
 
-        <FormField label="Title" htmlFor="expense-title" error={validationError ?? undefined}>
+        <FormField label={t("bookingField.title")} htmlFor="expense-title" error={validationError ?? undefined}>
           <Input
             id="expense-title"
             value={form.title}
@@ -108,7 +109,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         </FormField>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Amount" htmlFor="expense-amount">
+          <FormField label={t("bookingField.amount")} htmlFor="expense-amount">
             <Input
               id="expense-amount"
               type="number"
@@ -119,7 +120,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             />
           </FormField>
 
-          <FormField label="Category" htmlFor="expense-category">
+          <FormField label={t("finance.expenses.category")} htmlFor="expense-category">
             <Input
               id="expense-category"
               placeholder="e.g. Office, Marketing"
@@ -138,7 +139,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           </FormField>
         </div>
 
-        <FormField label="Description" htmlFor="expense-description">
+        <FormField label={t("finance.items.description")} htmlFor="expense-description">
           <Textarea
             id="expense-description"
             rows={3}
@@ -149,7 +150,7 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 
         {createExpense.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the expense. Please try again.
+            {t("finance.expenses.addError")}
           </p>
         )}
 
@@ -160,10 +161,10 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             onClick={() => onOpenChange(false)}
             disabled={createExpense.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createExpense.isPending}>
-            {createExpense.isPending ? "Adding…" : "Add Expense"}
+            {createExpense.isPending ? t("common.adding") : t("finance.expenses.add")}
           </Button>
         </div>
       </form>
@@ -174,6 +175,8 @@ function CreateExpenseDialog({ open, onOpenChange }: { open: boolean; onOpenChan
 // Paged and searched (title/category) on the server, so it isn't capped
 // at the 1000 rows one response can hold.
 export function ExpenseOverview() {
+  const t = useT();
+  const format = useFormat();
   const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(undefined, FINANCE_CARD_PAGE_SIZE);
   const { data, isLoading, isError, isFetching } = useExpensesPage({ page, pageSize, search: debouncedSearch });
   const expenses = data?.items ?? [];
@@ -184,17 +187,17 @@ export function ExpenseOverview() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Expenses</h2>
-          <p className="text-xs text-muted-foreground">Operating costs logged for your agency</p>
+          <h2 className="text-sm font-semibold text-foreground">{t("finance.expenses.title")}</h2>
+          <p className="text-xs text-muted-foreground">{t("finance.expenses.subtitle")}</p>
         </div>
         <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          Add Expense
+          {t("finance.expenses.add")}
         </Button>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         <SearchInput
-          placeholder="Search by title or category"
-          aria-label="Search expenses"
+          placeholder={t("finance.expenses.searchPlaceholder")}
+          aria-label={t("finance.expenses.searchLabel")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -202,25 +205,25 @@ export function ExpenseOverview() {
           isLoading={isLoading}
           isError={isError}
           isEmpty={!isLoading && expenses.length === 0}
-          loadingLabel="Loading expenses"
-          errorMessage="Something went wrong loading expenses. Please try again later."
-          emptyMessage={debouncedSearch ? "No expenses match your search" : "No expenses logged yet"}
+          loadingLabel={t("finance.expenses.loading")}
+          errorMessage={t("finance.expenses.error")}
+          emptyMessage={debouncedSearch ? t("finance.expenses.emptySearch") : t("finance.expenses.empty")}
           emptyIcon={<Wallet size={20} />}
           emptyAction={
             !debouncedSearch ? (
               <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-                Add Expense
+                {t("finance.expenses.add")}
               </Button>
             ) : undefined
           }
         >
-          <Table aria-label="Expenses" caption="All logged expenses, most recent first">
+          <Table aria-label={t("finance.expenses.title")} caption={t("finance.expenses.caption")}>
             <TableHeader>
               <TableRow className="text-muted-foreground">
-                <TableCell header>Title</TableCell>
-                <TableCell header>Category</TableCell>
+                <TableCell header>{t("bookingField.title")}</TableCell>
+                <TableCell header>{t("finance.expenses.category")}</TableCell>
                 <TableCell header>Date</TableCell>
-                <TableCell header>Amount</TableCell>
+                <TableCell header>{t("bookingField.amount")}</TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -228,8 +231,8 @@ export function ExpenseOverview() {
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">{expense.title}</TableCell>
                   <TableCell>{expense.category ?? "—"}</TableCell>
-                  <TableCell>{expense.expenseDate ? formatDate(expense.expenseDate) : "—"}</TableCell>
-                  <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                  <TableCell>{expense.expenseDate ? format.date(expense.expenseDate) : "—"}</TableCell>
+                  <TableCell>{format.currency(expense.amount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

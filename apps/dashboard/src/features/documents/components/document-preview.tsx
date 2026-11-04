@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Dialog, Button } from "@travio/ui";
 import type { Document } from "@travio/api";
 import { useSignedUrl } from "../api/documents.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Images and PDFs render inline via the browser's own capabilities (no
 // PDF/image library) - everything else is download-only, per the
@@ -21,6 +22,7 @@ export interface DocumentPreviewProps {
 // Fetches a fresh 60s signed URL each time it's opened (never cached) -
 // see useSignedUrl's own comment for why this is a mutation, not a query.
 export function DocumentPreview({ document, open, onOpenChange }: DocumentPreviewProps) {
+  const t = useT();
   const signedUrl = useSignedUrl();
 
   useEffect(() => {
@@ -43,11 +45,11 @@ export function DocumentPreview({ document, open, onOpenChange }: DocumentPrevie
 
         {signedUrl.isPending ? (
           <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-            Loading preview…
+            {t("documents.loadingPreview")}
           </div>
         ) : signedUrl.isError ? (
           <p role="alert" className="text-sm text-danger">
-            Couldn't load a preview. Please try again.
+            {t("documents.previewError")}
           </p>
         ) : signedUrl.data && previewable ? (
           document.mimeType === "application/pdf" ? (
@@ -65,18 +67,18 @@ export function DocumentPreview({ document, open, onOpenChange }: DocumentPrevie
           )
         ) : signedUrl.data ? (
           <p className="text-sm text-muted-foreground">
-            This file type can't be previewed inline. Use Download below.
+            {t("documents.noInlinePreview")}
           </p>
         ) : null}
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t("documents.close")}
           </Button>
           {signedUrl.data ? (
             <Button asChild>
               <a href={signedUrl.data.url} download={document.fileName} target="_blank" rel="noreferrer">
-                Download
+                {t("documents.download")}
               </a>
             </Button>
           ) : null}

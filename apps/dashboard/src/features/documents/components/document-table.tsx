@@ -9,15 +9,16 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  LtrText,
 } from "@travio/ui";
-import { formatDate } from "@travio/utils";
-import { DOCUMENT_TYPE_LABELS } from "@travio/types";
+import { DOCUMENT_TYPE_KEYS } from "../utils/label-keys";
 import type { Document } from "@travio/api";
 import { useDeleteDocument } from "../api/documents.api";
 import { DocumentsEmptyState } from "./empty-state";
 import { DocumentPreview } from "./document-preview";
 import type { DocumentTypeFilter } from "./document-filters";
 import { formatFileSize } from "../utils/format-file-size";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 export interface DocumentTableProps {
   documents: Document[] | undefined;
@@ -34,6 +35,8 @@ export function DocumentTable({
   typeFilter,
   onUploadClick,
 }: DocumentTableProps) {
+  const t = useT();
+  const format = useFormat();
   const deleteDocument = useDeleteDocument();
   const [previewing, setPreviewing] = useState<Document | null>(null);
 
@@ -50,27 +53,27 @@ export function DocumentTable({
         // message-only EmptyState) so the richer title+description
         // DocumentsEmptyState renders instead.
         isEmpty={false}
-        loadingLabel="Loading documents"
-        errorMessage="Something went wrong loading documents. Please try again later."
+        loadingLabel={t("documents.loading")}
+        errorMessage={t("documents.error")}
       >
         {filtered.length === 0 ? (
           <DocumentsEmptyState
             action={
               <Button size="sm" onClick={onUploadClick}>
-                Upload Document
+                {t("documents.upload")}
               </Button>
             }
           />
         ) : (
-          <Table aria-label="Documents" caption="Documents attached to this record">
+          <Table aria-label={t("nav.documents")} caption={t("documents.captionOwner")}>
             <TableHeader>
               <TableRow className="text-muted-foreground">
-                <TableCell header>File</TableCell>
-                <TableCell header>Type</TableCell>
-                <TableCell header>Size</TableCell>
-                <TableCell header>Uploaded</TableCell>
+                <TableCell header>{t("documents.file")}</TableCell>
+                <TableCell header>{t("documents.typeShort")}</TableCell>
+                <TableCell header>{t("documents.size")}</TableCell>
+                <TableCell header>{t("documents.uploaded")}</TableCell>
                 <TableCell header>
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t("common.actions")}</span>
                 </TableCell>
               </TableRow>
             </TableHeader>
@@ -78,29 +81,29 @@ export function DocumentTable({
               {filtered.map((document) => (
                 <TableRow key={document.id}>
                   <TableCell className="font-medium">{document.fileName}</TableCell>
-                  <TableCell>{DOCUMENT_TYPE_LABELS[document.documentType]}</TableCell>
-                  <TableCell>{formatFileSize(document.fileSize)}</TableCell>
-                  <TableCell>{formatDate(document.createdAt)}</TableCell>
+                  <TableCell>{t(DOCUMENT_TYPE_KEYS[document.documentType])}</TableCell>
+                  <TableCell><LtrText>{formatFileSize(document.fileSize)}</LtrText></TableCell>
+                  <TableCell>{format.date(document.createdAt)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setPreviewing(document)}
-                        aria-label={`Preview ${document.fileName}`}
+                        aria-label={t("documents.previewNamed", { name: document.fileName })}
                       >
-                        Preview
+                        {t("documents.preview")}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteDocument.mutate({ id: document.id })}
                         disabled={deleteDocument.isPending && deleteDocument.variables?.id === document.id}
-                        aria-label={`Delete ${document.fileName}`}
+                        aria-label={t("documents.deleteNamed", { name: document.fileName })}
                       >
                         {deleteDocument.isPending && deleteDocument.variables?.id === document.id
-                          ? "Deleting…"
-                          : "Delete"}
+                          ? t("common.deleting")
+                          : t("common.delete")}
                       </Button>
                     </div>
                   </TableCell>

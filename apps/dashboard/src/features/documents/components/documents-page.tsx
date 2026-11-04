@@ -7,6 +7,7 @@ import { useDocuments } from "../api/documents.api";
 import { DocumentTable } from "./document-table";
 import { DocumentFilters, type DocumentTypeFilter } from "./document-filters";
 import { UploadDocumentDialog } from "./upload-document-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 export interface DocumentsPageProps {
   ownerType: OwnerType;
@@ -19,6 +20,7 @@ export interface DocumentsPageProps {
 // customerId/bookingId props. No standalone /documents route exists yet
 // (no sidebar nav slot for one either) - out of this phase's scope.
 export function DocumentsPage({ ownerType, ownerId }: DocumentsPageProps) {
+  const t = useT();
   const { data: documents, isLoading, isError } = useDocuments(ownerType, ownerId);
   const [typeFilter, setTypeFilter] = useState<DocumentTypeFilter>("all");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -26,11 +28,11 @@ export function DocumentsPage({ ownerType, ownerId }: DocumentsPageProps) {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Documents"
-        description="Passports, visas, vouchers, and other attached files"
+        title={t("nav.documents")}
+        description={t("documents.descriptionOwner")}
         actions={
           <Button size="sm" onClick={() => setIsUploadOpen(true)}>
-            Upload Document
+            {t("documents.upload")}
           </Button>
         }
       />

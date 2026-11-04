@@ -2,11 +2,11 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
-import { formatSar } from "@travio/utils";
 import type { InvoiceItem, InvoiceItemType } from "@travio/api";
 import { useUpdateInvoiceItem } from "../../api/invoices.api";
-import { ITEM_TYPE_LABELS } from "./invoice-item";
+import { ITEM_TYPE_KEYS } from "./invoice-item";
 import { isInvoiceItemType } from "./create-invoice-item-dialog";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const ITEM_TYPE_OPTIONS: InvoiceItemType[] = ["flight", "hotel", "transfer", "visa", "manual"];
 
@@ -43,6 +43,8 @@ export function EditInvoiceItemDialog({
   open,
   onOpenChange,
 }: EditInvoiceItemDialogProps) {
+  const t = useT();
+  const format = useFormat();
   const updateItem = useUpdateInvoiceItem();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export function EditInvoiceItemDialog({
 
     const trimmedDescription = form.description.trim();
     if (trimmedDescription.length === 0) {
-      setValidationError("Description is required.");
+      setValidationError(t("finance.items.descriptionRequired"));
       return;
     }
 
@@ -103,12 +105,12 @@ export function EditInvoiceItemDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-invoice-item-title" className="text-lg font-semibold">
-          Edit Item
+          {t("finance.items.edit")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="edit-invoice-item-description" className="text-sm font-medium">
-            Description
+            {t("finance.items.description")}
           </label>
           <input
             id="edit-invoice-item-description"
@@ -127,7 +129,7 @@ export function EditInvoiceItemDialog({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="edit-invoice-item-quantity" className="text-sm font-medium">
-              Quantity
+              {t("finance.items.quantity")}
             </label>
             <input
               id="edit-invoice-item-quantity"
@@ -142,7 +144,7 @@ export function EditInvoiceItemDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-invoice-item-unit-price" className="text-sm font-medium">
-              Unit Price
+              {t("finance.items.unitPrice")}
             </label>
             <input
               id="edit-invoice-item-unit-price"
@@ -158,7 +160,7 @@ export function EditInvoiceItemDialog({
 
         <div className="space-y-1">
           <label htmlFor="edit-invoice-item-type" className="text-sm font-medium">
-            Item Type
+            {t("finance.items.type")}
           </label>
           <select
             id="edit-invoice-item-type"
@@ -173,20 +175,20 @@ export function EditInvoiceItemDialog({
           >
             {ITEM_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {ITEM_TYPE_LABELS[option]}
+                {t(ITEM_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
         </div>
 
         <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Total: </span>
-          <span className="font-medium">{formatSar(computedTotal)}</span>
+          <span className="text-muted-foreground">{t("finance.items.totalLabel")} </span>
+          <span className="font-medium">{format.currency(computedTotal)}</span>
         </div>
 
         {updateItem.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -197,10 +199,10 @@ export function EditInvoiceItemDialog({
             onClick={() => onOpenChange(false)}
             disabled={updateItem.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateItem.isPending}>
-            {updateItem.isPending ? "Saving…" : "Save Changes"}
+            {updateItem.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

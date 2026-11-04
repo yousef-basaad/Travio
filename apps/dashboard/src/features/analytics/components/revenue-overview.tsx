@@ -15,17 +15,18 @@ import {
   TableRow,
   TableCell,
 } from "@travio/ui";
-import { formatCurrency } from "@travio/utils";
 import { useRevenueOverview } from "../api/analytics.api";
+import { useFormat, useI18n, useT } from "@/lib/i18n/i18n-provider";
+import { intlLocale } from "@/lib/i18n/format";
 
 // Formats "YYYY-MM" as a short month label ("Jan", "Feb", ...) for the
 // chart's x-axis - purely presentational, the underlying data (real
 // revenue.months from analyticsService.getRevenueOverview) is untouched.
-function formatMonthLabel(month: string): string {
+function formatMonthLabel(month: string, localeTag: string): string {
   const [year, monthNumber] = month.split("-");
   if (!year || !monthNumber) return month;
   const date = new Date(Number(year), Number(monthNumber) - 1, 1);
-  return date.toLocaleDateString("en-US", { month: "short" });
+  return date.toLocaleDateString(localeTag, { month: "short" });
 }
 
 // Design System v2.0 / Phase UI-2: line/area trend chart (packages/ui's
@@ -36,6 +37,9 @@ function formatMonthLabel(month: string): string {
 // alternative, same convention the dataviz guidance calls for), not
 // removed.
 export function RevenueOverview() {
+  const t = useT();
+  const { locale } = useI18n();
+  const format = useFormat();
   const { data: overview, isLoading, isError } = useRevenueOverview();
   const months = overview?.months ?? [];
   const [showTable, setShowTable] = useState(false);
@@ -44,12 +48,12 @@ export function RevenueOverview() {
     <Card>
       <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Revenue Trend</h2>
-          <p className="text-xs text-muted-foreground">Invoiced vs. paid, last 12 months</p>
+          <h2 className="text-sm font-semibold text-foreground">{t("analytics.revenue.title")}</h2>
+          <p className="text-xs text-muted-foreground">{t("analytics.revenue.subtitle")}</p>
         </div>
         {months.length > 0 ? (
           <Button variant="ghost" size="sm" onClick={() => setShowTable((value) => !value)}>
-            {showTable ? "View chart" : "View as table"}
+            {showTable ? t("analytics.revenue.viewChart") : t("analytics.revenue.viewTable")}
           </Button>
         ) : null}
       </CardHeader>
@@ -59,21 +63,21 @@ export function RevenueOverview() {
           isError={isError}
           isEmpty={months.length === 0}
           skeletonRows={4}
-          loadingLabel="Loading revenue overview"
-          errorMessage="Something went wrong loading the revenue overview. Please try again later."
-          emptyMessage="No revenue data yet"
+          loadingLabel={t("analytics.revenue.loading")}
+          errorMessage={t("analytics.revenue.error")}
+          emptyMessage={t("analytics.revenue.empty")}
           emptyIcon={<TrendingUp size={20} />}
         >
           {showTable ? (
             <RevenueTable months={months} />
           ) : (
             <TrendChart
-              labels={months.map((m) => formatMonthLabel(m.month))}
-              valueFormatter={formatCurrency}
+              labels={months.map((m) => formatMonthLabel(m.month, intlLocale(locale)))}
+              valueFormatter={(value) => format.currency(value)}
               series={[
-                { name: "Paid", color: "hsl(var(--primary))", values: months.map((m) => m.paidTotal) },
+                { name: t("bookings.finance.paid"), color: "hsl(var(--primary))", values: months.map((m) => m.paidTotal) },
                 {
-                  name: "Invoiced",
+                  name: t("analytics.revenue.invoiced"),
                   color: "hsl(var(--muted-foreground))",
                   values: months.map((m) => m.invoiceTotal),
                 },
@@ -91,15 +95,17 @@ function RevenueTable({
 }: {
   months: { month: string; invoiceTotal: number; paidTotal: number }[];
 }) {
+  const t = useT();
+  const format = useFormat();
   const maxValue = Math.max(1, ...months.map((m) => Math.max(m.invoiceTotal, m.paidTotal)));
 
   return (
-    <Table aria-label="Revenue by month" caption="Invoiced and paid totals per month for the last 12 months">
+    <Table aria-label={t("analytics.revenue.byMonth")} caption={t("analytics.revenue.caption")}>
       <TableHeader>
         <TableRow className="text-muted-foreground">
-          <TableCell header>Month</TableCell>
-          <TableCell header>Invoiced</TableCell>
-          <TableCell header>Paid</TableCell>
+          <TableCell header>{t("analytics.revenue.month")}</TableCell>
+          <TableCell header>{t("analytics.revenue.invoiced")}</TableCell>
+          <TableCell header>{t("bookings.finance.paid")}</TableCell>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -113,7 +119,7 @@ function RevenueTable({
                   className="h-2 rounded-full bg-muted-foreground/40"
                   style={{ width: `${(m.invoiceTotal / maxValue) * 100}%`, minWidth: "2px" }}
                 />
-                <span className="whitespace-nowrap">{formatCurrency(m.invoiceTotal)}</span>
+                <span className="whitespace-nowrap">{format.currency(m.invoiceTotal)}</span>
               </div>
             </TableCell>
             <TableCell>
@@ -123,7 +129,7 @@ function RevenueTable({
                   className="h-2 rounded-full bg-primary"
                   style={{ width: `${(m.paidTotal / maxValue) * 100}%`, minWidth: "2px" }}
                 />
-                <span className="whitespace-nowrap">{formatCurrency(m.paidTotal)}</span>
+                <span className="whitespace-nowrap">{format.currency(m.paidTotal)}</span>
               </div>
             </TableCell>
           </TableRow>

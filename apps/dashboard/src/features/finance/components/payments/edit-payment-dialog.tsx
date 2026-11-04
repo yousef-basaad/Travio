@@ -4,8 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog } from "@travio/ui";
 import type { Payment, PaymentMethod } from "@travio/api";
 import { useUpdatePayment } from "../../api/invoices.api";
-import { PAYMENT_METHOD_LABELS } from "./payment-item";
+import { PAYMENT_METHOD_KEYS } from "./payment-item";
 import { isPaymentMethod } from "./create-payment-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ["cash", "card", "bank_transfer", "online"];
 
@@ -43,6 +44,7 @@ export function EditPaymentDialog({
   open,
   onOpenChange,
 }: EditPaymentDialogProps) {
+  const t = useT();
   const updatePayment = useUpdatePayment();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export function EditPaymentDialog({
     const trimmedAmount = form.amount.trim();
     const parsedAmount = trimmedAmount === "" ? Number.NaN : Number(trimmedAmount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setValidationError("Enter a valid payment amount.");
+      setValidationError(t("finance.payments.invalidAmount"));
       return;
     }
 
@@ -97,13 +99,13 @@ export function EditPaymentDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-payment-title" className="text-lg font-semibold">
-          Edit Payment
+          {t("finance.payments.edit")}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1">
             <label htmlFor="edit-payment-amount" className="text-sm font-medium">
-              Amount
+              {t("bookingField.amount")}
             </label>
             <input
               id="edit-payment-amount"
@@ -119,7 +121,7 @@ export function EditPaymentDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-payment-method" className="text-sm font-medium">
-              Payment Method
+              {t("finance.payments.method")}
             </label>
             <select
               id="edit-payment-method"
@@ -134,7 +136,7 @@ export function EditPaymentDialog({
             >
               {PAYMENT_METHOD_OPTIONS.map((option) => (
                 <option key={option} value={option}>
-                  {PAYMENT_METHOD_LABELS[option]}
+                  {t(PAYMENT_METHOD_KEYS[option])}
                 </option>
               ))}
             </select>
@@ -142,7 +144,7 @@ export function EditPaymentDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-payment-reference" className="text-sm font-medium">
-              Reference
+              {t("bookings.payments.reference")}
             </label>
             <input
               id="edit-payment-reference"
@@ -154,7 +156,7 @@ export function EditPaymentDialog({
 
           <div className="space-y-1">
             <label htmlFor="edit-payment-paid-at" className="text-sm font-medium">
-              Paid Date
+              {t("finance.payments.paidDate")}
             </label>
             <input
               id="edit-payment-paid-at"
@@ -174,7 +176,7 @@ export function EditPaymentDialog({
 
         {updatePayment.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -185,10 +187,10 @@ export function EditPaymentDialog({
             onClick={() => onOpenChange(false)}
             disabled={updatePayment.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updatePayment.isPending}>
-            {updatePayment.isPending ? "Saving…" : "Save Changes"}
+            {updatePayment.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>
