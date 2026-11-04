@@ -1,5 +1,8 @@
+"use client";
+
 import { MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, EmptyState } from "@travio/ui";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Deliberately not wired to any data source. A "top destinations"
 // aggregate would need to summarize booking_hotels.city/country and/or
@@ -11,17 +14,18 @@ import { Card, CardContent, CardHeader, EmptyState } from "@travio/ui";
 // the dashboard layout so the slot is ready the moment that aggregate
 // exists, rather than fabricating city names or percentages.
 export function TopDestinations() {
+  const t = useT();
   return (
     <Card>
       <CardHeader className="pb-3">
-        <h2 className="text-sm font-semibold text-foreground">Top Destinations</h2>
-        <p className="text-xs text-muted-foreground">Most booked cities and countries</p>
+        <h2 className="text-sm font-semibold text-foreground">{t("analytics.destinations.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("analytics.destinations.description")}</p>
       </CardHeader>
       <CardContent className="pt-0">
         <EmptyState
           icon={<MapPin size={20} />}
-          title="Not available yet"
-          description="Destination analytics requires a new aggregate across hotel and flight bookings that the current analytics API doesn't expose yet."
+          title={t("analytics.destinations.unavailable")}
+          description={t("analytics.destinations.unavailableHint")}
         />
       </CardContent>
     </Card>

@@ -21,9 +21,9 @@ function emptyToUndefined(value: unknown) {
 }
 
 export const createLeadFormSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required"),
+  fullName: z.string().trim().min(1, "customers.fullNameRequired"),
   phone: z.preprocess(emptyToUndefined, z.string().optional()),
-  email: z.preprocess(emptyToUndefined, z.string().email("Enter a valid email").optional()),
+  email: z.preprocess(emptyToUndefined, z.string().email("validation.invalidEmail").optional()),
   source: z.preprocess(emptyToUndefined, crmLeadSourceSchema.optional()),
 });
 

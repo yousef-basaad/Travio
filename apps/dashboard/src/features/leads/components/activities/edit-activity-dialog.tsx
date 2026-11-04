@@ -4,8 +4,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@travio/ui";
 import type { CrmActivity, CrmActivityType } from "@travio/api";
 import { useUpdateLeadActivity } from "../../api/leads.api";
-import { humanize } from "../../utils/humanize";
+import { ACTIVITY_TYPE_KEYS } from "../../utils/label-keys";
 import { ACTIVITY_TYPE_OPTIONS, isCrmActivityType } from "./create-activity-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 type EditActivityDialogProps = {
   activity: CrmActivity | null;
@@ -24,6 +25,7 @@ export function EditActivityDialog({
   open,
   onOpenChange,
 }: EditActivityDialogProps) {
+  const t = useT();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const updateActivity = useUpdateLeadActivity();
   const [type, setType] = useState<CrmActivityType>("call");
@@ -54,7 +56,7 @@ export function EditActivityDialog({
 
     const trimmedTitle = title.trim();
     if (trimmedTitle.length === 0) {
-      setValidationError("Title is required.");
+      setValidationError(t("validation.titleRequired"));
       return;
     }
     setValidationError(null);
@@ -91,12 +93,12 @@ export function EditActivityDialog({
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="edit-activity-title" className="text-lg font-semibold">
-          Edit Activity
+          {t("leads.activities.edit")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="edit-activity-type" className="text-sm font-medium">
-            Activity Type
+            {t("leads.activities.type")}
           </label>
           <select
             id="edit-activity-type"
@@ -111,7 +113,7 @@ export function EditActivityDialog({
           >
             {ACTIVITY_TYPE_OPTIONS.map((option) => (
               <option key={option} value={option}>
-                {humanize(option)}
+                {t(ACTIVITY_TYPE_KEYS[option])}
               </option>
             ))}
           </select>
@@ -119,7 +121,7 @@ export function EditActivityDialog({
 
         <div className="space-y-1">
           <label htmlFor="edit-activity-title-field" className="text-sm font-medium">
-            Title
+            {t("common.title")}
           </label>
           <input
             id="edit-activity-title-field"
@@ -138,7 +140,7 @@ export function EditActivityDialog({
 
         <div className="space-y-1">
           <label htmlFor="edit-activity-description" className="text-sm font-medium">
-            Description
+            {t("common.description")}
           </label>
           <textarea
             id="edit-activity-description"
@@ -151,7 +153,7 @@ export function EditActivityDialog({
 
         {updateActivity.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't save changes. Please try again.
+            {t("common.saveError")}
           </p>
         )}
 
@@ -162,10 +164,10 @@ export function EditActivityDialog({
             onClick={() => onOpenChange(false)}
             disabled={updateActivity.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={updateActivity.isPending}>
-            {updateActivity.isPending ? "Saving…" : "Save Changes"}
+            {updateActivity.isPending ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </div>
       </form>

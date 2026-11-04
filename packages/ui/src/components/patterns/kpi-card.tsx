@@ -147,7 +147,17 @@ export function KpiCard({
         </span>
       ) : null}
 
-      <p className="mt-4 text-heading-xl font-bold leading-none tracking-tight text-foreground">{value}</p>
+      {/* Formatted money ("SAR 12,345.00", "‏12,345.00 ر.س.‏") is much wider
+          than a count, so long values step down a size instead of
+          overflowing a fifth-width card. */}
+      <p
+        className={cn(
+          "mt-4 font-bold leading-none tracking-tight text-foreground",
+          value.length > 12 ? "text-heading-sm" : value.length > 8 ? "text-heading-md" : "text-heading-xl",
+        )}
+      >
+        {value}
+      </p>
 
       <p className="mt-2 truncate text-sm text-muted-foreground">{label}</p>
 
