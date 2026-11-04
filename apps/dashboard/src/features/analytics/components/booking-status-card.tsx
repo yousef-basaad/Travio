@@ -1,14 +1,16 @@
 "use client";
 
 import { Card, CardContent, CardHeader, DataTableState, BarList } from "@travio/ui";
-import { BOOKING_STATUS_LABELS } from "@/features/bookings";
+import { BOOKING_STATUS_KEYS } from "@/features/bookings";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import { useBookingAnalytics } from "../api/analytics.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
-const SERVICE_LABELS: Record<string, string> = {
-  flights: "Flights",
-  hotels: "Hotels",
-  transfers: "Transfers",
-  visa: "Visa",
+const SERVICE_KEYS: Record<string, MessageKey> = {
+  flights: "services.flight.title",
+  hotels: "services.hotel.title",
+  transfers: "services.transfer.title",
+  visa: "home.quickStats.visa",
 };
 
 // Booking status is a state field, not a free categorical dimension, so
@@ -37,16 +39,17 @@ const STATUS_BAR_COLORS: Record<string, string> = {
 // second label map, same reasoning as every other *_LABELS export in
 // this codebase.
 export function BookingStatusCard() {
+  const t = useT();
   const { data: analytics, isLoading, isError } = useBookingAnalytics();
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <h2 className="text-sm font-semibold text-foreground">Booking Analytics</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("analytics.bookings.title")}</h2>
         <p className="text-xs text-muted-foreground">
           {isLoading || isError || !analytics
-            ? "Status and service mix"
-            : `${analytics.totalBookings} total bookings`}
+            ? t("analytics.bookings.description")
+            : t("analytics.bookings.total", { count: analytics.totalBookings })}
         </p>
       </CardHeader>
       <CardContent className="pt-0">
@@ -55,18 +58,18 @@ export function BookingStatusCard() {
           isError={isError}
           isEmpty={false}
           skeletonRows={4}
-          loadingLabel="Loading booking analytics"
-          errorMessage="Something went wrong loading booking analytics. Please try again later."
+          loadingLabel={t("analytics.bookings.loading")}
+          errorMessage={t("home.quickStats.error")}
         >
           {analytics ? (
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Status Distribution
+                  {t("analytics.bookings.byStatus")}
                 </h3>
                 <BarList
                   rows={Object.entries(analytics.byStatus).map(([status, count]) => ({
-                    label: BOOKING_STATUS_LABELS[status as keyof typeof BOOKING_STATUS_LABELS] ?? status,
+                    label: status in BOOKING_STATUS_KEYS ? t(BOOKING_STATUS_KEYS[status as keyof typeof BOOKING_STATUS_KEYS]) : status,
                     value: count,
                     barClassName: STATUS_BAR_COLORS[status],
                   }))}
@@ -75,11 +78,11 @@ export function BookingStatusCard() {
 
               <div>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Service Distribution
+                  {t("analytics.bookings.byService")}
                 </h3>
                 <BarList
                   rows={Object.entries(analytics.serviceDistribution).map(([service, count]) => ({
-                    label: SERVICE_LABELS[service] ?? service,
+                    label: SERVICE_KEYS[service] ? t(SERVICE_KEYS[service]) : service,
                     value: count,
                   }))}
                 />

@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Dialog, FormField, Input, Select } from "@travio/ui";
 import { useInviteTeamMember, type AssignableRole } from "../api/team.api";
-import { TEAM_ROLE_LABELS } from "./team-role-badge";
+import { TEAM_ROLE_KEYS } from "./team-role-badge";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const ASSIGNABLE_ROLE_OPTIONS: AssignableRole[] = [
   "sales_agent",
@@ -29,6 +30,7 @@ export interface InviteTeamMemberDialogProps {
 // inviteUserByEmail) - there is no draft/preview step, matching every
 // other create dialog's "submit now" convention in this app.
 export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberDialogProps) {
+  const t = useT();
   const inviteTeamMember = useInviteTeamMember();
   const [form, setForm] = useState(EMPTY_FORM);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -49,11 +51,11 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
     const fullName = form.fullName.trim();
 
     if (!email) {
-      setValidationError("Email is required.");
+      setValidationError(t("validation.emailRequired"));
       return;
     }
     if (!fullName) {
-      setValidationError("Name is required.");
+      setValidationError(t("validation.nameRequired"));
       return;
     }
     setValidationError(null);
@@ -79,10 +81,10 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="invite-team-member-title" className="text-lg font-semibold">
-          Invite Team Member
+          {t("team.inviteTitle")}
         </h2>
 
-        <FormField label="Full Name" htmlFor="invite-full-name" error={validationError ?? undefined}>
+        <FormField label={t("field.fullName")} htmlFor="invite-full-name" error={validationError ?? undefined}>
           <Input
             id="invite-full-name"
             value={form.fullName}
@@ -90,7 +92,7 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
           />
         </FormField>
 
-        <FormField label="Email" htmlFor="invite-email">
+        <FormField label={t("field.email")} htmlFor="invite-email">
           <Input
             id="invite-email"
             type="email"
@@ -99,7 +101,7 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
           />
         </FormField>
 
-        <FormField label="Role" htmlFor="invite-role">
+        <FormField label={t("common.role")} htmlFor="invite-role">
           <Select
             id="invite-role"
             value={form.role}
@@ -107,7 +109,7 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
           >
             {ASSIGNABLE_ROLE_OPTIONS.map((role) => (
               <option key={role} value={role}>
-                {TEAM_ROLE_LABELS[role]}
+                {t(TEAM_ROLE_KEYS[role])}
               </option>
             ))}
           </Select>
@@ -117,7 +119,7 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
           <p role="alert" className="text-sm text-danger">
             {inviteTeamMember.error instanceof Error
               ? inviteTeamMember.error.message
-              : "Couldn't send the invite. Please try again."}
+              : t("team.inviteError")}
           </p>
         )}
 
@@ -128,10 +130,10 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
             onClick={() => onOpenChange(false)}
             disabled={inviteTeamMember.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={inviteTeamMember.isPending}>
-            {inviteTeamMember.isPending ? "Sending…" : "Send Invite"}
+            {inviteTeamMember.isPending ? t("common.sending") : t("team.sendInvite")}
           </Button>
         </div>
       </form>
