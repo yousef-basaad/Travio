@@ -18,17 +18,8 @@ export const BOOKING_STATUS_STYLES: Record<BookingStatus, string> = {
   cancelled: "bg-danger/10 text-danger",
 };
 
-// Exported so other bookings-related views (e.g. the analytics feature's
-// BookingStatusCard) reuse the same label map instead of duplicating it.
-export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  draft: "Draft",
-  pending: "Pending",
-  confirmed: "Confirmed",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
-
-// Message keys for the same statuses, for translated display.
+// Message keys for the statuses, shared by every bookings-related view
+// (booking badges, the home board, the analytics status card).
 export const BOOKING_STATUS_KEYS: Record<BookingStatus, MessageKey> = {
   draft: "bookingStatus.draft",
   pending: "bookingStatus.pending",

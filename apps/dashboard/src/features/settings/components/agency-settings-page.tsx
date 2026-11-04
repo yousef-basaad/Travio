@@ -19,10 +19,12 @@ import {
   agencySettingsFormSchema,
   type AgencySettingsFormValues,
 } from "../schemas/agency-settings.schema";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function SettingsSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading agency profile" className="space-y-4">
+    <div role="status" aria-label={t("settings.loading")} className="space-y-4">
       <Skeleton className="h-40 w-full" />
       <Skeleton className="h-64 w-full" />
     </div>
@@ -30,12 +32,13 @@ function SettingsSkeleton() {
 }
 
 function SettingsErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
     >
-      Something went wrong loading your agency profile. Please try again later.
+      {t("settings.error")}
     </div>
   );
 }
@@ -47,6 +50,7 @@ function SettingsErrorState() {
 // an editable "Contact Information" form (phone/email/address, the
 // fields this phase's migration actually added).
 export function AgencySettingsPage() {
+  const t = useT();
   const { data: tenant, isLoading, isError } = useTenant();
   const updateTenant = useUpdateTenant();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -75,13 +79,13 @@ export function AgencySettingsPage() {
       await updateTenant.mutateAsync(values);
       setSaved(true);
     } catch {
-      setSubmitError("Couldn't save your changes. Please try again.");
+      setSubmitError(t("common.saveError"));
     }
   });
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Settings" description="Your agency's profile and contact information" />
+      <PageHeader title={t("nav.settings")} description={t("settings.description")} />
 
       {isLoading ? (
         <SettingsSkeleton />
@@ -91,35 +95,35 @@ export function AgencySettingsPage() {
         <>
           <Card>
             <CardHeader>
-              <h2 className="text-sm font-medium">Agency Details</h2>
+              <h2 className="text-sm font-medium">{t("settings.details")}</h2>
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <InfoRow label="Agency Name" value={tenant.name} />
-                <InfoRow label="CR Number" value={tenant.crNumber} />
-                <InfoRow label="Slug" value={tenant.slug} />
-                <InfoRow label="Status" value={tenant.isActive ? "Active" : "Inactive"} />
+                <InfoRow label={t("settings.agencyName")} value={tenant.name} />
+                <InfoRow label={t("settings.crNumber")} value={tenant.crNumber} />
+                <InfoRow label={t("settings.slug")} value={tenant.slug} />
+                <InfoRow label={t("common.status")} value={tenant.isActive ? t("common.active") : t("common.inactive")} />
               </dl>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <h2 className="text-sm font-medium">Contact Information</h2>
+              <h2 className="text-sm font-medium">{t("settings.contact")}</h2>
             </CardHeader>
             <CardContent>
               <form onSubmit={onSubmit} className="space-y-4" noValidate>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <FormField label="Phone" htmlFor="agency-phone" error={errors.phone?.message}>
+                  <FormField label={t("field.phone")} htmlFor="agency-phone" error={errors.phone?.message}>
                     <Input id="agency-phone" type="tel" {...register("phone")} />
                   </FormField>
 
-                  <FormField label="Email" htmlFor="agency-email" error={errors.email?.message}>
+                  <FormField label={t("field.email")} htmlFor="agency-email" error={errors.email?.message}>
                     <Input id="agency-email" type="email" {...register("email")} />
                   </FormField>
                 </div>
 
-                <FormField label="Address" htmlFor="agency-address" error={errors.address?.message}>
+                <FormField label={t("settings.address")} htmlFor="agency-address" error={errors.address?.message}>
                   <Input id="agency-address" {...register("address")} />
                 </FormField>
 
@@ -129,12 +133,12 @@ export function AgencySettingsPage() {
                   </p>
                 )}
                 {saved && !submitError && (
-                  <p className="text-sm text-success">Saved.</p>
+                  <p className="text-sm text-success">{t("settings.saved")}</p>
                 )}
 
                 <div className="flex justify-end pt-2">
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Saving…" : "Save Changes"}
+                    {isSubmitting ? t("common.saving") : t("common.saveChanges")}
                   </Button>
                 </div>
               </form>

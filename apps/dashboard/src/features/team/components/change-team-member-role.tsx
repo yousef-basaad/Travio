@@ -2,7 +2,8 @@
 
 import { Select } from "@travio/ui";
 import { useUpdateTeamMemberRole, type AssignableRole, type TeamMemberResponse } from "../api/team.api";
-import { TEAM_ROLE_LABELS } from "./team-role-badge";
+import { TEAM_ROLE_KEYS } from "./team-role-badge";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const ASSIGNABLE_ROLE_OPTIONS: AssignableRole[] = [
   "sales_agent",
@@ -23,6 +24,7 @@ export function isAssignableRole(role: string): role is AssignableRole {
 // own row has no control here at all (see TeamTable), so there's no
 // "demote yourself" affordance to guard against client-side.
 export function ChangeTeamMemberRole({ member }: { member: TeamMemberResponse }) {
+  const t = useT();
   const updateRole = useUpdateTeamMemberRole();
 
   if (!isAssignableRole(member.role)) {
@@ -31,7 +33,7 @@ export function ChangeTeamMemberRole({ member }: { member: TeamMemberResponse })
 
   return (
     <Select
-      aria-label={`Change role for ${member.fullName}`}
+      aria-label={t("team.changeRoleFor", { name: member.fullName })}
       className="h-8 w-auto text-xs"
       value={member.role}
       disabled={updateRole.isPending}
@@ -44,7 +46,7 @@ export function ChangeTeamMemberRole({ member }: { member: TeamMemberResponse })
     >
       {ASSIGNABLE_ROLE_OPTIONS.map((role) => (
         <option key={role} value={role}>
-          {TEAM_ROLE_LABELS[role]}
+          {t(TEAM_ROLE_KEYS[role])}
         </option>
       ))}
     </Select>
