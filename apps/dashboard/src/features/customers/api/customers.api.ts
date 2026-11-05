@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { fetchPage } from "@/lib/api/fetch-page";
 import type {
   Customer,
+  CustomerListItem,
   CustomerTimelineItem,
   VisaApplication,
   VisaApplicationWithCustomer,
@@ -53,7 +54,7 @@ export function useCustomersPage(query: { page: number; pageSize: number; search
   return useQuery({
     queryKey: [...CUSTOMERS_QUERY_KEY, "page", query],
     queryFn: () =>
-      fetchPage<Customer>("/api/customers", {
+      fetchPage<CustomerListItem>("/api/customers", {
         page: query.page,
         pageSize: query.pageSize,
         search: query.search,
