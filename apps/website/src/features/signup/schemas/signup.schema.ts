@@ -1,11 +1,14 @@
 import { z } from "zod";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
+// Error messages are message keys (lib/i18n/messages); SignupForm
+// translates them, so the server action stays language-neutral.
 export const signupSchema = z.object({
-  fullName: z.string().trim().min(1, "Enter your full name."),
-  agencyName: z.string().trim().min(1, "Enter your agency's name."),
-  crNumber: z.string().trim().min(1, "Enter your commercial registration (CR) number."),
-  email: z.string().trim().email("Enter a valid email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+  fullName: z.string().trim().min(1, "signup.error.fullName"),
+  agencyName: z.string().trim().min(1, "signup.error.agencyName"),
+  crNumber: z.string().trim().min(1, "signup.error.crNumber"),
+  email: z.string().trim().email("signup.error.email"),
+  password: z.string().min(8, "signup.error.password"),
 });
 
 export type SignupValues = z.infer<typeof signupSchema>;
@@ -25,10 +28,10 @@ export type SignupState =
   | { status: "check_email"; email: string };
 
 export const SIGNUP_MESSAGES = {
-  rateLimited: "Too many signup attempts. Please wait a few minutes and try again.",
-  unknown: "We couldn't create your account. Please try again.",
-  unavailable: "Signup is temporarily unavailable. Please try again later.",
-} as const;
+  rateLimited: "signup.error.rateLimited",
+  unknown: "signup.error.unknown",
+  unavailable: "signup.error.unavailable",
+} as const satisfies Record<string, MessageKey>;
 
 export function readSignupForm(formData: FormData): Record<SignupFieldName, string> {
   const read = (name: SignupFieldName) => String(formData.get(name) ?? "");

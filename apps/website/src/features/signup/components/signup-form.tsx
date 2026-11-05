@@ -4,32 +4,38 @@ import { useActionState } from "react";
 import { Button, FormField, Input } from "@travio/ui";
 import { signupAction } from "@/app/signup/actions";
 import type { SignupFieldName, SignupState } from "../schemas/signup.schema";
+import { useT } from "@/lib/i18n/i18n-provider";
+import { isMessageKey } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 const initialState: SignupState = { status: "idle" };
 
 const FIELDS: {
   name: SignupFieldName;
-  label: string;
+  label: MessageKey;
   type?: string;
   autoComplete: string;
 }[] = [
-  { name: "fullName", label: "Full name", autoComplete: "name" },
-  { name: "agencyName", label: "Agency name", autoComplete: "organization" },
-  { name: "crNumber", label: "CR number", autoComplete: "off" },
-  { name: "email", label: "Email", type: "email", autoComplete: "email" },
-  { name: "password", label: "Password", type: "password", autoComplete: "new-password" },
+  { name: "fullName", label: "signup.fullName", autoComplete: "name" },
+  { name: "agencyName", label: "signup.agencyName", autoComplete: "organization" },
+  { name: "crNumber", label: "signup.crNumber", autoComplete: "off" },
+  { name: "email", label: "signup.email", type: "email", autoComplete: "email" },
+  { name: "password", label: "signup.password", type: "password", autoComplete: "new-password" },
 ];
 
 export function SignupForm() {
   const [state, formAction, pending] = useActionState(signupAction, initialState);
+  const t = useT();
+  // Errors arrive as message keys; anything else is shown as written.
+  const message = (text: string) => (isMessageKey(text) ? t(text) : text);
 
   if (state.status === "check_email") {
     return (
       <div role="status" className="rounded-lg border border-success/30 bg-success/10 p-6 text-center">
         <p className="text-sm font-medium text-foreground">
-          Check your email to confirm your account, then sign in on the dashboard.
+          {t("signup.checkEmail")}
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">We sent a confirmation link to {state.email}.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("signup.sentTo", { email: state.email })}</p>
       </div>
     );
   }
@@ -41,9 +47,10 @@ export function SignupForm() {
     <form action={formAction} className="space-y-4" noValidate>
       {FIELDS.map((field) => {
         const id = `signup-${field.name}`;
-        const error = fieldErrors[field.name];
+        const rawError = fieldErrors[field.name];
+        const error = rawError ? message(rawError) : undefined;
         return (
-          <FormField key={field.name} label={field.label} htmlFor={id} error={error}>
+          <FormField key={field.name} label={t(field.label)} htmlFor={id} error={error}>
             <Input
               id={id}
               name={field.name}
@@ -61,12 +68,12 @@ export function SignupForm() {
 
       {state.status === "error" && state.formError ? (
         <p role="alert" className="text-sm text-danger">
-          {state.formError}
+          {message(state.formError)}
         </p>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Creating your agency…" : "Create agency"}
+        {t(pending ? "signup.submitting" : "signup.submit")}
       </Button>
     </form>
   );

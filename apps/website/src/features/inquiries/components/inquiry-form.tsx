@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Button, FormField, Input, Textarea } from "@travio/ui";
 import { submitInquiry } from "../api/submit-inquiry";
 import { HONEYPOT_FIELD } from "../schemas/inquiry.schema";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // The server action (submit-inquiry.ts) reads agencyName/email/message
 // from FormData. This form shows 4 fields (Name/Email/Company/Message) by
@@ -11,6 +12,7 @@ import { HONEYPOT_FIELD } from "../schemas/inquiry.schema";
 // it - nothing entered here is silently lost. A hidden honeypot field
 // (HONEYPOT_FIELD) is sent too: people never see it, bots often fill it.
 export function InquiryForm() {
+  const t = useT();
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error" | "rate_limited">("idle");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -46,51 +48,51 @@ export function InquiryForm() {
   if (status === "success") {
     return (
       <div role="status" className="rounded-lg border border-success/30 bg-success/10 p-6 text-center">
-        <p className="text-sm font-medium text-foreground">Thanks - we&rsquo;ve got your message.</p>
-        <p className="mt-1 text-sm text-muted-foreground">Our team will get back to you shortly.</p>
+        <p className="text-sm font-medium text-foreground">{t("contact.successTitle")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("contact.successBody")}</p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <FormField label="Name" htmlFor="contact-name">
+      <FormField label={t("contact.name")} htmlFor="contact-name">
         <Input id="contact-name" name="name" required autoComplete="name" maxLength={80} />
       </FormField>
 
-      <FormField label="Email" htmlFor="contact-email">
+      <FormField label={t("contact.email")} htmlFor="contact-email">
         <Input id="contact-email" name="email" type="email" required autoComplete="email" maxLength={254} />
       </FormField>
 
-      <FormField label="Company" htmlFor="contact-company">
+      <FormField label={t("contact.company")} htmlFor="contact-company">
         <Input id="contact-company" name="company" required autoComplete="organization" maxLength={200} />
       </FormField>
 
-      <FormField label="Message" htmlFor="contact-message">
+      <FormField label={t("contact.message")} htmlFor="contact-message">
         <Textarea id="contact-message" name="message" rows={5} required minLength={10} maxLength={4900} />
       </FormField>
 
       {/* Honeypot: hidden from people and assistive tech, left empty by
           them; bots that fill every field get a fake success. */}
-      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
-        <label htmlFor={`contact-${HONEYPOT_FIELD}`}>Leave this field empty</label>
+      <div aria-hidden="true" className="absolute -start-[9999px] h-px w-px overflow-hidden">
+        <label htmlFor={`contact-${HONEYPOT_FIELD}`}>{t("contact.honeypot")}</label>
         <input id={`contact-${HONEYPOT_FIELD}`} name={HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
       {status === "error" ? (
         <p role="alert" className="text-sm text-danger">
-          Something went wrong sending your message. Please try again.
+          {t("contact.error")}
         </p>
       ) : null}
 
       {status === "rate_limited" ? (
         <p role="alert" className="text-sm text-danger">
-          We&rsquo;ve received several messages recently. Please try again a little later.
+          {t("contact.rateLimited")}
         </p>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={status === "submitting"}>
-        {status === "submitting" ? "Sending…" : "Request a Demo"}
+        {t(status === "submitting" ? "contact.sending" : "contact.submit")}
       </Button>
     </form>
   );

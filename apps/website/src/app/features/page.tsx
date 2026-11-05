@@ -4,27 +4,30 @@ import { SectionHeader } from "@/components/section-header";
 import { ProductPreview } from "@/components/product-preview";
 import { CtaSection } from "@/components/cta-section";
 import { FEATURES } from "@/lib/features-content";
+import { getT } from "@/lib/i18n/get-locale";
 
-export const metadata: Metadata = {
-  title: "Features - Travio",
-  description:
-    "CRM, booking management, visa operations, finance, documents, and analytics - every module travel agencies need, in one platform.",
-  openGraph: {
-    title: "Features - Travio",
-    description:
-      "CRM, booking management, visa operations, finance, documents, and analytics - every module travel agencies need, in one platform.",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("meta.featuresTitle"),
+    description: t("meta.featuresDescription"),
+    openGraph: {
+      title: t("meta.featuresTitle"),
+      description: t("meta.featuresDescription"),
+      type: "website",
+    },
+  };
+}
 
-export default function FeaturesPage() {
+export default async function FeaturesPage() {
+  const t = await getT();
   return (
     <>
       <section className="mx-auto max-w-6xl px-6 pb-16 pt-20 sm:pt-28">
         <SectionHeader
-          eyebrow="Features"
-          title="Every module your agency needs"
-          description="Six connected modules that share the same customer, booking, and financial records - not six separate tools bolted together."
+          eyebrow={t("featuresPage.eyebrow")}
+          title={t("featuresPage.title")}
+          description={t("featuresPage.description")}
         />
       </section>
 
@@ -38,13 +41,13 @@ export default function FeaturesPage() {
               >
                 <feature.icon size={24} />
               </span>
-              <h2 className="mt-4 text-heading-lg text-foreground">{feature.title}</h2>
-              <p className="mt-3 text-muted-foreground">{feature.description}</p>
+              <h2 className="mt-4 text-heading-lg text-foreground">{t(feature.title)}</h2>
+              <p className="mt-3 text-muted-foreground">{t(feature.description)}</p>
               <ul className="mt-6 space-y-3">
                 {feature.benefits.map((benefit) => (
                   <li key={benefit} className="flex items-start gap-2 text-sm text-foreground">
                     <Check size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
-                    {benefit}
+                    {t(benefit)}
                   </li>
                 ))}
               </ul>
@@ -57,10 +60,10 @@ export default function FeaturesPage() {
       </div>
 
       <CtaSection
-        title="See every module in action"
-        description="Book a walkthrough with our team or start exploring Travio yourself."
-        primaryCta={{ label: "Start Free Trial", href: "/signup" }}
-        secondaryCta={{ label: "Request Demo", href: "/contact" }}
+        title={t("featuresPage.cta.title")}
+        description={t("featuresPage.cta.description")}
+        primaryCta={{ label: t("cta.startTrial"), href: "/signup" }}
+        secondaryCta={{ label: t("cta.requestDemo"), href: "/contact" }}
       />
     </>
   );
