@@ -17,6 +17,7 @@ function visa(overrides: Partial<VisaApplicationWithCustomer>): VisaApplicationW
     createdAt: null,
     updatedAt: null,
     customer: null,
+    travelDate: null,
     ...overrides,
   };
 }
