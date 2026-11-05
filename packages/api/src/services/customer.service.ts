@@ -11,6 +11,18 @@ import {
 } from "./customer.mapper";
 import { ilikeAny, toRange, RANGE_NOT_SATISFIABLE, type Page, type PageRequest } from "./pagination";
 
+// Per-customer numbers for the Customers list (customer_list_stats,
+// 20261105130000) - computed in Postgres for the ids on one page.
+export interface CustomerListStats {
+  bookingsCount: number;
+  totalSpent: number;
+  lastActivityAt: string | null;
+}
+
+export type CustomerListItem = Customer & { stats: CustomerListStats };
+
+const EMPTY_STATS: CustomerListStats = { bookingsCount: 0, totalSpent: 0, lastActivityAt: null };
+
 export interface ListCustomersOptions {
   role: UserRole;
   userId: string;
@@ -23,6 +35,35 @@ export interface ListCustomersOptions {
 // (customers_tenant_access) - every method takes the caller's own
 // authenticated SupabaseClient, never service_role.
 export const customerService = {
+  // listPage() plus each customer's bookings count, amount paid and last
+  // activity, in one extra query for the whole page.
+  async listPageWithStats(
+    supabase: SupabaseClient<Database>,
+    tenantId: string,
+    request: PageRequest,
+    options?: ListCustomersOptions,
+  ): Promise<Page<CustomerListItem>> {
+    const page = await customerService.listPage(supabase, tenantId, request, options);
+    if (page.items.length === 0) return { ...page, items: [] };
+
+    const { data, error } = await supabase.rpc("customer_list_stats", {
+      customer_ids: page.items.map((customer) => customer.id),
+    });
+    if (error) throw error;
+
+    const byId = new Map(
+      (data ?? []).map((row) => [
+        row.customer_id,
+        {
+          bookingsCount: row.bookings_count,
+          totalSpent: Number(row.total_spent),
+          lastActivityAt: row.last_activity_at,
+        },
+      ]),
+    );
+    return { ...page, items: page.items.map((customer) => ({ ...customer, stats: byId.get(customer.id) ?? EMPTY_STATS })) };
+  },
+
   // The explicit .eq("tenant_id", ...) below is defense-in-depth, not the
   // real enforcement point (RLS is) - same convention already used
   // everywhere else. The sales_agent branch is the same story: RLS

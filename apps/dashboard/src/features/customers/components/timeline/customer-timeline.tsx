@@ -39,7 +39,8 @@ function TimelineEmptyState() {
 // tabs, not as a standalone page section, so it doesn't need its own
 // Card. Ordering (newest first) is applied server-side by
 // customerTimelineService - never sorted here.
-export function CustomerTimeline({ customerId }: { customerId: string }) {
+// limit: show only the newest N items (e.g. a "recent activity" preview).
+export function CustomerTimeline({ customerId, limit }: { customerId: string; limit?: number }) {
   const { data: timeline, isLoading, isError } = useCustomerTimeline(customerId);
 
   const hasItems = !isLoading && !isError && !!timeline && timeline.length > 0;
@@ -56,10 +57,12 @@ export function CustomerTimeline({ customerId }: { customerId: string }) {
     return <TimelineEmptyState />;
   }
 
+  const items = limit ? timeline.slice(0, limit) : timeline;
+
   return (
     <Timeline>
-      {timeline.map((item, index) => (
-        <CustomerTimelineItem key={item.id} item={item} isLast={index === timeline.length - 1} />
+      {items.map((item, index) => (
+        <CustomerTimelineItem key={item.id} item={item} isLast={index === items.length - 1} />
       ))}
     </Timeline>
   );

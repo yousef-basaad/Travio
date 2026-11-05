@@ -1619,6 +1619,15 @@ export type Database = {
         }
       }
       current_customer_id: { Args: never; Returns: string }
+      customer_list_stats: {
+        Args: { customer_ids: string[] }
+        Returns: {
+          bookings_count: number
+          customer_id: string
+          last_activity_at: string
+          total_spent: number
+        }[]
+      }
       current_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]

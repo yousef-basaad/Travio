@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "invalid_input", issues: pageParse.issues }, { status: 400 });
     }
     if (pageParse.kind === "page") {
-      const page = await customerService.listPage(auth.access.supabase, auth.access.tenantId, pageParse.request, {
+      const page = await customerService.listPageWithStats(auth.access.supabase, auth.access.tenantId, pageParse.request, {
         role: auth.access.role,
         userId: auth.access.userId,
       });
