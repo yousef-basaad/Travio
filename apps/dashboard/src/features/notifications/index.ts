@@ -5,3 +5,4 @@ export * from "./components/notification-bell";
 export * from "./components/notification-list";
 export * from "./components/notification-item";
 export * from "./api/notifications.api";
+export * from "./utils/notification-text";

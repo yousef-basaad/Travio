@@ -737,6 +737,28 @@ export const en = {
   "visaCenter.editFor": "Edit visa application for {name}",
 
   "analytics.recent.description": "Latest {count} bookings created",
+
+  "notifications.event.bookingCreated": "Booking created",
+  "notifications.event.bookingCreatedMessage": "Booking {number} was created.",
+  "notifications.event.bookingCreatedGeneric": "A new booking was created.",
+  "notifications.event.bookingStatusChanged": "Booking status changed",
+  "notifications.event.bookingStatusChangedMessage": "Booking {number} status changed from {from} to {to}.",
+  "notifications.event.bookingStatusChangedGeneric": "Booking status changed from {from} to {to}.",
+  "notifications.event.visaCreated": "Visa application created",
+  "notifications.event.visaCreatedMessage": "A new visa application was created for {country}.",
+  "notifications.event.visaCreatedGeneric": "A new visa application was created.",
+  "notifications.event.visaStatusChanged": "Visa application status changed",
+  "notifications.event.visaStatusChangedMessage": "Visa application status changed from {from} to {to}.",
+  "notifications.event.documentUploaded": "Document uploaded",
+  "notifications.event.documentUploadedMessage": "{name} was uploaded.",
+  "notifications.event.documentUploadedGeneric": "A document was uploaded.",
+  "notifications.event.documentDeleted": "Document deleted",
+  "notifications.event.documentDeletedMessage": "{name} was deleted.",
+  "notifications.event.documentDeletedGeneric": "A document was deleted.",
+  "visa.status.unset": "unset",
+  "bookings.timeline.statusChangedFrom": "Status changed from {from} to {to}",
+  "customers.timeline.created": "Customer created: {name}",
+  "customers.timeline.leadConverted": "Converted from lead: {name}",
 } as const;
 
 export type MessageKey = keyof typeof en;

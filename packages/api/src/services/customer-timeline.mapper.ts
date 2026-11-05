@@ -23,7 +23,7 @@ export function customerToTimelineItem(customer: Customer): CustomerTimelineItem
     type: "customer_created",
     title: `Customer created: ${customer.fullName}`,
     createdAt: customer.createdAt,
-    metadata: { customerId: customer.id },
+    metadata: { customerId: customer.id, fullName: customer.fullName },
   };
 }
 
@@ -41,6 +41,6 @@ export function leadConversionToTimelineItem(lead: CrmLead): CustomerTimelineIte
     type: "lead_converted",
     title: `Converted from lead: ${lead.fullName}`,
     createdAt: lead.convertedAt,
-    metadata: { leadId: lead.id, convertedBy: lead.convertedBy, source: lead.source },
+    metadata: { leadId: lead.id, fullName: lead.fullName, convertedBy: lead.convertedBy, source: lead.source },
   };
 }
