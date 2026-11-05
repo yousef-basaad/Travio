@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 import { cn } from "@travio/utils";
+import { getT } from "@/lib/i18n/get-locale";
+import type { Translate } from "@/lib/i18n/translate";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 export type ProductPreviewVariant = "analytics" | "customer-360" | "booking-360" | "generic";
 
@@ -27,7 +30,7 @@ function Bar({ width, tone = "muted" }: { width: string; tone?: "muted" | "prima
 
 function MockSidebar() {
   return (
-    <div className="hidden w-36 shrink-0 flex-col gap-4 border-r border-sidebar-border bg-sidebar p-3 sm:flex">
+    <div className="hidden w-36 shrink-0 flex-col gap-4 border-e border-sidebar-border bg-sidebar p-3 sm:flex">
       <div className="flex items-center gap-1.5 pb-2">
         <span className="h-5 w-5 rounded bg-primary" aria-hidden="true" />
         <Bar width="40px" />
@@ -48,10 +51,10 @@ function MockSidebar() {
   );
 }
 
-function MockHeader({ title }: { title: string }) {
+function MockHeader({ title, brand }: { title: string; brand: string }) {
   return (
     <div className="flex h-10 shrink-0 items-center justify-between border-b border-border px-4">
-      <p className="text-xs font-medium text-muted-foreground">Travio / {title}</p>
+      <p className="text-xs font-medium text-muted-foreground">{brand} / {title}</p>
       <div className="flex items-center gap-2">
         <span className="h-5 w-5 rounded-full bg-muted" aria-hidden="true" />
         <span className="h-5 w-5 rounded-full bg-muted" aria-hidden="true" />
@@ -93,7 +96,7 @@ function AnalyticsBody() {
   );
 }
 
-function Customer360Body() {
+function Customer360Body({ t }: { t: Translate }) {
   return (
     <div className="flex gap-3 p-4">
       <div className="w-24 shrink-0 space-y-2 rounded-md border border-border bg-card p-2.5">
@@ -104,7 +107,7 @@ function Customer360Body() {
       </div>
       <div className="flex-1 space-y-2 rounded-md border border-border bg-card p-2.5">
         <div className="flex gap-2">
-          {["Overview", "Bookings", "Finance"].map((tab, index) => (
+          {(["preview.tab.overview", "preview.tab.bookings", "preview.tab.finance"] as const).map((tab, index) => (
             <span
               key={tab}
               className={cn(
@@ -112,7 +115,7 @@ function Customer360Body() {
                 index === 0 ? "bg-secondary text-secondary-foreground" : "text-muted-foreground",
               )}
             >
-              {tab}
+              {t(tab)}
             </span>
           ))}
         </div>
@@ -141,15 +144,17 @@ function Booking360Body() {
   );
 }
 
-const VARIANT_CONFIG: Record<ProductPreviewVariant, { title: string; body: () => ReactNode }> = {
-  analytics: { title: "Analytics", body: AnalyticsBody },
-  "customer-360": { title: "Customers", body: Customer360Body },
-  "booking-360": { title: "Bookings", body: Booking360Body },
-  generic: { title: "Dashboard", body: AnalyticsBody },
+const VARIANT_CONFIG: Record<ProductPreviewVariant, { title: MessageKey; body: (props: { t: Translate }) => ReactNode }> = {
+  analytics: { title: "preview.analytics", body: AnalyticsBody },
+  "customer-360": { title: "preview.customers", body: Customer360Body },
+  "booking-360": { title: "preview.bookings", body: Booking360Body },
+  generic: { title: "preview.dashboard", body: AnalyticsBody },
 };
 
-export function ProductPreview({ variant = "generic", className }: ProductPreviewProps) {
-  const { title, body: Body } = VARIANT_CONFIG[variant];
+export async function ProductPreview({ variant = "generic", className }: ProductPreviewProps) {
+  const t = await getT();
+  const { title: titleKey, body: Body } = VARIANT_CONFIG[variant];
+  const title = t(titleKey);
 
   return (
     <div
@@ -158,7 +163,7 @@ export function ProductPreview({ variant = "generic", className }: ProductPrevie
         className,
       )}
       role="img"
-      aria-label={`Illustrative preview of the Travio ${title} view`}
+      aria-label={t("preview.label", { view: title })}
     >
       <div className="flex items-center gap-1.5 border-b border-border bg-surface-muted px-3 py-2">
         <span className="h-2.5 w-2.5 rounded-full bg-danger/60" aria-hidden="true" />
@@ -168,8 +173,8 @@ export function ProductPreview({ variant = "generic", className }: ProductPrevie
       <div className="flex">
         <MockSidebar />
         <div className="flex-1">
-          <MockHeader title={title} />
-          <Body />
+          <MockHeader title={title} brand={t("brand.name")} />
+          <Body t={t} />
         </div>
       </div>
     </div>

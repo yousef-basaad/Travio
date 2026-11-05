@@ -12,6 +12,8 @@ export interface PricingCardProps {
   features: readonly string[];
   cta: { label: string; href: string };
   highlighted?: boolean;
+  /** Badge text shown on the highlighted plan. */
+  highlightLabel?: string;
 }
 
 // Pricing values are explicitly placeholders per this phase's spec -
@@ -26,6 +28,7 @@ export function PricingCard({
   features,
   cta,
   highlighted = false,
+  highlightLabel,
 }: PricingCardProps) {
   return (
     <Card
@@ -35,9 +38,9 @@ export function PricingCard({
       )}
     >
       <CardHeader className="space-y-3 pb-4">
-        {highlighted ? (
+        {highlighted && highlightLabel ? (
           <span className="w-fit rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-            Most Popular
+            {highlightLabel}
           </span>
         ) : null}
         <h3 className="text-heading-md text-foreground">{name}</h3>

@@ -6,76 +6,63 @@ import { FeatureCard } from "@/components/feature-card";
 import { ProductPreview } from "@/components/product-preview";
 import { CtaSection } from "@/components/cta-section";
 import { FEATURES } from "@/lib/features-content";
+import { getT } from "@/lib/i18n/get-locale";
 
-export const metadata: Metadata = {
-  title: "Travio - Run Your Travel Agency From One Platform",
-  description:
-    "Manage bookings, customers, visas, documents, payments, and operations in one unified workspace built for travel agencies.",
-  openGraph: {
-    title: "Travio - Run Your Travel Agency From One Platform",
-    description:
-      "Manage bookings, customers, visas, documents, payments, and operations in one unified workspace built for travel agencies.",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("meta.siteTitle"),
+    description: t("meta.homeDescription"),
+    openGraph: {
+      title: t("meta.siteTitle"),
+      description: t("meta.homeDescription"),
+      type: "website",
+    },
+  };
+}
 
 const WORKFLOW_STEPS = [
-  "Lead",
-  "Customer",
-  "Booking",
-  "Visa / Documents",
-  "Payment",
-  "Completion",
+  "home.workflow.lead",
+  "home.workflow.customer",
+  "home.workflow.booking",
+  "home.workflow.visaDocuments",
+  "home.workflow.payment",
+  "home.workflow.completion",
 ] as const;
 
 const TRUST_POINTS = [
-  {
-    icon: LayoutGrid,
-    title: "Centralized operations",
-    description: "CRM, bookings, visas, documents, and finance in one workspace - not six disconnected tools.",
-  },
-  {
-    icon: Clock3,
-    title: "Less manual work",
-    description: "One booking record ties services, documents, and invoices together automatically.",
-  },
-  {
-    icon: Smile,
-    title: "Better customer experience",
-    description: "A complete Customer 360 view means every team member sees the same up-to-date picture.",
-  },
-  {
-    icon: Eye,
-    title: "Real-time visibility",
-    description: "Revenue, booking status, and customer growth, visible the moment they change.",
-  },
+  { icon: LayoutGrid, title: "home.why.centralizedTitle", description: "home.why.centralizedDescription" },
+  { icon: Clock3, title: "home.why.lessManualTitle", description: "home.why.lessManualDescription" },
+  { icon: Smile, title: "home.why.experienceTitle", description: "home.why.experienceDescription" },
+  { icon: Eye, title: "home.why.visibilityTitle", description: "home.why.visibilityDescription" },
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getT();
   return (
     <>
       <Hero
-        eyebrow="Travel Agency Operating System"
-        headline="Run your travel agency from one powerful platform."
-        supportingText="Manage bookings, customers, visas, documents, payments, and operations in one unified workspace."
-        primaryCta={{ label: "Start Free Trial", href: "/signup" }}
-        secondaryCta={{ label: "Request Demo", href: "/contact", variant: "outline" }}
+        eyebrow={t("home.hero.eyebrow")}
+        headline={t("home.hero.headline")}
+        supportingText={t("home.hero.supporting")}
+        primaryCta={{ label: t("cta.startTrial"), href: "/signup" }}
+        secondaryCta={{ label: t("cta.requestDemo"), href: "/contact", variant: "outline" }}
         visual={<ProductPreview variant="generic" />}
       />
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <SectionHeader
-          eyebrow="Platform"
-          title="Everything your agency runs on"
-          description="Six connected modules, built specifically for travel agency operations."
+          eyebrow={t("home.platform.eyebrow")}
+          title={t("home.platform.title")}
+          description={t("home.platform.description")}
         />
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature) => (
             <FeatureCard
               key={feature.slug}
               icon={feature.icon}
-              title={feature.title}
-              description={feature.summary}
+              title={t(feature.title)}
+              description={t(feature.summary)}
             />
           ))}
         </div>
@@ -83,9 +70,9 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <SectionHeader
-          eyebrow="How it works"
-          title="One workflow, start to finish"
-          description="Every trip follows the same clear path through your agency."
+          eyebrow={t("home.workflow.eyebrow")}
+          title={t("home.workflow.title")}
+          description={t("home.workflow.description")}
         />
         <div className="mt-12 flex flex-col items-center gap-3 lg:flex-row lg:justify-between">
           {WORKFLOW_STEPS.map((step, index) => (
@@ -94,13 +81,13 @@ export default function HomePage() {
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {index + 1}
                 </span>
-                <span className="whitespace-nowrap text-sm font-medium text-foreground">{step}</span>
+                <span className="whitespace-nowrap text-sm font-medium text-foreground">{t(step)}</span>
               </div>
               {index < WORKFLOW_STEPS.length - 1 ? (
                 <ArrowRight
                   aria-hidden="true"
                   size={18}
-                  className="hidden shrink-0 rotate-90 text-muted-foreground lg:block lg:rotate-0"
+                  className="hidden shrink-0 rotate-90 text-muted-foreground lg:block lg:rotate-0 lg:rtl:rotate-180"
                 />
               ) : null}
             </div>
@@ -110,28 +97,28 @@ export default function HomePage() {
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <SectionHeader
-          eyebrow="Inside Travio"
-          title="Built for the way agencies actually work"
-          description="A closer look at the workspace your team uses every day."
+          eyebrow={t("home.inside.eyebrow")}
+          title={t("home.inside.title")}
+          description={t("home.inside.description")}
         />
         <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-3">
             <ProductPreview variant="analytics" />
-            <p className="text-center text-sm font-medium text-foreground">Analytics Dashboard</p>
+            <p className="text-center text-sm font-medium text-foreground">{t("home.inside.analytics")}</p>
           </div>
           <div className="space-y-3">
             <ProductPreview variant="customer-360" />
-            <p className="text-center text-sm font-medium text-foreground">Customer 360</p>
+            <p className="text-center text-sm font-medium text-foreground">{t("home.inside.customer360")}</p>
           </div>
           <div className="space-y-3">
             <ProductPreview variant="booking-360" />
-            <p className="text-center text-sm font-medium text-foreground">Booking 360</p>
+            <p className="text-center text-sm font-medium text-foreground">{t("home.inside.booking360")}</p>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <SectionHeader eyebrow="Why Travio" title="Why travel agencies choose Travio" />
+        <SectionHeader eyebrow={t("home.why.eyebrow")} title={t("home.why.title")} />
         <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
           {TRUST_POINTS.map((point) => (
             <div key={point.title} className="flex gap-4">
@@ -142,8 +129,8 @@ export default function HomePage() {
                 <point.icon size={20} />
               </span>
               <div>
-                <h3 className="text-heading-sm text-foreground">{point.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{point.description}</p>
+                <h3 className="text-heading-sm text-foreground">{t(point.title)}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{t(point.description)}</p>
               </div>
             </div>
           ))}
@@ -151,10 +138,10 @@ export default function HomePage() {
       </section>
 
       <CtaSection
-        title="Ready to bring your agency into one platform?"
-        description="Start a free trial or book a demo with our team - no credit card required."
-        primaryCta={{ label: "Start Free Trial", href: "/signup" }}
-        secondaryCta={{ label: "Request Demo", href: "/contact" }}
+        title={t("home.cta.title")}
+        description={t("home.cta.description")}
+        primaryCta={{ label: t("cta.startTrial"), href: "/signup" }}
+        secondaryCta={{ label: t("cta.requestDemo"), href: "/contact" }}
       />
     </>
   );
