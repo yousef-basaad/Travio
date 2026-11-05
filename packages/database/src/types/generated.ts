@@ -352,14 +352,18 @@ export type Database = {
       }
       bookings: {
         Row: {
+          adults: number | null
           assigned_to: string | null
           booking_number: string
           branch_id: string | null
+          children: number | null
           created_at: string
           created_by: string | null
           currency: string | null
           customer_id: string
           deleted_at: string | null
+          destination_city: string | null
+          destination_country: string | null
           end_date: string | null
           id: string
           notes: string | null
@@ -371,14 +375,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adults?: number | null
           assigned_to?: string | null
           booking_number: string
           branch_id?: string | null
+          children?: number | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
           customer_id: string
           deleted_at?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
@@ -390,14 +398,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adults?: number | null
           assigned_to?: string | null
           booking_number?: string
           branch_id?: string | null
+          children?: number | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
           customer_id?: string
           deleted_at?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
@@ -1584,6 +1596,13 @@ export type Database = {
           invoice_total: number
           month: string
           paid_total: number
+        }[]
+      }
+      analytics_top_destinations: {
+        Args: { limit_count?: number }
+        Returns: {
+          bookings: number
+          country: string
         }[]
       }
       analytics_top_customers: {

@@ -1,20 +1,20 @@
 "use client";
 
 import { MapPin } from "lucide-react";
-import { Card, CardContent, CardHeader, EmptyState } from "@travio/ui";
-import { useT } from "@/lib/i18n/i18n-provider";
+import { BarList, Card, CardContent, CardHeader, DataTableState } from "@travio/ui";
+import { useI18n } from "@/lib/i18n/i18n-provider";
+import { intlLocale } from "@/lib/i18n/format";
+import { countryName } from "@/lib/countries/countries";
+import { useTopDestinations } from "../api/analytics.api";
 
-// Deliberately not wired to any data source. A "top destinations"
-// aggregate would need to summarize booking_hotels.city/country and/or
-// booking_flights.arrival_airport across every booking tenant-wide -
-// analyticsService (packages/api) has no such method, and adding one
-// means a new API route/service method, which is out of scope for this
-// task ("do not change database/API routes", "do not invent metrics
-// that don't exist in API data"). This stays a real, wired-in card in
-// the dashboard layout so the slot is ready the moment that aggregate
-// exists, rather than fabricating city names or percentages.
+// The destination countries with the most live bookings
+// (analytics_top_destinations). Countries come from each booking's
+// destination, so bookings without one aren't counted.
 export function TopDestinations() {
-  const t = useT();
+  const { t, locale } = useI18n();
+  const { data: destinations, isLoading, isError } = useTopDestinations();
+  const tag = intlLocale(locale);
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -22,11 +22,22 @@ export function TopDestinations() {
         <p className="text-xs text-muted-foreground">{t("analytics.destinations.description")}</p>
       </CardHeader>
       <CardContent className="pt-0">
-        <EmptyState
-          icon={<MapPin size={20} />}
-          title={t("analytics.destinations.unavailable")}
-          description={t("analytics.destinations.unavailableHint")}
-        />
+        <DataTableState
+          isLoading={isLoading}
+          isError={isError}
+          errorMessage={t("analytics.destinations.error")}
+          isEmpty={(destinations ?? []).length === 0}
+          emptyMessage={t("analytics.destinations.empty")}
+          emptyIcon={<MapPin size={20} />}
+        >
+          <BarList
+            rows={(destinations ?? []).map((destination) => ({
+              label: countryName(destination.country, tag),
+              value: destination.bookings,
+              barClassName: "bg-primary",
+            }))}
+          />
+        </DataTableState>
       </CardContent>
     </Card>
   );

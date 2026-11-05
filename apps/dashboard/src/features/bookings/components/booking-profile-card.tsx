@@ -17,7 +17,7 @@ import { BookingStatusBadge } from "./booking-status-badge";
 // string) so this card - the one persistent "Customer summary" surface
 // in Booking 360 - can also surface email/phone and a link to the full
 // profile, instead of an agent having to leave Booking 360 to find them.
-// BookingSummaryCards/OverviewTab still only need the name, so they keep
+// OverviewTab still only needs the name, so it keeps
 // receiving customerName as before - this is the only call site that
 // needed the richer object.
 export function BookingProfileCard({

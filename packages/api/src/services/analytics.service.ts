@@ -94,7 +94,23 @@ export function startOfMonth(monthsAgo: number): string {
 // queries, which aren't affected by the row cap.
 const TOP_CUSTOMERS_LIMIT = 5;
 
+// One destination country (ISO 3166-1 alpha-2) and its live bookings.
+export interface TopDestination {
+  country: string;
+  bookings: number;
+}
+
+const TOP_DESTINATIONS_LIMIT = 5;
+
 export const analyticsService = {
+  // analytics_top_destinations (20261105150000), grouped in Postgres.
+  async getTopDestinations(supabase: SupabaseClient<Database>): Promise<TopDestination[]> {
+    const { data, error } = await supabase.rpc("analytics_top_destinations", { limit_count: TOP_DESTINATIONS_LIMIT });
+    if (error) throw error;
+    return (data ?? []).map((row) => ({ country: row.country, bookings: row.bookings }));
+  },
+
+
   async getDashboardStats(supabase: SupabaseClient<Database>): Promise<DashboardStats> {
     const today = new Date().toISOString().slice(0, 10);
 

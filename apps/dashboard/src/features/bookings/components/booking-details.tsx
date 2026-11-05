@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SearchX } from "lucide-react";
-import { Button, EmptyState, Skeleton } from "@travio/ui";
+import { Button, EmptyState, LtrText, Skeleton } from "@travio/ui";
 import { useCustomer } from "@/features/customers";
 import { useBooking, BookingNotFoundError } from "../api/bookings.api";
 import { ChangeBookingStatus } from "./change-booking-status";
-import { BookingSummaryCards } from "./booking-summary-cards";
+import { BookingSummaryStrip } from "./booking-summary-strip";
+import { TripSchedule } from "./trip-schedule";
 import { BookingProfileCard } from "./booking-profile-card";
 import { BookingTabs } from "./booking-tabs";
 import { EditBookingDialog } from "./edit-booking-dialog";
@@ -90,10 +91,14 @@ export function BookingDetails({ id }: { id: string }) {
     <div className="space-y-8">
       <BackToBookingsLink />
 
+      {/* Header from the TRAVIO design (04): the booking number with its
+          status, then the trip title and when it was booked. */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-heading-lg text-foreground">{booking.title}</h1>
+            <h1 className="text-heading-lg text-foreground">
+              <LtrText>#{booking.bookingNumber}</LtrText>
+            </h1>
             {/* Product-2: ChangeBookingStatus is now tinted with the same
                 per-status color BookingStatusBadge uses, so it already
                 displays the current status - a separate static badge
@@ -101,9 +106,7 @@ export function BookingDetails({ id }: { id: string }) {
             <ChangeBookingStatus booking={booking} />
           </div>
           <p className="text-sm text-muted-foreground">
-            {booking.bookingNumber} · {customer?.fullName ?? booking.customerId}
-            {booking.startDate ? ` · ${format.date(booking.startDate)}` : ""}
-            {booking.endDate ? ` – ${format.date(booking.endDate)}` : ""}
+            {booking.title} · {t("bookings.workspace.createdOn", { date: format.dateTime(booking.createdAt) })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -121,14 +124,15 @@ export function BookingDetails({ id }: { id: string }) {
         </div>
       </div>
 
-      <BookingSummaryCards booking={booking} customerName={customer?.fullName ?? null} />
+      <BookingSummaryStrip booking={booking} customer={customer ?? null} />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <BookingProfileCard booking={booking} customer={customer ?? null} />
-        </div>
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
           <BookingTabs booking={booking} customerName={customer?.fullName ?? null} />
+        </div>
+        <div className="space-y-6">
+          <TripSchedule bookingId={booking.id} />
+          <BookingProfileCard booking={booking} customer={customer ?? null} />
         </div>
       </div>
 
