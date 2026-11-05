@@ -30,6 +30,8 @@ export function QuickStatsDonut() {
         emptyIcon={<PieChart size={20} />}
       >
         <DonutChart
+          size={112}
+          className="sm:flex-col"
           centerValue={String(total)}
           centerLabel={t("common.total")}
           segments={[

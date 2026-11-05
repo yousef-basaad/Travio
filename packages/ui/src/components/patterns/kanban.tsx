@@ -6,51 +6,58 @@ export interface KanbanBoardProps {
   className?: string;
 }
 
-// Design System v2.5 (Product-8.2 Phase 3): the reference's status-board
-// pattern (Operations Center's "لوحة الحجوزات") - a horizontally
-// scrolling row of fixed-width columns. Purely structural, like
-// ServiceItem/Timeline before it: no awareness of what a "card" or
-// "column" represents, the caller maps its own real records into
-// KanbanColumn/KanbanCard.
-//
-// Polish Pass 1: gap widened (gap-4 -> gap-5) and bottom padding added
-// (pb-3, was pb-2) so the horizontal scrollbar (on narrower viewports)
-// doesn't sit flush against the columns' own bottom edge - both purely
-// "more breathing room," no structural change.
+// The status board from the TRAVIO design (Operations Center's
+// "لوحة الحجوزات"): columns share the available width equally and only
+// scroll sideways once each would drop below 8.5rem. Purely structural:
+// the caller maps its own records into KanbanColumn/KanbanCard.
 export function KanbanBoard({ children, className }: KanbanBoardProps) {
-  return <div className={cn("flex gap-5 overflow-x-auto pb-3", className)}>{children}</div>;
+  return (
+    <div className={cn("grid auto-cols-[minmax(8.5rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-2", className)}>
+      {children}
+    </div>
+  );
 }
+
+export type KanbanTone = "neutral" | "info" | "warning" | "primary" | "success" | "danger";
+
+// Column tint + title/badge color per tone, as the design colors each
+// status column.
+const TONE_CLASSES: Record<KanbanTone, { column: string; title: string; badge: string }> = {
+  neutral: { column: "bg-surface-muted/70", title: "text-foreground", badge: "bg-muted text-muted-foreground" },
+  info: { column: "bg-info/5", title: "text-info", badge: "bg-info/10 text-info" },
+  warning: { column: "bg-warning/5", title: "text-warning", badge: "bg-warning/10 text-warning" },
+  primary: { column: "bg-primary/5", title: "text-primary", badge: "bg-primary/10 text-primary" },
+  success: { column: "bg-success/5", title: "text-success", badge: "bg-success/10 text-success" },
+  danger: { column: "bg-danger/5", title: "text-danger", badge: "bg-danger/10 text-danger" },
+};
 
 export interface KanbanColumnProps {
   title: string;
   count: number;
-  /** Tailwind background class for the count badge - falls back to a neutral tone. */
-  badgeClassName?: string;
+  tone?: KanbanTone;
   children: ReactNode;
+  /** Shown under the cards, e.g. an "add" link. */
+  footer?: ReactNode;
   className?: string;
 }
 
-// Polish Pass 1: wider (w-72 -> w-80), more internal padding (p-3 ->
-// p-3.5), a real header/body separation (a hairline border instead of
-// just a margin gap) - the previous version read as "compressed"
-// because the column's own chrome (background tint, header) carried
-// almost no weight of its own; this gives the column shell more
-// presence without changing what it contains.
-export function KanbanColumn({ title, count, badgeClassName, children, className }: KanbanColumnProps) {
+export function KanbanColumn({ title, count, tone = "neutral", children, footer, className }: KanbanColumnProps) {
+  const toneClasses = TONE_CLASSES[tone];
   return (
-    <div className={cn("flex w-80 shrink-0 flex-col rounded-xl bg-surface-muted/70 p-3.5", className)}>
-      <div className="mb-3 flex items-center justify-between border-b border-border/60 px-0.5 pb-3">
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+    <div className={cn("flex min-w-0 flex-col rounded-xl border border-border/40 p-2.5", toneClasses.column, className)}>
+      <div className="mb-2.5 flex items-center justify-between gap-2 px-1 pt-0.5">
+        <h3 className={cn("truncate text-sm font-semibold", toneClasses.title)}>{title}</h3>
         <span
           className={cn(
-            "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-2 text-xs font-medium",
-            badgeClassName ?? "bg-muted text-muted-foreground",
+            "inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-medium",
+            toneClasses.badge,
           )}
         >
           {count}
         </span>
       </div>
-      <div className="space-y-2.5">{children}</div>
+      <div className="flex-1 space-y-2">{children}</div>
+      {footer ? <div className="mt-2">{footer}</div> : null}
     </div>
   );
 }
@@ -60,21 +67,13 @@ export interface KanbanCardProps {
   className?: string;
 }
 
-// Polish Pass 1: stronger resting elevation (shadow -> was shadow-sm) and
-// a hover lift (-translate-y-0.5, matching KpiCard's own micro-
-// interaction) - a Trello/Linear-style card reads as a physical,
-// liftable object mostly through shadow depth and a soft hover response,
-// not a special cursor. Deliberately no `cursor-grab`/drag handle -
-// dragging isn't implemented, and a grab affordance would promise an
-// interaction this card doesn't have; the elevation alone gives the
-// "premium, drag-ready" quality the brief asks for without that
-// dishonesty. Softer border (border-border/50, was /60) so the shadow -
-// not the outline - carries most of the "this is a card" signal.
+// A liftable card (shadow + hover lift). Deliberately no drag handle -
+// dragging isn't implemented, so nothing should suggest it.
 export function KanbanCard({ children, className }: KanbanCardProps) {
   return (
     <div
       className={cn(
-        "space-y-1.5 rounded-lg border border-border/50 bg-card p-3.5 text-sm shadow transition-all duration-base ease-default hover:-translate-y-0.5 hover:border-border/70 hover:shadow-lg",
+        "space-y-1 rounded-lg border border-border/50 bg-card p-3 text-sm shadow-sm transition-all duration-base ease-default hover:-translate-y-0.5 hover:border-border/70 hover:shadow-md",
         className,
       )}
     >
@@ -87,10 +86,7 @@ export interface KanbanEmptyProps {
   message?: string;
 }
 
-// Polish Pass 1: a considered empty state (dashed placeholder box)
-// instead of a bare line of muted text - sized for a single narrow
-// column rather than the full-width EmptyState primitive (whose own
-// p-8 padding doesn't fit an 320px column comfortably).
+// A dashed placeholder sized for one column.
 export function KanbanEmpty({ message = "Nothing here" }: KanbanEmptyProps) {
   return (
     <div className="rounded-lg border border-dashed border-border/60 px-3 py-6 text-center text-xs text-muted-foreground">
