@@ -2,8 +2,19 @@
 
 import Link from "next/link";
 import type { Route } from "next";
-import { KanbanBoard, KanbanColumn, KanbanCard, KanbanEmpty, SectionToolbar, SkeletonTable, Avatar, Button } from "@travio/ui";
-import { useBookings, BOOKING_STATUS_KEYS, BOOKING_STATUS_STYLES } from "@/features/bookings";
+import { Plus } from "lucide-react";
+import {
+  KanbanBoard,
+  KanbanColumn,
+  KanbanCard,
+  KanbanEmpty,
+  SectionToolbar,
+  SkeletonTable,
+  Avatar,
+  Button,
+  type KanbanTone,
+} from "@travio/ui";
+import { useBookings, BOOKING_STATUS_KEYS } from "@/features/bookings";
 import { useCustomers } from "@/features/customers";
 import type { BookingStatus } from "@/features/bookings";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
@@ -15,6 +26,16 @@ import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 // own English gloss ("New/In Progress") - same five columns, same real
 // data, no invented status names.
 const COLUMN_ORDER: BookingStatus[] = ["draft", "pending", "confirmed", "completed", "cancelled"];
+
+// Column colors from the design: new (blue), awaiting confirmation
+// (amber), in progress (indigo), done (green), cancelled (red).
+const COLUMN_TONE: Record<BookingStatus, KanbanTone> = {
+  draft: "info",
+  pending: "warning",
+  confirmed: "primary",
+  completed: "success",
+  cancelled: "danger",
+};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -88,7 +109,19 @@ export function BookingKanban() {
               key={status}
               title={t(BOOKING_STATUS_KEYS[status])}
               count={byStatus.get(status)?.length ?? 0}
-              badgeClassName={BOOKING_STATUS_STYLES[status]}
+              tone={COLUMN_TONE[status]}
+              footer={
+                // New bookings start as drafts, so "add" lives under that column.
+                status === "draft" ? (
+                  <Link
+                    href="/bookings/new"
+                    className="flex items-center justify-center gap-1 rounded-lg py-1.5 text-xs font-medium text-primary transition-colors duration-fast hover:bg-primary/10"
+                  >
+                    <Plus size={14} aria-hidden="true" />
+                    {t("home.board.addBooking")}
+                  </Link>
+                ) : undefined
+              }
             >
               {(byStatus.get(status) ?? []).map((booking) => {
                 const customerName = customerNameById.get(booking.customerId) ?? "—";
@@ -96,18 +129,18 @@ export function BookingKanban() {
                 return (
                   <Link key={booking.id} href={`/bookings/${booking.id}` as Route}>
                     <KanbanCard>
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-semibold text-foreground">{booking.bookingNumber}</p>
+                      <p className="truncate text-xs font-semibold text-foreground">
+                        {booking.bookingNumber}
+                      </p>
+                      <p className="truncate text-sm text-foreground">{booking.title}</p>
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <Avatar name={customerName} size="sm" className="h-5 w-5 shrink-0 text-[10px]" />
+                          <span className="truncate text-xs text-muted-foreground">{customerName}</span>
+                        </span>
                         {relative ? (
-                          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                            {relative}
-                          </span>
+                          <span className="shrink-0 text-[11px] font-medium text-muted-foreground">{relative}</span>
                         ) : null}
-                      </div>
-                      <p className="truncate text-muted-foreground">{booking.title}</p>
-                      <div className="flex items-center gap-1.5 pt-0.5">
-                        <Avatar name={customerName} size="sm" className="h-5 w-5 text-[10px]" />
-                        <span className="truncate text-xs text-muted-foreground">{customerName}</span>
                       </div>
                     </KanbanCard>
                   </Link>

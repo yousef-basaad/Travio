@@ -2,7 +2,7 @@ import { useId, type ReactNode } from "react";
 import { cn } from "@travio/utils";
 import { Card } from "../card";
 import { Skeleton } from "../skeleton";
-import { StatBadge } from "../stat-badge";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 export type KpiCardTone = "primary" | "success" | "warning" | "danger" | "info";
 
@@ -23,14 +23,9 @@ const TONE_STROKE: Record<KpiCardTone, string> = {
 };
 
 const SPARK_WIDTH = 200;
-const SPARK_HEIGHT = 40;
+const SPARK_HEIGHT = 36;
 
-// Design System v2.7 (Product-8.2 Reference Fidelity Pass): full-bleed
-// gradient area sparkline - bigger viewbox than the v2.6 sparkline
-// (200x40, was 100x28) since it now spans the card's full width
-// (rendered inside a `-mx-5` wrapper in KpiCard, edge to edge, matching
-// the reference's own KPI cards where the trend chart runs under the
-// number with no side margin). Still dependency-free, still no axis/
+// Gradient area sparkline under the KPI. Dependency-free, no axis/
 // tooltip/legend - a decorative trend, not a readable chart. Renders
 // nothing when fewer than 2 points exist.
 function Sparkline({ values, tone }: { values: number[]; tone: KpiCardTone }) {
@@ -78,12 +73,16 @@ function Sparkline({ values, tone }: { values: number[]; tone: KpiCardTone }) {
 
 function KpiCardSkeleton() {
   return (
-    <div className="rounded-lg border border-border/40 bg-card p-5 shadow-sm" role="status" aria-label="Loading">
-      <Skeleton className="h-10 w-10 rounded-lg" />
-      <Skeleton className="mt-4 h-8 w-20" />
-      <Skeleton className="mt-2 h-3.5 w-24" />
-      <Skeleton className="mt-3 h-4 w-28" />
-      <Skeleton className="-mx-5 mt-3 h-9 w-[calc(100%+2.5rem)]" />
+    <div className="rounded-xl border border-border/40 bg-card p-3.5 shadow-sm" role="status" aria-label="Loading">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-20" />
+          <Skeleton className="h-3.5 w-24" />
+        </div>
+        <Skeleton className="h-10 w-10 rounded-xl" />
+      </div>
+      <Skeleton className="mt-3 h-3.5 w-28" />
+      <Skeleton className="mt-3 h-9 w-full" />
     </div>
   );
 }
@@ -91,11 +90,13 @@ function KpiCardSkeleton() {
 export interface KpiCardProps {
   label: string;
   value: string;
+  /** Small text after the value, e.g. a currency ("SAR", "ر.س"). */
+  unit?: string;
   icon?: ReactNode;
   tone?: KpiCardTone;
   isLoading?: boolean;
   trend?: { value: string; direction: "up" | "down" };
-  /** Real trailing-period context for the trend badge, e.g. "vs last month" - never invented. */
+  /** Real trailing-period context for the trend, e.g. "vs last month" - never invented. */
   trendContext?: string;
   /** Optional trailing-period values for the decorative sparkline - omit entirely when no real series exists, never a fabricated flat line. */
   sparkline?: number[];
@@ -103,24 +104,15 @@ export interface KpiCardProps {
   footer?: ReactNode;
 }
 
-// Design System v2.7 (Product-8.2 Reference Fidelity Pass): rebuilt the
-// internal layout order to match the actual TRAVIO reference (icon alone
-// at the top, then the big value, then the label *below* the value, then
-// the trend line, then a full-bleed sparkline) - the previous v2.6 pass
-// (icon+label sharing the top row, label above the value) was a
-// plausible "premium card" guess made without this reference in hand.
-// Label reads as plain sentence-case muted text now (was uppercase
-// tracking-wide eyebrow text) to match the reference's own label
-// weight. Trend row gained a real trailing context string (trendContext,
-// e.g. "vs last month") next to the StatBadge chip, same text the
-// reference always pairs with its trend arrows - callers must pass real,
-// pre-formatted text, never a computed guess. Sparkline now bleeds to
-// the card's full width via a `-mx-5` wrapper. Fixed-height reserved
-// slots (label/trend/sparkline) still apply so every card in a row stays
-// the same height regardless of which optional props a given card has.
+// KPI card from the TRAVIO design (Operations Center): the value at the
+// start with a tinted icon tile at the end, the label under them, the trend (arrow +
+// percentage in green/red, then its period) under them, and a small
+// area sparkline at the bottom. Fixed-height trend/sparkline slots keep
+// every card in a row the same height whichever optional props it has.
 export function KpiCard({
   label,
   value,
+  unit,
   icon,
   tone = "primary",
   isLoading,
@@ -133,44 +125,62 @@ export function KpiCard({
     return <KpiCardSkeleton />;
   }
 
+  const length = value.length + (unit ? unit.length + 1 : 0);
+
   return (
     <Card
       interactive
-      className="border-border/40 p-5 shadow-sm transition-all duration-base ease-default hover:-translate-y-0.5 hover:border-border/60 hover:shadow-lg"
+      className="rounded-xl border-border/40 p-3.5 shadow-sm transition-all duration-base ease-default hover:-translate-y-0.5 hover:border-border/60 hover:shadow-lg"
     >
-      {icon ? (
-        <span
-          aria-hidden="true"
-          className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", TONE_CLASSES[tone])}
-        >
-          {icon}
-        </span>
-      ) : null}
-
-      {/* Formatted money ("SAR 12,345.00", "‏12,345.00 ر.س.‏") is much wider
-          than a count, so long values step down a size instead of
-          overflowing a fifth-width card. */}
-      <p
-        className={cn(
-          "mt-4 font-bold leading-none tracking-tight text-foreground",
-          value.length > 12 ? "text-heading-sm" : value.length > 8 ? "text-heading-md" : "text-heading-xl",
-        )}
-      >
-        {value}
-      </p>
-
-      <p className="mt-2 truncate text-sm text-muted-foreground">{label}</p>
-
-      <div className="mt-3 flex h-4 items-center gap-1.5">
-        {trend ? (
-          <>
-            <StatBadge value={trend.value} direction={trend.direction} />
-            {trendContext ? <span className="truncate text-xs text-muted-foreground">{trendContext}</span> : null}
-          </>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          {/* Long values (money) step down a size instead of overflowing
+              a fifth-width card. */}
+          <p
+            className={cn(
+              "font-bold leading-tight tracking-tight text-foreground",
+              length > 12 ? "text-heading-sm" : length > 8 ? "text-heading-md" : "text-heading-lg",
+            )}
+          >
+            {value}
+            {/* The space lets a narrow card wrap the unit under the value. */}
+            {unit ? <> <span className="text-xs font-semibold text-muted-foreground">{unit}</span></> : null}
+          </p>
+        </div>
+        {icon ? (
+          <span
+            aria-hidden="true"
+            className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", TONE_CLASSES[tone])}
+          >
+            {icon}
+          </span>
         ) : null}
       </div>
 
-      <div className="-mx-5 mt-3 h-9">
+      {/* Full card width, so a two-word label stays on one line in a
+          narrow card. */}
+      <p className="mt-1 truncate text-sm text-muted-foreground">{label}</p>
+
+      <div className="mt-2 flex h-4 items-center gap-1.5 text-xs">
+        {trend ? (
+            <span
+              className={cn(
+                "inline-flex items-center gap-0.5 font-semibold",
+                trend.direction === "up" ? "text-success" : "text-danger",
+              )}
+            >
+              {trend.direction === "up" ? (
+                <ArrowUp size={12} aria-hidden="true" />
+              ) : (
+                <ArrowDown size={12} aria-hidden="true" />
+              )}
+              {trend.value}
+            </span>
+        ) : null}
+        {trendContext ? <span className="truncate text-muted-foreground">{trendContext}</span> : null}
+      </div>
+
+      <div className="mt-2 h-9">
         {sparkline && sparkline.length > 1 ? <Sparkline values={sparkline} tone={tone} /> : null}
       </div>
 

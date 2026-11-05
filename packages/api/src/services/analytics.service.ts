@@ -18,6 +18,11 @@ export interface DashboardStats {
   paidAmount: number;
   outstandingAmount: number;
   upcomingBookings: number;
+  /** Still owed on issued/partially paid invoices past their due date. */
+  overdueAmount: number;
+  overdueInvoices: number;
+  /** Visa applications not decided yet (draft or submitted). */
+  openVisaApplications: number;
 }
 
 export interface RevenueMonth {
@@ -98,6 +103,8 @@ export const analyticsService = {
       bookingsResult,
       financeResult,
       upcomingBookingsResult,
+      overdueResult,
+      openVisasResult,
     ] = await Promise.all([
       supabase
         .from("customers")
@@ -111,16 +118,24 @@ export const analyticsService = {
         .is("deleted_at", null)
         .neq("status", "cancelled")
         .gte("start_date", today),
+      supabase.rpc("analytics_overdue_total"),
+      supabase
+        .from("visa_applications")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["draft", "submitted"]),
     ]);
 
     if (customersResult.error) throw customersResult.error;
     if (bookingsResult.error) throw bookingsResult.error;
     if (financeResult.error) throw financeResult.error;
     if (upcomingBookingsResult.error) throw upcomingBookingsResult.error;
+    if (overdueResult.error) throw overdueResult.error;
+    if (openVisasResult.error) throw openVisasResult.error;
 
     const totals = financeResult.data[0];
     const totalRevenue = Number(totals?.total_revenue ?? 0);
     const paidAmount = Number(totals?.paid_amount ?? 0);
+    const overdue = overdueResult.data?.[0];
 
     return {
       totalCustomers: customersResult.count ?? 0,
@@ -129,6 +144,9 @@ export const analyticsService = {
       paidAmount,
       outstandingAmount: totalRevenue - paidAmount,
       upcomingBookings: upcomingBookingsResult.count ?? 0,
+      overdueAmount: Number(overdue?.overdue_amount ?? 0),
+      overdueInvoices: overdue?.overdue_count ?? 0,
+      openVisaApplications: openVisasResult.count ?? 0,
     };
   },
 

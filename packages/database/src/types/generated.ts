@@ -1571,6 +1571,13 @@ export type Database = {
           total_revenue: number
         }[]
       }
+      analytics_overdue_total: {
+        Args: never
+        Returns: {
+          overdue_amount: number
+          overdue_count: number
+        }[]
+      }
       analytics_revenue_by_month: {
         Args: { range_start: string }
         Returns: {
