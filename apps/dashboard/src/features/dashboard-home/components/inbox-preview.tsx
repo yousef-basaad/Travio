@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Inbox } from "lucide-react";
 import { Widget, DataTableState, Button } from "@travio/ui";
-import { useNotifications } from "@/features/notifications";
+import { useNotifications, notificationText } from "@/features/notifications";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 const PREVIEW_LIMIT = 5;
@@ -40,25 +40,28 @@ export function InboxPreview() {
         emptyIcon={<Inbox size={20} />}
       >
         <ul className="space-y-3">
-          {recent.map((notification) => (
-            <li key={notification.id} className="flex items-start gap-2">
-              <span
-                aria-hidden="true"
-                className={
-                  notification.readAt
-                    ? "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-transparent"
-                    : "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                }
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{notification.title}</p>
-                <p className="truncate text-xs text-muted-foreground">{notification.message}</p>
-              </div>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {format.relativeTime(notification.createdAt)}
-              </span>
-            </li>
-          ))}
+          {recent.map((notification) => {
+            const { title, message } = notificationText(notification, t);
+            return (
+              <li key={notification.id} className="flex items-start gap-2">
+                <span
+                  aria-hidden="true"
+                  className={
+                    notification.readAt
+                      ? "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-transparent"
+                      : "bg-primary mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+                  }
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-sm font-medium">{title}</p>
+                  <p className="text-muted-foreground truncate text-xs">{message}</p>
+                </div>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {format.relativeTime(notification.createdAt)}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </DataTableState>
     </Widget>

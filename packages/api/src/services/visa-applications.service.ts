@@ -113,7 +113,7 @@ export const visaApplicationsService = {
         message: visaApplication.country
           ? `A new visa application was created for ${visaApplication.country}.`
           : "A new visa application was created.",
-        metadata: { visaApplicationId: visaApplication.id },
+        metadata: { visaApplicationId: visaApplication.id, country: visaApplication.country },
       });
     }
 

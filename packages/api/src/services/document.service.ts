@@ -181,7 +181,7 @@ export const documentService = {
         type: "document_uploaded",
         title: "Document uploaded",
         message: `${document.fileName} was uploaded.`,
-        metadata: { documentId: document.id, documentType: document.documentType },
+        metadata: { documentId: document.id, documentType: document.documentType, fileName: document.fileName },
       });
     }
 
@@ -222,7 +222,7 @@ export const documentService = {
         type: "document_deleted",
         title: "Document deleted",
         message: `${document.fileName} was deleted.`,
-        metadata: { documentId: document.id, documentType: document.documentType },
+        metadata: { documentId: document.id, documentType: document.documentType, fileName: document.fileName },
       });
     }
 

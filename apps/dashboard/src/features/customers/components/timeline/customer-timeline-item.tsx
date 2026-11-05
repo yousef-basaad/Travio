@@ -2,7 +2,7 @@
 
 import { TimelineItem } from "@travio/ui";
 import type { CustomerTimelineItem as CustomerTimelineItemData } from "@travio/api";
-import { useFormat } from "@/lib/i18n/i18n-provider";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 // Centralized here - the only place customer timeline icons are mapped.
 // A plain lookup (not a Record<CustomerTimelineItemType, string>) so a
@@ -31,10 +31,20 @@ export function CustomerTimelineItem({
   isLast?: boolean;
 }) {
   const format = useFormat();
+  const t = useT();
+  // Titles are built in English by the API; derive them from the item
+  // type so they follow the UI language.
+  const name = typeof item.metadata?.fullName === "string" ? item.metadata.fullName : null;
+  const title =
+    name && item.type === "customer_created"
+      ? t("customers.timeline.created", { name })
+      : name && item.type === "lead_converted"
+        ? t("customers.timeline.leadConverted", { name })
+        : item.title;
   return (
     <TimelineItem
       icon={getTimelineIcon(item)}
-      title={item.title}
+      title={title}
       description={item.description}
       timestamp={format.relativeTime(item.createdAt)}
       timestampTitle={format.date(item.createdAt)}
