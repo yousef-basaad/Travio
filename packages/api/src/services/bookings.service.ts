@@ -35,6 +35,10 @@ export interface CreateBookingInput {
   totalAmount?: number;
   currency?: string | null;
   notes?: string | null;
+  destinationCountry?: string | null;
+  destinationCity?: string | null;
+  adults?: number | null;
+  children?: number | null;
   createdBy?: string | null;
 }
 
@@ -50,6 +54,10 @@ export interface UpdateBookingInput {
   totalAmount?: number;
   currency?: string | null;
   notes?: string | null;
+  destinationCountry?: string | null;
+  destinationCity?: string | null;
+  adults?: number | null;
+  children?: number | null;
 }
 
 export interface ListBookingsOptions {
@@ -70,6 +78,10 @@ function toBooking(row: BookingRow): Booking {
     startDate: row.start_date,
     endDate: row.end_date,
     totalAmount: row.total_amount,
+    destinationCountry: row.destination_country,
+    destinationCity: row.destination_city,
+    adults: row.adults,
+    children: row.children,
     currency: row.currency,
     notes: row.notes,
     createdBy: row.created_by,
@@ -106,6 +118,10 @@ function toBookingInsert(input: CreateBookingInput): BookingInsertRow {
     total_amount: input.totalAmount,
     currency: input.currency,
     notes: input.notes,
+    destination_country: input.destinationCountry,
+    destination_city: input.destinationCity,
+    adults: input.adults,
+    children: input.children,
     created_by: input.createdBy,
   };
 }
@@ -123,6 +139,10 @@ function toBookingUpdate(input: UpdateBookingInput): BookingUpdateRow {
     total_amount: input.totalAmount,
     currency: input.currency,
     notes: input.notes,
+    destination_country: input.destinationCountry,
+    destination_city: input.destinationCity,
+    adults: input.adults,
+    children: input.children,
   };
 }
 

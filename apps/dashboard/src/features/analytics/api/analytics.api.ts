@@ -6,6 +6,7 @@ import type {
   RevenueOverview,
   BookingAnalytics,
   CustomerAnalytics,
+  TopDestination,
 } from "@travio/api";
 
 // Read-only queries only - this module has no mutations, so (unlike
@@ -45,6 +46,14 @@ export function useBookingAnalytics() {
   return useQuery({
     queryKey: [...ANALYTICS_QUERY_KEY, "bookings"],
     queryFn: () => fetchJson<BookingAnalytics>("/api/analytics/bookings", "booking analytics"),
+  });
+}
+
+export function useTopDestinations() {
+  return useQuery({
+    queryKey: [...ANALYTICS_QUERY_KEY, "destinations"],
+    queryFn: async () =>
+      (await fetchJson<{ destinations: TopDestination[] }>("/api/analytics/destinations", "top destinations")).destinations,
   });
 }
 

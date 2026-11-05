@@ -23,6 +23,11 @@ export const bookingSchema = z.object({
   startDate: z.string().nullable(),
   endDate: z.string().nullable(),
   totalAmount: z.number().nonnegative(),
+  /** ISO 3166-1 alpha-2, e.g. "TR". */
+  destinationCountry: z.string().nullable(),
+  destinationCity: z.string().nullable(),
+  adults: z.number().int().nullable(),
+  children: z.number().int().nullable(),
   currency: z.string().nullable(),
   notes: z.string().nullable(),
   createdBy: z.string().uuid().nullable(),
