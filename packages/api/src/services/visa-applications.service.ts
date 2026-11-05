@@ -8,6 +8,7 @@ import {
   toVisaApplicationUpdate,
   type VisaApplication,
   type VisaApplicationWithCustomer,
+  type VisaStatus,
   type CreateVisaApplicationInput,
   type UpdateVisaApplicationInput,
 } from "./visa-applications.mapper";
@@ -22,6 +23,46 @@ export interface ListVisaApplicationsOptions {
 // components/routes. Mirrors bookingFlightsService/bookingHotelsService/
 // bookingTransfersService's shape - callers only ever see the mapped
 // VisaApplication domain shape, never the generated Row type.
+export interface VisaCenterStats {
+  total: number;
+  byStatus: Record<VisaStatus, number>;
+  newThisMonth: number;
+  newLastMonth: number;
+  byType: { label: string; count: number }[];
+  byCountry: { label: string; count: number }[];
+}
+
+function toCount(value: unknown): number {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function toLabelCounts(value: unknown): { label: string; count: number }[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is { label: unknown; count: unknown } => typeof item === "object" && item !== null)
+    .map((item) => ({ label: String(item.label ?? ""), count: toCount(item.count) }))
+    .filter((item) => item.label !== "");
+}
+
+// The function returns jsonb; anything missing reads as zero/empty.
+export function toVisaCenterStats(data: unknown): VisaCenterStats {
+  const raw = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
+  return {
+    total: toCount(raw.total),
+    byStatus: {
+      draft: toCount(raw.draft),
+      submitted: toCount(raw.submitted),
+      approved: toCount(raw.approved),
+      rejected: toCount(raw.rejected),
+    },
+    newThisMonth: toCount(raw.new_this_month),
+    newLastMonth: toCount(raw.new_last_month),
+    byType: toLabelCounts(raw.by_type),
+    byCountry: toLabelCounts(raw.by_country),
+  };
+}
+
 export const visaApplicationsService = {
   // The sales_agent .or() convention (Phase 4C.1's customer/crm-leads/
   // bookings services) is mirrored here for visa_officer - it's
@@ -33,13 +74,22 @@ export const visaApplicationsService = {
   // is decided by RLS (20261026120000/20261026130000): managers see all,
   // a visa officer its own + unassigned, a sales agent those of customers
   // it can see. The tenant .eq() is defense-in-depth, same as list().
+  // The Visa Center's numbers (visa_center_stats, 20261105160000):
+  // counts per status, new this/last month, top visa types and countries.
+  // Counted in Postgres under the caller's RLS.
+  async getCenterStats(supabase: SupabaseClient<Database>): Promise<VisaCenterStats> {
+    const { data, error } = await supabase.rpc("visa_center_stats");
+    if (error) throw error;
+    return toVisaCenterStats(data);
+  },
+
   async listForTenant(
     supabase: SupabaseClient<Database>,
     tenantId: string,
   ): Promise<VisaApplicationWithCustomer[]> {
     const { data, error } = await supabase
       .from("visa_applications")
-      .select("*, customer:customers(id, full_name)")
+      .select("*, customer:customers(id, full_name), booking:bookings(start_date)")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false });
 

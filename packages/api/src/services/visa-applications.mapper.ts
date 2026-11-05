@@ -71,14 +71,20 @@ export function toVisaApplication(row: VisaApplicationRow): VisaApplication {
 // null when RLS hides the customer from the caller.
 export interface VisaApplicationWithCustomer extends VisaApplication {
   customer: { id: string; fullName: string } | null;
+  /** Start date of the linked booking (the trip the visa is for), when there is one. */
+  travelDate: string | null;
 }
 
 export function toVisaApplicationWithCustomer(
-  row: VisaApplicationRow & { customer: { id: string; full_name: string } | null },
+  row: VisaApplicationRow & {
+    customer: { id: string; full_name: string } | null;
+    booking?: { start_date: string | null } | null;
+  },
 ): VisaApplicationWithCustomer {
   return {
     ...toVisaApplication(row),
     customer: row.customer ? { id: row.customer.id, fullName: row.customer.full_name } : null,
+    travelDate: row.booking?.start_date ?? null,
   };
 }
 

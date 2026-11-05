@@ -1676,6 +1676,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      visa_center_stats: { Args: never; Returns: Json }
       usage_document_totals: {
         Args: never
         Returns: {

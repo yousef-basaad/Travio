@@ -107,8 +107,8 @@ export interface KpiCardProps {
 // KPI card from the TRAVIO design (Operations Center): the value at the
 // start with a tinted icon tile at the end, the label under them, the trend (arrow +
 // percentage in green/red, then its period) under them, and a small
-// area sparkline at the bottom. Fixed-height trend/sparkline slots keep
-// every card in a row the same height whichever optional props it has.
+// area sparkline at the bottom. The trend line always takes its slot; the
+// sparkline slot is there when a series is passed.
 export function KpiCard({
   label,
   value,
@@ -180,9 +180,12 @@ export function KpiCard({
         {trendContext ? <span className="truncate text-muted-foreground">{trendContext}</span> : null}
       </div>
 
-      <div className="mt-2 h-9">
-        {sparkline && sparkline.length > 1 ? <Sparkline values={sparkline} tone={tone} /> : null}
-      </div>
+      {/* Space for the sparkline only when the caller has a series for it
+          (cards in one grid row still match heights - the grid stretches
+          them). */}
+      {sparkline !== undefined ? (
+        <div className="mt-2 h-9">{sparkline.length > 1 ? <Sparkline values={sparkline} tone={tone} /> : null}</div>
+      ) : null}
 
       {footer}
     </Card>
