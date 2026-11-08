@@ -1,5 +1,7 @@
 "use client";
 
+import { NextStage } from "@/components/next-stage";
+
 export function PlatformUsersView() {
-  return <div className="text-muted-foreground">PlatformUsers - cross-tenant view (admin only).</div>;
+  return <NextStage titleKey="nav.users" />;
 }

@@ -58,6 +58,7 @@ export type {
 export * from "./services/visa-applications.service";
 export * from "./services/finance-insights.service";
 export * from "./services/reports.service";
+export * from "./services/platform.service";
 export type {
   VisaApplication,
   VisaApplicationWithCustomer,

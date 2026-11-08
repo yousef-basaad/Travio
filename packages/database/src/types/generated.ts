@@ -1701,6 +1701,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      platform_overview: { Args: never; Returns: Json }
       reports_overview: { Args: { range_start: string }; Returns: Json }
       visa_center_stats: { Args: never; Returns: Json }
       usage_document_totals: {

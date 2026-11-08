@@ -1,5 +1,7 @@
 "use client";
 
+import { NextStage } from "@/components/next-stage";
+
 export function TenantsView() {
-  return <div className="text-muted-foreground">Tenants - cross-tenant view (admin only).</div>;
+  return <NextStage titleKey="nav.agencies" />;
 }
