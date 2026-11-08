@@ -188,7 +188,8 @@ export function TrendChart({
         ) : null}
       </div>
 
-      <div className="flex justify-between text-xs text-muted-foreground" aria-hidden="true">
+      {/* The plot runs left to right in every language, so its axis labels must too. */}
+      <div dir="ltr" className="flex justify-between text-xs text-muted-foreground" aria-hidden="true">
         <span>{labels[0]}</span>
         {labels.length > 2 ? <span>{labels[Math.floor(labels.length / 2)]}</span> : null}
         <span>{labels[labels.length - 1]}</span>

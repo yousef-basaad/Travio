@@ -7,6 +7,7 @@ import type {
   BookingAnalytics,
   CustomerAnalytics,
   TopDestination,
+  ReportsOverview,
 } from "@travio/api";
 
 // Read-only queries only - this module has no mutations, so (unlike
@@ -61,5 +62,12 @@ export function useCustomerAnalytics() {
   return useQuery({
     queryKey: [...ANALYTICS_QUERY_KEY, "customers"],
     queryFn: () => fetchJson<CustomerAnalytics>("/api/analytics/customers", "customer analytics"),
+  });
+}
+
+export function useReportsOverview() {
+  return useQuery({
+    queryKey: [...ANALYTICS_QUERY_KEY, "reports"],
+    queryFn: () => fetchJson<ReportsOverview>("/api/analytics/reports", "reports"),
   });
 }

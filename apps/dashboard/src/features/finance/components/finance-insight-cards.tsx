@@ -74,7 +74,7 @@ export function RevenueVsExpenses() {
             {t("finance.chart.expenses")}
           </span>
         </div>
-        <div className="flex h-44 items-end gap-3" role="img" aria-label={t("finance.chart.title")}>
+        <div dir="ltr" className="flex h-44 items-end gap-3" role="img" aria-label={t("finance.chart.title")}>
           {rows.map((row) => (
             <div key={row.month} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
               <div className="flex h-full w-full items-end justify-center gap-1">

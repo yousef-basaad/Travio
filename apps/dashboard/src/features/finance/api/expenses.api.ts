@@ -38,10 +38,11 @@ async function fetchExpenseTotal(): Promise<number> {
 // Sum of all the agency's expenses, computed in Postgres (summing a
 // fetched list stops at the 1000-row response cap). Under
 // EXPENSES_QUERY_KEY, so adding an expense refreshes it.
-export function useExpenseTotal() {
+export function useExpenseTotal({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [...EXPENSES_QUERY_KEY, "total"],
     queryFn: fetchExpenseTotal,
+    enabled,
   });
 }
 
