@@ -13,6 +13,8 @@ export interface DonutChartProps {
   centerLabel?: string;
   centerValue?: string;
   size?: number;
+  /** Formats each legend value (e.g. thousands separators); plain number by default. */
+  formatValue?: (value: number) => string;
   className?: string;
 }
 
@@ -24,7 +26,14 @@ const STROKE_WIDTH = 14;
 // with real percentages always accompanies the ring (color is never the
 // sole carrier of identity), and every segment's value/percentage is
 // real text, never baked only into the arc's geometry.
-export function DonutChart({ segments, centerLabel, centerValue, size = 160, className }: DonutChartProps) {
+export function DonutChart({
+  segments,
+  centerLabel,
+  centerValue,
+  size = 160,
+  formatValue = String,
+  className,
+}: DonutChartProps) {
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
   const radius = (size - STROKE_WIDTH) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -83,7 +92,7 @@ export function DonutChart({ segments, centerLabel, centerValue, size = 160, cla
               <span className="truncate">{segment.label}</span>
             </span>
             <span className="shrink-0 font-medium text-foreground">
-              {segment.value}
+              {formatValue(segment.value)}
               {total > 0 ? (
                 <span className="ms-1 text-xs font-normal text-muted-foreground">
                   ({Math.round((segment.value / total) * 100)}%)

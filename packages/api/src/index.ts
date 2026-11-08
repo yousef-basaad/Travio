@@ -56,6 +56,7 @@ export type {
   CustomerTimelineItemType,
 } from "./services/customer-timeline.mapper";
 export * from "./services/visa-applications.service";
+export * from "./services/finance-insights.service";
 export type {
   VisaApplication,
   VisaApplicationWithCustomer,

@@ -61,7 +61,7 @@ export interface CustomerAnalytics {
 
 // "YYYY-MM" keys for the trailing `count` months, oldest first, always
 // including the current month.
-function lastNMonthKeys(count: number): string[] {
+export function lastNMonthKeys(count: number): string[] {
   const now = new Date();
   const keys: string[] = [];
   for (let i = count - 1; i >= 0; i--) {

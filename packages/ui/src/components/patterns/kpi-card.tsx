@@ -96,6 +96,8 @@ export interface KpiCardProps {
   tone?: KpiCardTone;
   isLoading?: boolean;
   trend?: { value: string; direction: "up" | "down" };
+  /** When a rise is bad news (e.g. expenses): an upward trend shows red, a downward one green. */
+  invertTrendColor?: boolean;
   /** Real trailing-period context for the trend, e.g. "vs last month" - never invented. */
   trendContext?: string;
   /** Optional trailing-period values for the decorative sparkline - omit entirely when no real series exists, never a fabricated flat line. */
@@ -117,6 +119,7 @@ export function KpiCard({
   tone = "primary",
   isLoading,
   trend,
+  invertTrendColor = false,
   trendContext,
   sparkline,
   footer,
@@ -166,7 +169,7 @@ export function KpiCard({
             <span
               className={cn(
                 "inline-flex items-center gap-0.5 font-semibold",
-                trend.direction === "up" ? "text-success" : "text-danger",
+                (trend.direction === "up") !== invertTrendColor ? "text-success" : "text-danger",
               )}
             >
               {trend.direction === "up" ? (

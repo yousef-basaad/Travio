@@ -1657,6 +1657,31 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       finance_expense_total: { Args: never; Returns: number }
+      finance_expenses_by_category: {
+        Args: never
+        Returns: {
+          category: string
+          expense_total: number
+        }[]
+      }
+      finance_expenses_by_month: {
+        Args: { range_start: string }
+        Returns: {
+          expense_total: number
+          month: string
+        }[]
+      }
+      finance_overdue_invoices: {
+        Args: { limit_count?: number }
+        Returns: {
+          balance: number
+          customer_name: string
+          days_overdue: number
+          due_date: string
+          invoice_id: string
+          invoice_number: string
+        }[]
+      }
       update_team_member_role: {
         Args: { new_role: Database["public"]["Enums"]["user_role"]; target_user_id: string }
         Returns: {
