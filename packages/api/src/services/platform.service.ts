@@ -125,9 +125,89 @@ export function toPlatformOverview(data: unknown): PlatformOverview {
   };
 }
 
-// The Super Admin overview. platform_overview() refuses anyone who isn't
-// travio_admin, so this is safe to call with the signed-in user's client.
+export type AgencyStatusFilter = "all" | "active" | "inactive";
+
+export interface AgencyListItem {
+  id: string;
+  name: string;
+  slug: string;
+  crNumber: string | null;
+  email: string | null;
+  phone: string | null;
+  isActive: boolean;
+  createdAt: string;
+  /** Plan slug, or null without a live subscription. */
+  plan: string | null;
+  subscriptionStatus: string | null;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  staff: number;
+  customers: number;
+  bookings: number;
+  revenue: number;
+}
+
+export interface AgencyListPage {
+  total: number;
+  items: AgencyListItem[];
+}
+
+export interface AgencyListQuery {
+  search?: string;
+  status?: AgencyStatusFilter;
+  page?: number;
+  pageSize?: number;
+}
+
+function textOrNull(value: unknown): string | null {
+  return typeof value === "string" && value !== "" ? value : null;
+}
+
+// Maps platform_agencies' jsonb (20261109120000).
+export function toAgencyListPage(data: unknown): AgencyListPage {
+  const raw = asRecord(data);
+  return {
+    total: num(raw.total),
+    items: asList(raw.items).map((row) => ({
+      id: text(row.id),
+      name: text(row.name),
+      slug: text(row.slug),
+      crNumber: textOrNull(row.cr_number),
+      email: textOrNull(row.email),
+      phone: textOrNull(row.phone),
+      isActive: row.is_active === true,
+      createdAt: text(row.created_at),
+      plan: textOrNull(row.plan),
+      subscriptionStatus: textOrNull(row.subscription_status),
+      ownerName: textOrNull(row.owner_name),
+      ownerEmail: textOrNull(row.owner_email),
+      staff: num(row.staff),
+      customers: num(row.customers),
+      bookings: num(row.bookings),
+      revenue: num(row.revenue),
+    })),
+  };
+}
+
+// The Super Admin console. Every platform_* function refuses anyone who
+// isn't travio_admin, so these are safe with the signed-in user's client.
 export const platformService = {
+  async listAgencies(supabase: SupabaseClient<Database>, query: AgencyListQuery = {}): Promise<AgencyListPage> {
+    const { data, error } = await supabase.rpc("platform_agencies", {
+      search_text: query.search ?? "",
+      status_filter: query.status ?? "all",
+      page_number: query.page ?? 1,
+      page_size: query.pageSize ?? 20,
+    });
+    if (error) throw error;
+    return toAgencyListPage(data);
+  },
+
+  async setAgencyActive(supabase: SupabaseClient<Database>, tenantId: string, active: boolean): Promise<void> {
+    const { error } = await supabase.rpc("platform_set_agency_active", { target_tenant: tenantId, active });
+    if (error) throw error;
+  },
+
   async getOverview(supabase: SupabaseClient<Database>): Promise<PlatformOverview> {
     const { data, error } = await supabase.rpc("platform_overview");
     if (error) throw error;

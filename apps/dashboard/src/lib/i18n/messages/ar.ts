@@ -38,6 +38,8 @@ export const ar: Messages = {
   "userMenu.profile": "الملف الشخصي",
   "userMenu.settings": "الإعدادات",
   "userMenu.logout": "تسجيل الخروج",
+  "forbidden.agencyInactive.title": "تم تعطيل هذا المكتب",
+  "forbidden.agencyInactive.description": "تم إيقاف الوصول إلى مساحة عمل هذا المكتب، وبياناته محفوظة. تواصل مع دعم ترافيو لإعادة تفعيله.",
   "userMenu.switchLanguage": "English",
 
   "role.travio_admin": "مسؤول ترافيو",

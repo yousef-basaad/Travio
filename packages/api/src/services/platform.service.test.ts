@@ -50,6 +50,51 @@ describe("platform overview", () => {
     expect(findCallsByMethod(allCalls, "rpc:platform_overview", "rpc")).toHaveLength(1);
   });
 
+  it("lists agencies with the given filters", async () => {
+    const { client, allCalls } = createFakeSupabaseClient({
+      "rpc:platform_agencies": [
+        {
+          data: {
+            total: 21,
+            items: [
+              {
+                id: "t1", name: "Alpha", slug: "alpha", cr_number: "111", email: null, phone: "", is_active: false,
+                created_at: "2026-11-01T10:00:00Z", plan: "starter", subscription_status: "trialing",
+                owner_name: "Owner", owner_email: "o@a.test", staff: 2, customers: 3, bookings: 4, revenue: "750.00",
+              },
+            ],
+          },
+          error: null,
+        },
+      ],
+    });
+
+    await expect(platformService.listAgencies(client, { search: "al", status: "inactive", page: 2, pageSize: 20 })).resolves.toEqual({
+      total: 21,
+      items: [
+        {
+          id: "t1", name: "Alpha", slug: "alpha", crNumber: "111", email: null, phone: null, isActive: false,
+          createdAt: "2026-11-01T10:00:00Z", plan: "starter", subscriptionStatus: "trialing",
+          ownerName: "Owner", ownerEmail: "o@a.test", staff: 2, customers: 3, bookings: 4, revenue: 750,
+        },
+      ],
+    });
+    const [call] = findCallsByMethod(allCalls, "rpc:platform_agencies", "rpc");
+    expect(call?.args).toEqual(["platform_agencies", { search_text: "al", status_filter: "inactive", page_number: 2, page_size: 20 }]);
+  });
+
+  it("sets an agency's status and surfaces a refusal", async () => {
+    const ok = createFakeSupabaseClient({ "rpc:platform_set_agency_active": [{ data: null, error: null }] });
+    await platformService.setAgencyActive(ok.client, "t1", false);
+    const [call] = findCallsByMethod(ok.allCalls, "rpc:platform_set_agency_active", "rpc");
+    expect(call?.args).toEqual(["platform_set_agency_active", { target_tenant: "t1", active: false }]);
+
+    const denied = createFakeSupabaseClient({
+      "rpc:platform_set_agency_active": [{ data: null, error: { code: "42501", message: "forbidden" } }],
+    });
+    await expect(platformService.setAgencyActive(denied.client, "t1", true)).rejects.toEqual({ code: "42501", message: "forbidden" });
+  });
+
   it("reads anything missing as zero / empty", () => {
     const overview = toPlatformOverview(null);
     expect(overview.agencies).toBe(0);

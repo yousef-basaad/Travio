@@ -37,6 +37,8 @@ export const en = {
   "userMenu.profile": "Profile",
   "userMenu.settings": "Settings",
   "userMenu.logout": "Logout",
+  "forbidden.agencyInactive.title": "This agency has been deactivated",
+  "forbidden.agencyInactive.description": "Access to this agency's workspace is paused and its data is safe. Contact Travio support to reactivate it.",
   // Shown in the language being switched TO, so it's readable either way.
   "userMenu.switchLanguage": "العربية",
 
