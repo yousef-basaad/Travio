@@ -1,68 +1,50 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { PageHeader } from "@travio/ui";
-import { AnalyticsMetrics } from "./analytics-metrics";
-import { RevenueOverview } from "./revenue-overview";
-import { BookingStatusCard } from "./booking-status-card";
-import { CustomerInsights } from "./customer-insights";
-import { RecentBookings } from "./recent-bookings";
-import { TopDestinations } from "./top-destinations";
+import { ReportKpis } from "./report-kpis";
+import {
+  AnnualGrowth,
+  BookingsTrend,
+  CustomersByNationality,
+  DestinationSales,
+  PerformanceOverview,
+  SalesByMonth,
+  SalesByService,
+  StaffPerformance,
+} from "./report-cards";
 import { useT } from "@/lib/i18n/i18n-provider";
 
-// Section eyebrow - a small uppercase label above each of the five named
-// sections this page is structured around (KPI Grid / Revenue Trend /
-// Booking Analytics / Customer Insights / Recent Activity), matching
-// every other section-eyebrow already used elsewhere in the design
-// system (e.g. sidebar group labels).
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <p className="text-caption font-semibold uppercase tracking-wider text-muted-foreground">
-      {children}
-    </p>
-  );
-}
-
-// Full page composition, extracted here (rather than living directly in
-// app/(dashboard)/analytics/page.tsx) so the route file stays a thin
-// shell - matching CustomersPage/LeadsPage's own convention of a
-// one-line page.tsx rendering a feature component. Phase UI-2:
-// restructured into five explicit sections (each card underneath is
-// unchanged in data source - only the page-level grouping/labeling and
-// each card's own visual polish changed).
-export function AnalyticsPage() {
+// Reports & Analytics from the TRAVIO design (07). Every number comes
+// from Postgres under the caller's RLS (reports_overview and the existing
+// analytics functions). `profitKpi` is the finance-only profit card,
+// passed in by the route so this feature doesn't import the finance one.
+export function AnalyticsPage({ profitKpi }: { profitKpi?: ReactNode }) {
   const t = useT();
   return (
-    <div className="space-y-10">
-      <PageHeader
-        title={t("nav.analytics")}
-        description={t("analytics.description")}
-      />
+    <div className="space-y-6">
+      <PageHeader title={t("reports.title")} description={t("reports.description")} />
 
-      <section className="space-y-4">
-        <SectionLabel>{t("analytics.section.kpis")}</SectionLabel>
-        <AnalyticsMetrics />
-      </section>
+      <ReportKpis extra={profitKpi} />
 
-      <section className="space-y-4">
-        <SectionLabel>{t("analytics.section.revenue")}</SectionLabel>
-        <RevenueOverview />
-      </section>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <SalesByMonth />
+        <SalesByService />
+        <DestinationSales />
+      </div>
 
-      <section className="space-y-4">
-        <SectionLabel>{t("analytics.section.bookingsCustomers")}</SectionLabel>
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <BookingStatusCard />
-          <CustomerInsights />
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <BookingsTrend />
+        <CustomersByNationality />
+        <StaffPerformance />
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <AnnualGrowth />
         </div>
-      </section>
-
-      <section className="space-y-4">
-        <SectionLabel>{t("analytics.section.recent")}</SectionLabel>
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <RecentBookings />
-          <TopDestinations />
-        </div>
-      </section>
+        <PerformanceOverview />
+      </div>
     </div>
   );
 }

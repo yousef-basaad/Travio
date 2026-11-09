@@ -17,6 +17,8 @@ async function fetchFinanceInsights(): Promise<FinanceInsights> {
   return (await response.json()) as FinanceInsights;
 }
 
-export function useFinanceInsights() {
-  return useQuery({ queryKey: FINANCE_INSIGHTS_QUERY_KEY, queryFn: fetchFinanceInsights });
+// `enabled: false` for callers without finance access (the Reports page
+// shows profit only to finance roles).
+export function useFinanceInsights({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery({ queryKey: FINANCE_INSIGHTS_QUERY_KEY, queryFn: fetchFinanceInsights, enabled });
 }
