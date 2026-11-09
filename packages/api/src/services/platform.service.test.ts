@@ -143,6 +143,30 @@ describe("platform overview", () => {
     expect(call?.args).toEqual(["platform_subscriptions", { search_text: "a", status_filter: "none", page_number: 2, page_size: 20 }]);
   });
 
+  it("lists plans and updates one", async () => {
+    const listed = createFakeSupabaseClient({
+      "rpc:platform_plans": [
+        {
+          data: [
+            { id: "p1", name: "Starter", slug: "starter", price: "99.00", billing_interval: "monthly", is_active: true, limits: { max_users: "5", broken: null }, agencies: 2 },
+          ],
+          error: null,
+        },
+      ],
+    });
+    await expect(platformService.listPlans(listed.client)).resolves.toEqual([
+      { id: "p1", name: "Starter", slug: "starter", price: 99, billingInterval: "monthly", isActive: true, limits: { max_users: "5" }, agencies: 2 },
+    ]);
+
+    const updated = createFakeSupabaseClient({ "rpc:platform_update_plan": [{ data: null, error: null }] });
+    await platformService.updatePlan(updated.client, "p1", 120, { max_users: "unlimited" });
+    const [call] = findCallsByMethod(updated.allCalls, "rpc:platform_update_plan", "rpc");
+    expect(call?.args).toEqual(["platform_update_plan", { target_plan: "p1", new_price: 120, new_limits: { max_users: "unlimited" } }]);
+
+    const denied = createFakeSupabaseClient({ "rpc:platform_update_plan": [{ data: null, error: { code: "42501", message: "forbidden" } }] });
+    await expect(platformService.updatePlan(denied.client, "p1", 1, {})).rejects.toEqual({ code: "42501", message: "forbidden" });
+  });
+
   it("sets an agency's status and surfaces a refusal", async () => {
     const ok = createFakeSupabaseClient({ "rpc:platform_set_agency_active": [{ data: null, error: null }] });
     await platformService.setAgencyActive(ok.client, "t1", false);

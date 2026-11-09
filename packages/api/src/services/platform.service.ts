@@ -305,9 +305,49 @@ export function toPlatformSubscriptionPage(data: unknown): PlatformSubscriptionP
   };
 }
 
+export interface PlatformPlan {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  billingInterval: string;
+  isActive: boolean;
+  /** feature_key to value: a whole number as text, or "unlimited". */
+  limits: Record<string, string>;
+  /** Agencies with a live subscription on this plan. */
+  agencies: number;
+}
+
+// Maps platform_plans' jsonb (20261109150000).
+export function toPlatformPlans(data: unknown): PlatformPlan[] {
+  return asList(data).map((row) => ({
+    id: text(row.id),
+    name: text(row.name),
+    slug: text(row.slug),
+    price: num(row.price),
+    billingInterval: text(row.billing_interval),
+    isActive: row.is_active === true,
+    limits: Object.fromEntries(
+      Object.entries(asRecord(row.limits)).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+    ),
+    agencies: num(row.agencies),
+  }));
+}
+
 // The Super Admin console. Every platform_* function refuses anyone who
 // isn't travio_admin, so these are safe with the signed-in user's client.
 export const platformService = {
+  async listPlans(supabase: SupabaseClient<Database>): Promise<PlatformPlan[]> {
+    const { data, error } = await supabase.rpc("platform_plans");
+    if (error) throw error;
+    return toPlatformPlans(data);
+  },
+
+  async updatePlan(supabase: SupabaseClient<Database>, planId: string, price: number, limits: Record<string, string>): Promise<void> {
+    const { error } = await supabase.rpc("platform_update_plan", { target_plan: planId, new_price: price, new_limits: limits });
+    if (error) throw error;
+  },
+
   async listSubscriptions(supabase: SupabaseClient<Database>, query: PlatformSubscriptionQuery = {}): Promise<PlatformSubscriptionPage> {
     const { data, error } = await supabase.rpc("platform_subscriptions", {
       search_text: query.search ?? "",

@@ -1706,6 +1706,8 @@ export type Database = {
         Returns: Json
       }
       platform_overview: { Args: never; Returns: Json }
+      platform_plans: { Args: never; Returns: Json }
+      platform_update_plan: { Args: { target_plan: string; new_price: number; new_limits: Json }; Returns: undefined }
       platform_subscriptions: {
         Args: { search_text?: string; status_filter?: string; page_number?: number; page_size?: number }
         Returns: Json
