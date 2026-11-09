@@ -30,8 +30,6 @@ export const en = {
   "forbidden.description":
     "This area is restricted to Travio staff administrators. If you think this is a mistake, contact Travio support.",
 
-  "placeholder.title": "Coming in the next stage",
-  "placeholder.description": "This section of the admin console is being built. The overview already shows live platform numbers.",
 
   "overview.title": "Platform overview",
   "overview.description": "Every agency, customer, booking and payment on Travio",
@@ -164,6 +162,26 @@ export const en = {
   "billing.perYear": "{amount} / year",
   "billing.empty": "No subscriptions match this search.",
   "billing.error": "Couldn't load the subscriptions.",
+
+  "settings.description": "Each plan's price and usage limits",
+  "settings.websiteNotice": "Changes apply to agencies right away. The prices on the public website's pricing page are separate and don't change from here.",
+  "settings.monthly": "Monthly",
+  "settings.yearly": "Yearly",
+  "settings.agencies": "{count} agencies subscribed",
+  "settings.price": "Price (SAR)",
+  "settings.customPriceHint": "A price of 0 shows as \"custom price\".",
+  "settings.limit.max_users": "Team members",
+  "settings.limit.max_bookings_monthly": "Bookings per month",
+  "settings.limit.max_documents": "Documents",
+  "settings.limit.max_storage_mb": "Storage (MB)",
+  "settings.unlimited": "Unlimited",
+  "settings.save": "Save changes",
+  "settings.saved": "Saved.",
+  "settings.invalid": "Enter a valid price, and a whole number above 0 for each limit.",
+  "settings.saveError": "Couldn't save the plan. Please try again.",
+  "settings.error": "Couldn't load the plans.",
+  "settings.confirm.title": "Save changes to {name}?",
+  "settings.confirm.body": "This applies right away to the {count} agencies subscribed to this plan.",
 } as const;
 
 export type MessageKey = keyof typeof en;

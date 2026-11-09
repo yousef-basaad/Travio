@@ -30,8 +30,6 @@ export const ar: Messages = {
   "forbidden.title": "لا تملك صلاحية عرض هذه الصفحة",
   "forbidden.description": "هذه المنطقة مخصصة لمشرفي فريق ترافيو. إذا كنت ترى أن هذا خطأ، تواصل مع دعم ترافيو.",
 
-  "placeholder.title": "قادمة في المرحلة التالية",
-  "placeholder.description": "هذا القسم من لوحة الإدارة قيد البناء. لوحة التحكم تعرض أرقام المنصة الحية من الآن.",
 
   "overview.title": "نظرة عامة على المنصة",
   "overview.description": "كل المكاتب والعملاء والحجوزات والمدفوعات على ترافيو",
@@ -164,4 +162,24 @@ export const ar: Messages = {
   "billing.perYear": "{amount} / سنوياً",
   "billing.empty": "لا توجد اشتراكات مطابقة لهذا البحث.",
   "billing.error": "تعذّر تحميل الاشتراكات.",
+
+  "settings.description": "سعر كل خطة وحدود استخدامها",
+  "settings.websiteNotice": "التغييرات تسري على المكاتب فوراً. الأسعار في صفحة الأسعار بالموقع العام منفصلة ولا تتغير من هنا.",
+  "settings.monthly": "شهرية",
+  "settings.yearly": "سنوية",
+  "settings.agencies": "{count} مكتب مشترك",
+  "settings.price": "السعر (ر.س)",
+  "settings.customPriceHint": "السعر 0 يظهر على أنه \"سعر خاص\".",
+  "settings.limit.max_users": "أعضاء الفريق",
+  "settings.limit.max_bookings_monthly": "الحجوزات في الشهر",
+  "settings.limit.max_documents": "المستندات",
+  "settings.limit.max_storage_mb": "التخزين (ميجابايت)",
+  "settings.unlimited": "غير محدود",
+  "settings.save": "حفظ التغييرات",
+  "settings.saved": "تم الحفظ.",
+  "settings.invalid": "أدخل سعراً صحيحاً، ورقماً صحيحاً أكبر من 0 لكل حد.",
+  "settings.saveError": "تعذّر حفظ الخطة. حاول مرة أخرى.",
+  "settings.error": "تعذّر تحميل الخطط.",
+  "settings.confirm.title": "حفظ التغييرات على {name}؟",
+  "settings.confirm.body": "يسري هذا فوراً على {count} مكتب مشترك في هذه الخطة.",
 };
