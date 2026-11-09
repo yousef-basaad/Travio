@@ -33,10 +33,12 @@ import { AiAssistantPanel } from "./ai-assistant-panel";
 // TopDestinations is reused directly from the analytics feature (an
 // honest EmptyState today - no destination aggregate exists in the API)
 // as the approved stand-in for the reference's world map widget.
+// The right rail has a fixed width (as in the design) so the KPI row and
+// board keep most of the page.
 export function DashboardHomePage() {
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-      <div className="space-y-5 xl:col-span-2">
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="space-y-5">
         <KpiRow />
         <BookingKanban />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">

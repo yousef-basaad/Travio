@@ -36,6 +36,30 @@ describe("analyticsService", () => {
     expect(stats).toMatchObject({ totalRevenue: 0, paidAmount: 0, outstandingAmount: 0 });
   });
 
+  it("getDashboardStats takes overdue receivables from the database function and counts open visas", async () => {
+    const { client, allCalls } = createFakeSupabaseClient({
+      "rpc:analytics_finance_totals": [{ data: [{ total_revenue: 1600, paid_amount: 25 }], error: null }],
+      "rpc:analytics_overdue_total": [{ data: [{ overdue_amount: 1260, overdue_count: 4 }], error: null }],
+      visa_applications: [{ data: null, count: 6, error: null } as never],
+    });
+
+    const stats = await analyticsService.getDashboardStats(client);
+
+    expect(stats).toMatchObject({ overdueAmount: 1260, overdueInvoices: 4, openVisaApplications: 6 });
+    expect(findCallsByMethod(allCalls, "rpc:analytics_overdue_total", "rpc")).toHaveLength(1);
+    expect(wasCalled(allCalls, "invoices", "select")).toBe(false);
+  });
+
+  it("getDashboardStats reports no overdue receivables when the function returns nothing", async () => {
+    const { client } = createFakeSupabaseClient({
+      "rpc:analytics_finance_totals": [{ data: [], error: null }],
+      "rpc:analytics_overdue_total": [{ data: [], error: null }],
+    });
+
+    const stats = await analyticsService.getDashboardStats(client);
+    expect(stats).toMatchObject({ overdueAmount: 0, overdueInvoices: 0, openVisaApplications: 0 });
+  });
+
   it("getRevenueOverview returns 12 months oldest-first, filling months without data with 0", async () => {
     const thisMonth = currentMonthKey();
     const { client, allCalls } = createFakeSupabaseClient({

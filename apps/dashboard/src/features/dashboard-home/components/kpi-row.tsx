@@ -1,19 +1,20 @@
 "use client";
 
-import { Luggage, UserPlus, Wallet, CircleDollarSign, CalendarClock } from "lucide-react";
+import { Luggage, UserPlus, Wallet, CircleDollarSign, Stamp } from "lucide-react";
 import { KpiCard, SkeletonCard } from "@travio/ui";
 import { useDashboardStats, useCustomerAnalytics, useRevenueOverview } from "@/features/analytics";
 import { useBookings } from "@/features/bookings";
-import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import { useCustomers, useVisaApplications } from "@/features/customers";
+import { useI18n } from "@/lib/i18n/i18n-provider";
+import { intlLocale } from "@/lib/i18n/format";
 
-const ICON_SIZE = 18;
+const ICON_SIZE = 20;
 const TREND_MONTHS = 6;
 
 // "YYYY-MM" for the trailing `count` months, oldest first, always
 // including the current month - same bucketing shape
 // analyticsService.getRevenueOverview already uses server-side, done
-// here client-side since no per-month bookings/customers-count endpoint
-// exists (out of scope: "no new APIs").
+// here client-side from lists the home page already loads.
 function lastNMonthKeys(count: number): string[] {
   const now = new Date();
   const keys: string[] = [];
@@ -24,18 +25,18 @@ function lastNMonthKeys(count: number): string[] {
   return keys;
 }
 
-function countsByMonth(dates: string[], months: string[]): number[] {
+function countsByMonth(dates: (string | null | undefined)[], months: string[]): number[] {
   const counts = new Map(months.map((month) => [month, 0]));
   for (const date of dates) {
-    const key = date.slice(0, 7);
-    if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
+    const key = date?.slice(0, 7);
+    if (key && counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return months.map((month) => counts.get(month) ?? 0);
 }
 
 // Real month-over-month delta, never a fabricated one - returns
-// undefined (renders no trend chip) rather than a divide-by-zero
-// percentage when the previous period was zero.
+// undefined (renders no trend) rather than a divide-by-zero percentage
+// when the previous period was zero.
 function trendFrom(series: number[]): { value: string; direction: "up" | "down" } | undefined {
   if (series.length < 2) return undefined;
   const current = series[series.length - 1] ?? 0;
@@ -46,31 +47,21 @@ function trendFrom(series: number[]): { value: string; direction: "up" | "down" 
   return { value: `${Math.abs(change)}%`, direction: change > 0 ? "up" : "down" };
 }
 
-// Design System v2.7 (Product-8.2 Reference Fidelity Pass): the
-// reference's 5-KPI row (Total Bookings, New Customers, Visa Requests,
-// Total Sales, Overdue Payments), reordered here to Bookings / Customers
-// / Upcoming Bookings / Sales / Outstanding so the two currency cards
-// stay adjacent at the end exactly as the reference has Sales next to
-// Overdue. "Visa Requests" has no backing data anywhere in this
-// codebase (visa applications are only ever fetched per-customer, never
-// tenant-wide - see the existing Visa Center page's own comment), so
-// that slot is "Upcoming Bookings" (dashboardStats.upcomingBookings,
-// already real and already used elsewhere) rather than a fabricated
-// count - a known, intentional content gap vs. the reference, not a
-// fidelity miss. Every trend chip carries the real "vs last month"
-// context text the reference always pairs with its arrows. Every
-// sparkline is a real, client-side-bucketed trailing series from
-// already-fetched data (bookings/revenue-overview) - "Outstanding
-// Payments" and "Upcoming Bookings" are snapshots with no natural
-// monthly series, so they render without a sparkline rather than a
-// fabricated flat line.
+// The design's five KPIs: Total Bookings, New Customers, Visa Requests,
+// Total Sales, Overdue Payments. Every number is real: counts and sums
+// come from the dashboard stats (sums in Postgres), sparklines and
+// trends are month buckets of lists the page already loads. A card with
+// no real series (Overdue Payments is a snapshot) shows no sparkline.
+// Visa applications may be hidden from some roles; the card then shows
+// the stats count without a sparkline.
 export function KpiRow() {
-  const t = useT();
-  const format = useFormat();
+  const { t, locale } = useI18n();
   const { data: stats, isLoading: isLoadingStats } = useDashboardStats();
   const { data: customerAnalytics, isLoading: isLoadingCustomers } = useCustomerAnalytics();
   const { data: revenue, isLoading: isLoadingRevenue } = useRevenueOverview();
   const { data: bookings, isLoading: isLoadingBookings } = useBookings();
+  const { data: customers } = useCustomers();
+  const { data: visas } = useVisaApplications();
 
   const isLoading = isLoadingStats || isLoadingCustomers || isLoadingRevenue || isLoadingBookings;
 
@@ -84,55 +75,72 @@ export function KpiRow() {
     );
   }
 
+  // Whole amounts with a small currency label, as in the design.
+  const amount = new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 0 });
+  const vsLastMonth = t("home.kpi.vsLastMonth");
+
   const months = lastNMonthKeys(TREND_MONTHS);
   const bookingsPerMonth = countsByMonth((bookings ?? []).map((b) => b.createdAt), months);
+  const customersPerMonth = customers ? countsByMonth(customers.map((c) => c.createdAt), months) : undefined;
+  const visasPerMonth = visas ? countsByMonth(visas.map((v) => v.createdAt), months) : undefined;
   const salesPerMonth = (revenue?.months ?? []).slice(-TREND_MONTHS).map((m) => m.paidTotal);
 
   const bookingsTrend = trendFrom(bookingsPerMonth);
   const customersTrend = customerAnalytics
     ? trendFrom([customerAnalytics.newCustomersLastMonth, customerAnalytics.newCustomersThisMonth])
     : undefined;
+  const visasTrend = visasPerMonth ? trendFrom(visasPerMonth) : undefined;
   const salesTrend = trendFrom(salesPerMonth);
+  const overdue = stats?.overdueAmount ?? 0;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <KpiCard
         label={t("home.kpi.totalBookings")}
-        value={String(stats?.totalBookings ?? 0)}
+        value={amount.format(stats?.totalBookings ?? 0)}
         icon={<Luggage size={ICON_SIZE} />}
         tone="primary"
         trend={bookingsTrend}
-        trendContext={bookingsTrend ? t("home.kpi.vsLastMonth") : undefined}
+        trendContext={bookingsTrend ? vsLastMonth : undefined}
         sparkline={bookingsPerMonth}
       />
       <KpiCard
         label={t("home.kpi.newCustomers")}
-        value={String(customerAnalytics?.newCustomersThisMonth ?? 0)}
+        value={amount.format(customerAnalytics?.newCustomersThisMonth ?? 0)}
         icon={<UserPlus size={ICON_SIZE} />}
         tone="info"
         trend={customersTrend}
-        trendContext={customersTrend ? t("home.kpi.vsLastMonth") : undefined}
+        trendContext={customersTrend ? vsLastMonth : undefined}
+        sparkline={customersPerMonth}
       />
       <KpiCard
-        label={t("home.kpi.upcomingBookings")}
-        value={String(stats?.upcomingBookings ?? 0)}
-        icon={<CalendarClock size={ICON_SIZE} />}
-        tone="info"
+        label={t("home.kpi.visaRequests")}
+        value={amount.format(stats?.openVisaApplications ?? 0)}
+        icon={<Stamp size={ICON_SIZE} />}
+        tone="success"
+        trend={visasTrend}
+        trendContext={visasTrend ? vsLastMonth : undefined}
+        sparkline={visasPerMonth}
       />
       <KpiCard
         label={t("home.kpi.totalSales")}
-        value={format.currency(stats?.totalRevenue ?? 0)}
+        value={amount.format(stats?.totalRevenue ?? 0)}
+        unit={t("home.kpi.currency")}
         icon={<CircleDollarSign size={ICON_SIZE} />}
-        tone="success"
+        tone="warning"
         trend={salesTrend}
-        trendContext={salesTrend ? t("home.kpi.vsLastMonth") : undefined}
+        trendContext={salesTrend ? vsLastMonth : undefined}
         sparkline={salesPerMonth}
       />
       <KpiCard
-        label={t("home.kpi.outstanding")}
-        value={format.currency(stats?.outstandingAmount ?? 0)}
+        label={t("home.kpi.overdue")}
+        value={amount.format(overdue)}
+        unit={t("home.kpi.currency")}
         icon={<Wallet size={ICON_SIZE} />}
-        tone={(stats?.outstandingAmount ?? 0) > 0 ? "danger" : "success"}
+        tone={overdue > 0 ? "danger" : "success"}
+        trendContext={
+          stats && stats.overdueInvoices > 0 ? t("home.kpi.overdueInvoices", { count: stats.overdueInvoices }) : undefined
+        }
       />
     </div>
   );
