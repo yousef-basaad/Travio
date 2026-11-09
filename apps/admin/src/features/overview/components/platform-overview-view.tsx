@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Building2, CalendarCheck2, Receipt, TrendingUp, Users, UsersRound, Wallet } from "lucide-react";
 import { Card, DonutChart, KpiCard, LtrText, PageHeader } from "@travio/ui";
 import type { PlatformActivityKind, PlatformOverview } from "@travio/api";
+import { RelativeTime } from "@/components/relative-time";
 import { useI18n } from "@/lib/i18n/i18n-provider";
 import { intlLocale } from "@/lib/i18n/format";
 import type { MessageKey } from "@/lib/i18n/messages/en";
@@ -302,7 +303,9 @@ export function PlatformOverviewView({ overview }: { overview: PlatformOverview 
                     </p>
                     <p className="truncate text-xs text-muted-foreground">{event.agency}</p>
                   </div>
-                  <span className="shrink-0 text-[11px] text-muted-foreground">{format.relativeTime(event.at)}</span>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    <RelativeTime iso={event.at} />
+                  </span>
                 </li>
               ))}
             </ul>

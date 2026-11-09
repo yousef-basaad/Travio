@@ -83,6 +83,37 @@ describe("platform overview", () => {
     expect(call?.args).toEqual(["platform_agencies", { search_text: "al", status_filter: "inactive", page_number: 2, page_size: 20 }]);
   });
 
+  it("lists users with the given filters", async () => {
+    const { client, allCalls } = createFakeSupabaseClient({
+      "rpc:platform_users": [
+        {
+          data: {
+            total: 1,
+            items: [
+              {
+                id: "u1", full_name: "Sara", email: "s@a.test", role: "sales_agent", agency_id: null, agency_name: null,
+                agency_active: null, created_at: "2026-11-01T10:00:00Z", last_sign_in_at: null, email_confirmed: true,
+              },
+            ],
+          },
+          error: null,
+        },
+      ],
+    });
+
+    await expect(platformService.listUsers(client, { search: "sa", role: "sales_agent", page: 2, pageSize: 20 })).resolves.toEqual({
+      total: 1,
+      items: [
+        {
+          id: "u1", fullName: "Sara", email: "s@a.test", role: "sales_agent", agencyId: null, agencyName: null,
+          agencyActive: null, createdAt: "2026-11-01T10:00:00Z", lastSignInAt: null, emailConfirmed: true,
+        },
+      ],
+    });
+    const [call] = findCallsByMethod(allCalls, "rpc:platform_users", "rpc");
+    expect(call?.args).toEqual(["platform_users", { search_text: "sa", role_filter: "sales_agent", page_number: 2, page_size: 20 }]);
+  });
+
   it("sets an agency's status and surfaces a refusal", async () => {
     const ok = createFakeSupabaseClient({ "rpc:platform_set_agency_active": [{ data: null, error: null }] });
     await platformService.setAgencyActive(ok.client, "t1", false);
