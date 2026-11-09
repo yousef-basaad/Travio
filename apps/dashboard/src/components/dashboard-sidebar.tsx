@@ -14,6 +14,7 @@ import {
   UserPlus,
   UsersRound,
   CreditCard,
+  Palette,
   FileText,
   CalendarDays,
   Inbox,
@@ -25,6 +26,7 @@ import {
 import { AppSidebar, isRouteActive, type AppNavItem } from "@travio/ui";
 import { useSession } from "@travio/auth";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { useBrandLockup } from "@/lib/branding/brand-context";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 import {
   AGENCY_OWNER_ROLES,
@@ -80,6 +82,7 @@ export const NAV_ITEMS: readonly NavDefinition[] = [
   { labelKey: "nav.aiAssistant", href: "/ai-assistant", icon: <Sparkles size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
   { labelKey: "nav.team", href: "/team", icon: <UsersRound size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
   { labelKey: "nav.subscription", href: "/subscription", icon: <CreditCard size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
+  { labelKey: "nav.branding", href: "/branding", icon: <Palette size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
   { labelKey: "nav.settings", href: "/settings", icon: <SettingsIcon size={ICON_SIZE} />, roles: AGENCY_OWNER_ROLES },
   { labelKey: "nav.helpCenter", href: "/help-center", icon: <HelpCircle size={ICON_SIZE} />, roles: DASHBOARD_ROLES },
 ];
@@ -118,6 +121,20 @@ export function getNavTitle(pathname: string): MessageKey {
 // the reference's own collapsed treatment.
 export function Brand() {
   const t = useT();
+  const { logoUrl, agencyName } = useBrandLockup();
+
+  // An agency with its own logo shows that and its name instead of Travio's.
+  if (logoUrl) {
+    return (
+      <>
+        <img src={logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />
+        <div data-sidebar-block className="min-w-0 leading-tight">
+          <p className="truncate text-sm font-semibold text-sidebar-foreground">{agencyName ?? "Travio"}</p>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <span
