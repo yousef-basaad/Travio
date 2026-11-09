@@ -11,17 +11,35 @@ import {
   StatsCard,
   type StatsCardTone,
 } from "@travio/ui";
-import { cn, formatDate } from "@travio/utils";
+import { cn } from "@travio/utils";
 import type { SubscriptionStatus, LimitCheck } from "@travio/api";
 import { useSubscription, type SubscriptionResponse } from "../api/subscription.api";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
-const STATUS_LABELS: Record<SubscriptionStatus, string> = {
-  trialing: "Trialing",
-  active: "Active",
-  past_due: "Past Due",
-  cancelled: "Cancelled",
-  expired: "Expired",
+const STATUS_KEYS: Record<SubscriptionStatus, MessageKey> = {
+  trialing: "subscriptionStatus.trialing",
+  active: "subscriptionStatus.active",
+  past_due: "subscriptionStatus.past_due",
+  cancelled: "subscriptionStatus.cancelled",
+  expired: "subscriptionStatus.expired",
 };
+
+const FEATURE_KEYS: Record<string, MessageKey> = {
+  max_users: "planFeature.max_users",
+  max_bookings_monthly: "planFeature.max_bookings_monthly",
+  max_documents: "planFeature.max_documents",
+  max_storage_mb: "planFeature.max_storage_mb",
+};
+
+const INTERVAL_KEYS: Record<string, MessageKey> = {
+  monthly: "subscription.interval.monthly",
+  yearly: "subscription.interval.yearly",
+};
+
+// "5 / 10" has neutral separators, so an RTL page would flip it to
+// "10 / 5" - isolate it as one left-to-right run.
+const ltr = (value: string) => `\u2066${value}\u2069`;
 
 // Reuses only existing design tokens, matching every other status badge
 // in this app - no new colors introduced.
@@ -34,8 +52,9 @@ const STATUS_STYLES: Record<SubscriptionStatus, string> = {
 };
 
 function SubscriptionSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading subscription" className="space-y-4">
+    <div role="status" aria-label={t("subscription.loading")} className="space-y-4">
       <Skeleton className="h-40 w-full" />
       <Skeleton className="h-32 w-full" />
     </div>
@@ -43,12 +62,13 @@ function SubscriptionSkeleton() {
 }
 
 function SubscriptionErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
     >
-      Something went wrong loading your subscription. Please try again later.
+      {t("subscription.error")}
     </div>
   );
 }
@@ -68,11 +88,11 @@ function humanizeFeatureKey(key: string): string {
 // explicitly says so, or just "5" when the feature key isn't configured
 // at all (LimitCheck.isConfigured === false) - never a fabricated
 // denominator, matching planLimitsService's own isConfigured contract.
-function formatCountValue(used: number, limit: LimitCheck | undefined): string {
+function formatCountValue(used: number, limit: LimitCheck | undefined, unlimited: string): string {
   if (!limit || limit.limit === null) {
-    return limit?.isConfigured ? `${used} / Unlimited` : `${used}`;
+    return limit?.isConfigured ? ltr(`${used} / ${unlimited}`) : `${used}`;
   }
-  return `${used} / ${limit.limit}`;
+  return ltr(`${used} / ${limit.limit}`);
 }
 
 function formatMb(mb: number): string {
@@ -85,12 +105,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
-function formatStorageValue(usedBytes: number, limit: LimitCheck | undefined): string {
+function formatStorageValue(usedBytes: number, limit: LimitCheck | undefined, unlimited: string): string {
   const used = formatBytes(usedBytes);
   if (!limit || limit.limit === null) {
-    return limit?.isConfigured ? `${used} / Unlimited` : used;
+    return ltr(limit?.isConfigured ? `${used} / ${unlimited}` : used);
   }
-  return `${used} / ${formatMb(limit.limit)}`;
+  return ltr(`${used} / ${formatMb(limit.limit)}`);
 }
 
 // primary by default, warning inside the last 20% of a configured
@@ -120,39 +140,40 @@ function UsageAndLimits({
   usageSnapshot: SubscriptionResponse["usageSnapshot"];
   limits: SubscriptionResponse["limits"];
 }) {
+  const t = useT();
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-sm font-medium">Usage & Limits</h2>
+        <h2 className="text-sm font-medium">{t("subscription.usageLimits")}</h2>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatsCard
-            label="Team Members"
-            value={formatCountValue(usageSnapshot.teamMembers, limits.max_users)}
+            label={t("subscription.teamMembers")}
+            value={formatCountValue(usageSnapshot.teamMembers, limits.max_users, t("subscription.unlimited"))}
             icon={<Users size={18} />}
             tone={toneForLimit(limits.max_users)}
           />
           <StatsCard
-            label="Customers"
+            label={t("subscription.customers")}
             value={`${usageSnapshot.customers}`}
             icon={<Contact size={18} />}
           />
           <StatsCard
-            label="Bookings This Month"
-            value={formatCountValue(usageSnapshot.bookingsThisMonth, limits.max_bookings_monthly)}
+            label={t("subscription.bookingsThisMonth")}
+            value={formatCountValue(usageSnapshot.bookingsThisMonth, limits.max_bookings_monthly, t("subscription.unlimited"))}
             icon={<CalendarCheck size={18} />}
             tone={toneForLimit(limits.max_bookings_monthly)}
           />
           <StatsCard
-            label="Documents"
-            value={formatCountValue(usageSnapshot.documents, limits.max_documents)}
+            label={t("nav.documents")}
+            value={formatCountValue(usageSnapshot.documents, limits.max_documents, t("subscription.unlimited"))}
             icon={<FileText size={18} />}
             tone={toneForLimit(limits.max_documents)}
           />
           <StatsCard
-            label="Storage"
-            value={formatStorageValue(usageSnapshot.storageBytes, limits.max_storage_mb)}
+            label={t("subscription.storage")}
+            value={formatStorageValue(usageSnapshot.storageBytes, limits.max_storage_mb, t("subscription.unlimited"))}
             icon={<HardDrive size={18} />}
             tone={toneForLimit(limits.max_storage_mb)}
           />
@@ -166,11 +187,13 @@ function UsageAndLimits({
 // payments... read-only subscription view") - no plan picker, no
 // upgrade/downgrade action, no payment form anywhere on this page.
 export function SubscriptionPage() {
+  const t = useT();
+  const format = useFormat();
   const { data, isLoading, isError } = useSubscription();
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Subscription" description="Your agency's current plan and usage" />
+      <PageHeader title={t("nav.subscription")} description={t("subscription.description")} />
 
       {isLoading ? (
         <SubscriptionSkeleton />
@@ -181,8 +204,8 @@ export function SubscriptionPage() {
           <CardContent className="pt-6">
             <EmptyState
               icon={<CreditCard size={20} />}
-              title="No active subscription"
-              description="This agency doesn't have a subscription on file yet. Contact Travio to set one up."
+              title={t("subscription.none")}
+              description={t("subscription.noneHint")}
             />
           </CardContent>
         </Card>
@@ -190,14 +213,14 @@ export function SubscriptionPage() {
         <>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <h2 className="text-sm font-medium">Current Plan</h2>
+              <h2 className="text-sm font-medium">{t("subscription.currentPlan")}</h2>
               <span
                 className={cn(
                   "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
                   STATUS_STYLES[data.subscription.status],
                 )}
               >
-                {STATUS_LABELS[data.subscription.status]}
+                {t(STATUS_KEYS[data.subscription.status])}
               </span>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -209,23 +232,26 @@ export function SubscriptionPage() {
               </div>
               <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
                 <div>
-                  <dt className="text-muted-foreground">Price</dt>
+                  <dt className="text-muted-foreground">{t("subscription.price")}</dt>
                   <dd className="font-medium text-foreground">
                     {data.plan.price > 0
-                      ? `${data.plan.price.toLocaleString()} / ${data.plan.interval}`
-                      : "Custom"}
+                      ? t("subscription.pricePer", {
+                          price: data.plan.price.toLocaleString(),
+                          interval: INTERVAL_KEYS[data.plan.interval] ? t(INTERVAL_KEYS[data.plan.interval]!) : data.plan.interval,
+                        })
+                      : t("subscription.custom")}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Started</dt>
+                  <dt className="text-muted-foreground">{t("subscription.started")}</dt>
                   <dd className="font-medium text-foreground">
-                    {formatDate(data.subscription.startsAt)}
+                    {format.date(data.subscription.startsAt)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Renews / Ends</dt>
+                  <dt className="text-muted-foreground">{t("subscription.renews")}</dt>
                   <dd className="font-medium text-foreground">
-                    {data.subscription.endsAt ? formatDate(data.subscription.endsAt) : "—"}
+                    {data.subscription.endsAt ? format.date(data.subscription.endsAt) : "—"}
                   </dd>
                 </div>
               </dl>
@@ -235,17 +261,17 @@ export function SubscriptionPage() {
           {data.features.length > 0 && (
             <Card>
               <CardHeader>
-                <h2 className="text-sm font-medium">Plan Features</h2>
+                <h2 className="text-sm font-medium">{t("subscription.features")}</h2>
               </CardHeader>
               <CardContent>
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {data.features.map((feature) => (
                     <div key={feature.id} className="flex items-center justify-between gap-4">
                       <dt className="text-sm text-muted-foreground">
-                        {humanizeFeatureKey(feature.featureKey)}
+                        {FEATURE_KEYS[feature.featureKey] ? t(FEATURE_KEYS[feature.featureKey]!) : humanizeFeatureKey(feature.featureKey)}
                       </dt>
                       <dd className="text-sm font-medium text-foreground">
-                        {feature.featureValue ?? "—"}
+                        {feature.featureValue === "unlimited" ? t("subscription.unlimited") : (feature.featureValue ?? "—")}
                       </dd>
                     </div>
                   ))}
@@ -257,7 +283,7 @@ export function SubscriptionPage() {
           {data.usage.length > 0 && (
             <Card>
               <CardHeader>
-                <h2 className="text-sm font-medium">Usage</h2>
+                <h2 className="text-sm font-medium">{t("subscription.usage")}</h2>
               </CardHeader>
               <CardContent>
                 <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">

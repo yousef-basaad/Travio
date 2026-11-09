@@ -6,20 +6,11 @@ import type { VisaApplication, VisaStatus } from "@travio/api";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 
-// Single source of truth for visa status labels - exported so
-// create-visa-dialog.tsx/edit-visa-dialog.tsx reuse it for their
-// <select> options instead of duplicating it. Matches the real
-// visa_status enum (draft/submitted/approved/rejected).
-export const VISA_STATUS_LABELS: Record<VisaStatus, string> = {
-  draft: "Draft",
-  submitted: "Submitted",
-  approved: "Approved",
-  rejected: "Rejected",
-};
-
 // Reuses only existing design tokens, matching LeadStatusBadge/
 // BookingStatusBadge's approach - no new colors introduced.
-// Message keys for the same statuses, for translated display.
+// Message keys for the visa_status enum (draft/submitted/approved/
+// rejected), shared by the badge, the create/edit selects and the Visa
+// Center filter.
 export const VISA_STATUS_KEYS: Record<VisaStatus, MessageKey> = {
   draft: "visa.status.draft",
   submitted: "visa.status.submitted",

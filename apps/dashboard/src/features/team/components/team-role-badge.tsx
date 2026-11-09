@@ -1,5 +1,9 @@
+"use client";
+
 import { cn } from "@travio/utils";
 import type { UserRole } from "@travio/types";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 // Every role a profile can hold, for display - only 4 of these are ever
 // assignable through this feature's own UI (see AssignableRole in
@@ -7,14 +11,14 @@ import type { UserRole } from "@travio/types";
 // here since a real team roster includes the owner's own row, and
 // travio_admin could theoretically appear if Travio staff are ever
 // attached to a tenant.
-export const TEAM_ROLE_LABELS: Record<UserRole, string> = {
-  travio_admin: "Travio Admin",
-  agency_owner: "Agency Owner",
-  branch_manager: "Branch Manager",
-  sales_agent: "Sales Agent",
-  visa_officer: "Visa Officer",
-  accountant: "Accountant",
-  customer: "Customer",
+export const TEAM_ROLE_KEYS: Record<UserRole, MessageKey> = {
+  travio_admin: "role.travio_admin",
+  agency_owner: "role.agency_owner",
+  branch_manager: "role.branch_manager",
+  sales_agent: "role.sales_agent",
+  visa_officer: "role.visa_officer",
+  accountant: "role.accountant",
+  customer: "role.customer",
 };
 
 // Reuses only existing design tokens, matching BookingStatusBadge/
@@ -30,6 +34,7 @@ const TEAM_ROLE_STYLES: Record<UserRole, string> = {
 };
 
 export function TeamRoleBadge({ role }: { role: UserRole }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -37,7 +42,7 @@ export function TeamRoleBadge({ role }: { role: UserRole }) {
         TEAM_ROLE_STYLES[role],
       )}
     >
-      {TEAM_ROLE_LABELS[role]}
+      {t(TEAM_ROLE_KEYS[role])}
     </span>
   );
 }

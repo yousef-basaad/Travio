@@ -1,3 +1,5 @@
+"use client";
+
 import { PageHeader } from "@travio/ui";
 import { AnalyticsMetrics } from "./analytics-metrics";
 import { RevenueOverview } from "./revenue-overview";
@@ -5,6 +7,7 @@ import { BookingStatusCard } from "./booking-status-card";
 import { CustomerInsights } from "./customer-insights";
 import { RecentBookings } from "./recent-bookings";
 import { TopDestinations } from "./top-destinations";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Section eyebrow - a small uppercase label above each of the five named
 // sections this page is structured around (KPI Grid / Revenue Trend /
@@ -27,25 +30,26 @@ function SectionLabel({ children }: { children: string }) {
 // unchanged in data source - only the page-level grouping/labeling and
 // each card's own visual polish changed).
 export function AnalyticsPage() {
+  const t = useT();
   return (
     <div className="space-y-10">
       <PageHeader
-        title="Analytics"
-        description="Overview of bookings, revenue, and customers across your agency"
+        title={t("nav.analytics")}
+        description={t("analytics.description")}
       />
 
       <section className="space-y-4">
-        <SectionLabel>KPI Grid</SectionLabel>
+        <SectionLabel>{t("analytics.section.kpis")}</SectionLabel>
         <AnalyticsMetrics />
       </section>
 
       <section className="space-y-4">
-        <SectionLabel>Revenue Trend</SectionLabel>
+        <SectionLabel>{t("analytics.section.revenue")}</SectionLabel>
         <RevenueOverview />
       </section>
 
       <section className="space-y-4">
-        <SectionLabel>Booking Analytics &amp; Customer Insights</SectionLabel>
+        <SectionLabel>{t("analytics.section.bookingsCustomers")}</SectionLabel>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <BookingStatusCard />
           <CustomerInsights />
@@ -53,7 +57,7 @@ export function AnalyticsPage() {
       </section>
 
       <section className="space-y-4">
-        <SectionLabel>Recent Activity</SectionLabel>
+        <SectionLabel>{t("analytics.section.recent")}</SectionLabel>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <RecentBookings />
           <TopDestinations />
