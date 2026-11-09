@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Tajawal } from "next/font/google";
 import "@travio/ui/styles.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { I18nProvider } from "@/lib/i18n/i18n-provider";
+import { getLocale, getT } from "@/lib/i18n/get-locale";
+import { dirOf } from "@/lib/i18n/locales";
 
 // Same font wiring as the dashboard's Design System v2.0 (Geist,
 // exposed as --font-sans, consumed by globals.css's `font-sans` body
@@ -14,27 +17,43 @@ const geistSans = Geist({
   display: "swap",
 });
 
-const SITE_DESCRIPTION =
-  "Travio is the all-in-one operating system for travel agencies - CRM, bookings, visas, documents, finance, and analytics in one platform.";
+// Arabic glyphs (Geist has none) and headings, as in the dashboard: the
+// preset's font stacks fall back to --font-heading.
+const tajawalHeading = Tajawal({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "700", "800"],
+  variable: "--font-heading",
+  display: "swap",
+});
 
-export const metadata: Metadata = {
-  title: "Travio - Run Your Travel Agency From One Platform",
-  description: SITE_DESCRIPTION,
-  openGraph: {
-    siteName: "Travio",
-    title: "Travio - Run Your Travel Agency From One Platform",
-    description: SITE_DESCRIPTION,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("meta.siteTitle"),
+    description: t("meta.siteDescription"),
+    openGraph: {
+      siteName: t("brand.name"),
+      title: t("meta.siteTitle"),
+      description: t("meta.siteDescription"),
+      type: "website",
+    },
+  };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// lang/dir follow the visitor's language (cookie, or the browser's
+// preference on a first visit), read on the server so the first render
+// already has the right direction.
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" dir="ltr" className={geistSans.variable}>
+    <html lang={locale} dir={dirOf(locale)} className={`${geistSans.variable} ${tajawalHeading.variable}`}>
       <body className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <I18nProvider locale={locale}>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </I18nProvider>
       </body>
     </html>
   );

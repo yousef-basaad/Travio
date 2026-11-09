@@ -1,89 +1,72 @@
 import type { Metadata } from "next";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 import { SectionHeader } from "@/components/section-header";
 import { PricingCard } from "@/components/pricing-card";
 import { CtaSection } from "@/components/cta-section";
+import { getT } from "@/lib/i18n/get-locale";
 
-export const metadata: Metadata = {
-  title: "Pricing - Travio",
-  description: "Simple, transparent pricing for travel agencies of every size.",
-  openGraph: {
-    title: "Pricing - Travio",
-    description: "Simple, transparent pricing for travel agencies of every size.",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("meta.pricingTitle"),
+    description: t("meta.pricingDescription"),
+    openGraph: {
+      title: t("meta.pricingTitle"),
+      description: t("meta.pricingDescription"),
+      type: "website",
+    },
+  };
+}
 
 // Placeholder pricing - every value below is illustrative (per this
 // phase's explicit spec) and lives in this one array so replacing real
 // prices later is a data change, not a template change.
 const PLANS = [
-  {
-    name: "Starter",
-    price: "$49",
-    billingNote: "/ month",
-    description: "For small agencies getting started with CRM and bookings.",
-    features: [
-      "Up to 3 team members",
-      "CRM and booking management",
-      "Basic finance (invoices and payments)",
-      "Email support",
-    ],
-    cta: { label: "Start Free Trial", href: "/signup" },
-  },
-  {
-    name: "Growth",
-    price: "$149",
-    billingNote: "/ month",
-    description: "For growing agencies that need visa operations and analytics.",
-    features: [
-      "Up to 15 team members",
-      "Everything in Starter",
-      "Visa operations desk",
-      "Analytics dashboard",
-      "Document management",
-      "Priority support",
-    ],
-    cta: { label: "Start Free Trial", href: "/signup" },
-    highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    description: "For multi-branch agencies and corporate travel operations.",
-    features: [
-      "Unlimited team members",
-      "Everything in Growth",
-      "Multi-branch support",
-      "Dedicated onboarding",
-      "Custom contract and SLA",
-    ],
-    cta: { label: "Request Demo", href: "/contact" },
-  },
+  { key: "starter", price: "$49", monthly: true, features: 4, cta: "startTrial" },
+  { key: "growth", price: "$149", monthly: true, features: 6, cta: "startTrial", highlighted: true },
+  { key: "enterprise", price: null, monthly: false, features: 5, cta: "requestDemo" },
 ] as const;
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const t = await getT();
   return (
     <>
       <section className="mx-auto max-w-6xl px-6 pb-16 pt-20 sm:pt-28">
         <SectionHeader
-          eyebrow="Pricing"
-          title="Simple, transparent pricing"
-          description="Placeholder pricing shown below - contact us for current rates. Every plan includes the core Travio workspace."
+          eyebrow={t("pricing.eyebrow")}
+          title={t("pricing.title")}
+          description={t("pricing.description")}
         />
       </section>
 
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {PLANS.map((plan) => (
-            <PricingCard key={plan.name} {...plan} />
+            <PricingCard
+              key={plan.key}
+              name={t(`pricing.${plan.key}.name`)}
+              price={plan.price ?? t("pricing.custom")}
+              billingNote={plan.monthly ? t("pricing.perMonth") : undefined}
+              description={t(`pricing.${plan.key}.description`)}
+              features={Array.from({ length: plan.features }, (_, index) =>
+                t(`pricing.${plan.key}.feature${index + 1}` as MessageKey),
+              )}
+              cta={
+                plan.cta === "startTrial"
+                  ? { label: t("cta.startTrial"), href: "/signup" }
+                  : { label: t("cta.requestDemo"), href: "/contact" }
+              }
+              highlighted={"highlighted" in plan && plan.highlighted}
+              highlightLabel={t("pricing.mostPopular")}
+            />
           ))}
         </div>
       </section>
 
       <CtaSection
-        title="Not sure which plan fits?"
-        description="Talk to our team and we'll help you find the right plan for your agency."
-        primaryCta={{ label: "Request Demo", href: "/contact" }}
+        title={t("pricing.cta.title")}
+        description={t("pricing.cta.description")}
+        primaryCta={{ label: t("cta.requestDemo"), href: "/contact" }}
       />
     </>
   );

@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import { SignupForm } from "@/features/signup/components/signup-form";
 import { SectionHeader } from "@/components/section-header";
+import { getT } from "@/lib/i18n/get-locale";
 
-export const metadata: Metadata = {
-  title: "Create your agency - Travio",
-  description: "Sign up your travel agency for Travio.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("meta.signupTitle"),
+    description: t("meta.signupDescription"),
+  };
+}
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const t = await getT();
   return (
     <section className="mx-auto max-w-lg px-6 pb-24 pt-20 sm:pt-28">
       <SectionHeader
-        eyebrow="Get started"
-        title="Create your agency"
-        description="Set up your Travio workspace in a minute."
+        eyebrow={t("signup.eyebrow")}
+        title={t("signup.title")}
+        description={t("signup.description")}
       />
       <div className="mt-10">
         <SignupForm />

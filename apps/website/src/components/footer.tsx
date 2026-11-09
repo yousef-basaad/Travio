@@ -1,30 +1,32 @@
 import Link from "next/link";
 import { Twitter, Linkedin, Instagram } from "lucide-react";
+import { getT } from "@/lib/i18n/get-locale";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 const FOOTER_SECTIONS = [
   {
-    title: "Product",
+    title: "footer.product",
     links: [
-      { label: "Features", href: "/features" },
-      { label: "Pricing", href: "/pricing" },
+      { label: "nav.features", href: "/features" },
+      { label: "nav.pricing", href: "/pricing" },
     ],
   },
   {
-    title: "Solutions",
+    title: "footer.solutions",
     links: [
-      { label: "Travel Agencies", href: "/solutions#travel-agencies" },
-      { label: "Visa Processing Teams", href: "/solutions#visa-processing" },
-      { label: "Corporate Travel", href: "/solutions#corporate-travel" },
+      { label: "footer.travelAgencies", href: "/solutions#travel-agencies" },
+      { label: "footer.visaTeams", href: "/solutions#visa-processing" },
+      { label: "footer.corporateTravel", href: "/solutions#corporate-travel" },
     ],
   },
   {
-    title: "Company",
+    title: "footer.company",
     links: [
-      { label: "About", href: "/about" },
-      { label: "Contact", href: "/contact" },
+      { label: "nav.about", href: "/about" },
+      { label: "nav.contact", href: "/contact" },
     ],
   },
-] as const;
+] as const satisfies readonly { title: MessageKey; links: readonly { label: MessageKey; href: string }[] }[];
 
 // Placeholders - no real Travio social accounts exist yet, so these are
 // inert (href="#") rather than pointing at a guessed/fabricated URL.
@@ -34,7 +36,8 @@ const SOCIAL_LINKS = [
   { label: "Instagram", icon: Instagram },
 ] as const;
 
-export function Footer() {
+export async function Footer() {
+  const t = await getT();
   return (
     <footer className="border-t border-border bg-surface-muted">
       <div className="mx-auto max-w-6xl px-6 py-16">
@@ -47,17 +50,17 @@ export function Footer() {
               >
                 T
               </span>
-              <span className="text-heading-sm text-foreground">Travio</span>
+              <span className="text-heading-sm text-foreground">{t("brand.name")}</span>
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-              One operating system for travel businesses.
+              {t("footer.tagline")}
             </p>
           </div>
 
           {FOOTER_SECTIONS.map((section) => (
             <div key={section.title}>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {section.title}
+                {t(section.title)}
               </p>
               <ul className="mt-3 space-y-2">
                 {section.links.map((link) => (
@@ -66,7 +69,7 @@ export function Footer() {
                       href={link.href}
                       className="text-sm text-muted-foreground transition-colors duration-fast hover:text-foreground"
                     >
-                      {link.label}
+                      {t(link.label)}
                     </Link>
                   </li>
                 ))}
@@ -77,7 +80,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Travio. All rights reserved.
+            {t("footer.rights", { year: new Date().getFullYear() })}
           </p>
           <div className="flex items-center gap-4">
             {SOCIAL_LINKS.map((social) => (
