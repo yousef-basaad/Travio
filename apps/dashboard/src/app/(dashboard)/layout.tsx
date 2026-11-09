@@ -6,6 +6,9 @@ import { getAgencySetupRedirect, getDashboardGateRedirect } from "@/lib/auth/das
 import { completeAgencySetup } from "@/lib/auth/complete-agency-setup";
 import { DASHBOARD_ROLES } from "@/lib/auth/domain-roles";
 import { isAgencyInactive } from "@/lib/auth/agency-active";
+import { brandingService, EMPTY_BRANDING, type TenantBranding } from "@travio/api";
+import { brandThemeCss } from "@/lib/branding/theme";
+import { BrandProvider } from "@/lib/branding/brand-context";
 import { createServerSupabaseClient } from "@travio/database/server";
 
 // Route-group guard: every page under (dashboard) requires agency staff.
@@ -57,9 +60,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/forbidden?reason=agency_inactive");
   }
 
+  // Branding must never take the dashboard down: on any failure the
+  // agency simply sees the default theme.
+  let branding: TenantBranding = EMPTY_BRANDING;
+  if (result.profile.tenantId) {
+    try {
+      branding = await brandingService.get(await createServerSupabaseClient(), result.profile.tenantId);
+    } catch {
+      branding = EMPTY_BRANDING;
+    }
+  }
+  const themeCss = brandThemeCss(branding);
+
   return (
     <SessionProvider profile={result.profile}>
+      {themeCss ? <style dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
+      <BrandProvider value={{ logoUrl: branding.logoUrl, agencyName: branding.agencyName }}>
       <DashboardShell>{children}</DashboardShell>
+      </BrandProvider>
     </SessionProvider>
   );
 }
