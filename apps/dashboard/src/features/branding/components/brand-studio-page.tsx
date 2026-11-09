@@ -7,7 +7,7 @@ import { Button, Card, PageHeader, SkeletonCard } from "@travio/ui";
 import type { TenantBranding } from "@travio/api";
 import { useI18n } from "@/lib/i18n/i18n-provider";
 import type { MessageKey } from "@/lib/i18n/messages/en";
-import { DEFAULT_PRIMARY, DEFAULT_SIDEBAR, brandThemeVars, isHexColor } from "@/lib/branding/theme";
+import { DEFAULT_PRIMARY, DEFAULT_SIDEBAR, brandThemeVars, isHexColor } from "@travio/utils";
 import { BrandingRequestError, useBranding, useRemoveLogo, useSaveBranding, useUploadLogo } from "../api/branding.api";
 
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {

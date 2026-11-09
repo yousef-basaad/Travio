@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Button, FormField, Input } from "@travio/ui";
-import { signupAction } from "@/app/signup/actions";
+import { signupAction } from "@/app/(marketing)/signup/actions";
 import type { SignupFieldName, SignupState } from "../schemas/signup.schema";
 import { useT } from "@/lib/i18n/i18n-provider";
 import { isMessageKey } from "@/lib/i18n/translate";

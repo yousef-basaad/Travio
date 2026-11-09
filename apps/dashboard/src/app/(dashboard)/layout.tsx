@@ -7,7 +7,7 @@ import { completeAgencySetup } from "@/lib/auth/complete-agency-setup";
 import { DASHBOARD_ROLES } from "@/lib/auth/domain-roles";
 import { isAgencyInactive } from "@/lib/auth/agency-active";
 import { brandingService, EMPTY_BRANDING, type TenantBranding } from "@travio/api";
-import { brandThemeCss } from "@/lib/branding/theme";
+import { brandThemeCss } from "@travio/utils";
 import { BrandProvider } from "@/lib/branding/brand-context";
 import { createServerSupabaseClient } from "@travio/database/server";
 

@@ -1410,6 +1410,71 @@ export type Database = {
           },
         ]
       }
+      agency_sites: {
+        Row: {
+          about: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          headline: string | null
+          is_published: boolean
+          language: string
+          phone: string | null
+          services: string[]
+          show_about: boolean
+          show_contact: boolean
+          show_services: boolean
+          subheadline: string | null
+          tenant_id: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          about?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          headline?: string | null
+          is_published?: boolean
+          language?: string
+          phone?: string | null
+          services?: string[]
+          show_about?: boolean
+          show_contact?: boolean
+          show_services?: boolean
+          subheadline?: string | null
+          tenant_id: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          about?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          headline?: string | null
+          is_published?: boolean
+          language?: string
+          phone?: string | null
+          services?: string[]
+          show_about?: boolean
+          show_contact?: boolean
+          show_services?: boolean
+          subheadline?: string | null
+          tenant_id?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_sites_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_branding: {
         Row: {
           created_at: string
@@ -1743,6 +1808,7 @@ export type Database = {
         Args: { search_text?: string; status_filter?: string; page_number?: number; page_size?: number }
         Returns: Json
       }
+      public_agency_site: { Args: { site_slug: string }; Returns: Json }
       platform_overview: { Args: never; Returns: Json }
       platform_plans: { Args: never; Returns: Json }
       platform_update_plan: { Args: { target_plan: string; new_price: number; new_limits: Json }; Returns: undefined }
