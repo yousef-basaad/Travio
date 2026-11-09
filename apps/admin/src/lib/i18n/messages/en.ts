@@ -123,6 +123,26 @@ export const en = {
   "pagination.previous": "Previous",
   "pagination.next": "Next",
   "pagination.page": "Page {page} of {pages}",
+
+  "role.travio_admin": "Travio admin",
+  "role.agency_owner": "Agency owner",
+  "role.branch_manager": "Branch manager",
+  "role.sales_agent": "Sales agent",
+  "role.visa_officer": "Visa officer",
+  "role.accountant": "Accountant",
+  "role.customer": "Customer",
+  "users.description": "Every account on Travio: staff, agency owners and portal customers",
+  "users.search": "Search by name, email or agency",
+  "users.allRoles": "All roles",
+  "users.name": "User",
+  "users.role": "Role",
+  "users.lastSignIn": "Last sign-in",
+  "users.never": "Never",
+  "users.emailStatus": "Email",
+  "users.confirmed": "Confirmed",
+  "users.unconfirmed": "Not confirmed",
+  "users.empty": "No users match this search.",
+  "users.error": "Couldn't load the users.",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -189,9 +189,68 @@ export function toAgencyListPage(data: unknown): AgencyListPage {
   };
 }
 
+export interface PlatformUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  agencyId: string | null;
+  agencyName: string | null;
+  /** Null for accounts without an agency. */
+  agencyActive: boolean | null;
+  createdAt: string;
+  /** Null when the account has never signed in. */
+  lastSignInAt: string | null;
+  emailConfirmed: boolean;
+}
+
+export interface PlatformUserPage {
+  total: number;
+  items: PlatformUser[];
+}
+
+export interface PlatformUserQuery {
+  search?: string;
+  /** A user_role value, or "all". */
+  role?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+// Maps platform_users' jsonb (20261109130000).
+export function toPlatformUserPage(data: unknown): PlatformUserPage {
+  const raw = asRecord(data);
+  return {
+    total: num(raw.total),
+    items: asList(raw.items).map((row) => ({
+      id: text(row.id),
+      fullName: text(row.full_name),
+      email: text(row.email),
+      role: text(row.role),
+      agencyId: textOrNull(row.agency_id),
+      agencyName: textOrNull(row.agency_name),
+      agencyActive: typeof row.agency_active === "boolean" ? row.agency_active : null,
+      createdAt: text(row.created_at),
+      lastSignInAt: textOrNull(row.last_sign_in_at),
+      emailConfirmed: row.email_confirmed === true,
+    })),
+  };
+}
+
 // The Super Admin console. Every platform_* function refuses anyone who
 // isn't travio_admin, so these are safe with the signed-in user's client.
 export const platformService = {
+  async listUsers(supabase: SupabaseClient<Database>, query: PlatformUserQuery = {}): Promise<PlatformUserPage> {
+    const { data, error } = await supabase.rpc("platform_users", {
+      search_text: query.search ?? "",
+      role_filter: query.role ?? "all",
+      page_number: query.page ?? 1,
+      page_size: query.pageSize ?? 20,
+    });
+    if (error) throw error;
+    return toPlatformUserPage(data);
+  },
+
   async listAgencies(supabase: SupabaseClient<Database>, query: AgencyListQuery = {}): Promise<AgencyListPage> {
     const { data, error } = await supabase.rpc("platform_agencies", {
       search_text: query.search ?? "",
