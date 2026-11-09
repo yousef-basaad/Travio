@@ -1,15 +1,16 @@
 "use client";
 
 import { StatsCard, SkeletonCard } from "@travio/ui";
-import { formatCurrency } from "@travio/utils";
 import { useDashboardStats } from "@/features/analytics";
 import { useExpenseTotal } from "../api/expenses.api";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 function MetricsSkeleton() {
+  const t = useT();
   return (
     <div
       role="status"
-      aria-label="Loading finance metrics"
+      aria-label={t("finance.metrics.loading")}
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5"
     >
       {Array.from({ length: 5 }).map((_, index) => (
@@ -20,12 +21,13 @@ function MetricsSkeleton() {
 }
 
 function MetricsErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-lg border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading finance metrics. Please try again later.
+      {t("finance.metrics.error")}
     </div>
   );
 }
@@ -36,6 +38,8 @@ function MetricsErrorState() {
 // Postgres too (useExpenseTotal -> finance_expense_total): summing the
 // fetched expenses list stopped at the 1000-row response cap.
 export function FinanceMetrics() {
+  const t = useT();
+  const format = useFormat();
   const { data: stats, isLoading: isLoadingStats, isError: isStatsError } = useDashboardStats();
   const { data: totalExpenses, isLoading: isLoadingExpenses, isError: isExpensesError } = useExpenseTotal();
 
@@ -46,11 +50,11 @@ export function FinanceMetrics() {
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      <StatsCard label="Total Revenue" value={formatCurrency(stats.totalRevenue)} />
-      <StatsCard label="Paid Amount" value={formatCurrency(stats.paidAmount)} />
-      <StatsCard label="Outstanding" value={formatCurrency(stats.outstandingAmount)} />
-      <StatsCard label="Total Expenses" value={formatCurrency(totalExpenses)} />
-      <StatsCard label="Net Income" value={formatCurrency(netIncome)} />
+      <StatsCard label={t("finance.metrics.totalRevenue")} value={format.currency(stats.totalRevenue)} />
+      <StatsCard label={t("finance.metrics.paidAmount")} value={format.currency(stats.paidAmount)} />
+      <StatsCard label={t("bookings.finance.outstanding")} value={format.currency(stats.outstandingAmount)} />
+      <StatsCard label={t("finance.metrics.totalExpenses")} value={format.currency(totalExpenses)} />
+      <StatsCard label={t("finance.metrics.netIncome")} value={format.currency(netIncome)} />
     </div>
   );
 }

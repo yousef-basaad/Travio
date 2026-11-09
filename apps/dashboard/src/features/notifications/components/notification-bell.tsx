@@ -1,3 +1,5 @@
+"use client";
+
 import { Bell } from "lucide-react";
 import { Button, Badge } from "@travio/ui";
 import { useT } from "@/lib/i18n/i18n-provider";

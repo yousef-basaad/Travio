@@ -1,3 +1,5 @@
+"use client";
+
 import { StatusBadge } from "@travio/ui";
 import type { Customer } from "@travio/api";
 import { useT } from "@/lib/i18n/i18n-provider";

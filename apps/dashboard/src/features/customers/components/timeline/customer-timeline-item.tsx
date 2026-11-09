@@ -1,3 +1,5 @@
+"use client";
+
 import { TimelineItem } from "@travio/ui";
 import type { CustomerTimelineItem as CustomerTimelineItemData } from "@travio/api";
 import { useFormat } from "@/lib/i18n/i18n-provider";

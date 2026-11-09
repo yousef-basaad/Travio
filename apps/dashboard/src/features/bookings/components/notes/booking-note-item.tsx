@@ -1,3 +1,5 @@
+"use client";
+
 import type { BookingNote } from "../../types/booking";
 import { Button } from "@travio/ui";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";

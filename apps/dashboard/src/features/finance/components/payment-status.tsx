@@ -14,19 +14,22 @@ import {
   SearchInput,
 } from "@travio/ui";
 import { AppPagination } from "@/components/app-pagination";
-import { cn, formatCurrency, formatDate } from "@travio/utils";
+import { cn } from "@travio/utils";
 import { usePaymentsPage } from "../api/invoices.api";
 import { useListPaging, usePageClamp } from "@/lib/hooks/use-list-paging";
 import { FINANCE_CARD_PAGE_SIZE } from "./finance-paging";
-import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_STYLES } from "./payments/payment-item";
+import { PAYMENT_METHOD_KEYS, PAYMENT_METHOD_STYLES } from "./payments/payment-item";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 // Tenant-wide payment list - the Finance workspace's counterpart to the
 // existing per-invoice PaymentsList (which stays untouched; this is a
-// new, separate component). Reuses PAYMENT_METHOD_LABELS/STYLES from
+// new, separate component). Reuses PAYMENT_METHOD_KEYS/STYLES from
 // payment-item.tsx instead of a second method-color map. Paged and
 // searched (by reference) on the server; each row carries its invoice
 // number, so every invoice doesn't have to be loaded to label it.
 export function PaymentStatus() {
+  const t = useT();
+  const format = useFormat();
   const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging(undefined, FINANCE_CARD_PAGE_SIZE);
   const { data, isLoading, isError, isFetching } = usePaymentsPage({ page, pageSize, search: debouncedSearch });
   const payments = data?.items ?? [];
@@ -35,13 +38,13 @@ export function PaymentStatus() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <h2 className="text-sm font-semibold text-foreground">Payments</h2>
-        <p className="text-xs text-muted-foreground">Recent payments across your agency</p>
+        <h2 className="text-sm font-semibold text-foreground">{t("finance.payments.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("finance.payments.subtitle")}</p>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         <SearchInput
-          placeholder="Search by reference"
-          aria-label="Search payments"
+          placeholder={t("finance.payments.searchPlaceholder")}
+          aria-label={t("finance.payments.searchLabel")}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -49,19 +52,19 @@ export function PaymentStatus() {
           isLoading={isLoading}
           isError={isError}
           isEmpty={!isLoading && payments.length === 0}
-          loadingLabel="Loading payments"
-          errorMessage="Something went wrong loading payments. Please try again later."
-          emptyMessage={debouncedSearch ? "No payments match your search" : "No payments yet"}
+          loadingLabel={t("bookings.payments.loading")}
+          errorMessage={t("bookings.payments.error")}
+          emptyMessage={debouncedSearch ? t("finance.payments.emptySearch") : t("finance.payments.empty")}
           emptyIcon={<Receipt size={20} />}
         >
-          <Table aria-label="Payments" caption="All payments across the tenant, most recent first">
+          <Table aria-label={t("finance.payments.title")} caption={t("finance.payments.caption")}>
             <TableHeader>
               <TableRow className="text-muted-foreground">
-                <TableCell header>Invoice</TableCell>
-                <TableCell header>Amount</TableCell>
-                <TableCell header>Method</TableCell>
-                <TableCell header>Reference</TableCell>
-                <TableCell header>Paid</TableCell>
+                <TableCell header>{t("bookings.payments.invoice")}</TableCell>
+                <TableCell header>{t("bookingField.amount")}</TableCell>
+                <TableCell header>{t("bookings.payments.method")}</TableCell>
+                <TableCell header>{t("bookings.payments.reference")}</TableCell>
+                <TableCell header>{t("bookings.finance.paid")}</TableCell>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -70,7 +73,7 @@ export function PaymentStatus() {
                   <TableCell className="font-medium">
                     {payment.invoiceNumber ?? "—"}
                   </TableCell>
-                  <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                  <TableCell>{format.currency(payment.amount)}</TableCell>
                   <TableCell>
                     <span
                       className={cn(
@@ -78,11 +81,11 @@ export function PaymentStatus() {
                         PAYMENT_METHOD_STYLES[payment.method],
                       )}
                     >
-                      {PAYMENT_METHOD_LABELS[payment.method]}
+                      {t(PAYMENT_METHOD_KEYS[payment.method])}
                     </span>
                   </TableCell>
                   <TableCell>{payment.reference ?? "—"}</TableCell>
-                  <TableCell>{payment.paidAt ? formatDate(payment.paidAt) : "—"}</TableCell>
+                  <TableCell>{payment.paidAt ? format.date(payment.paidAt) : "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

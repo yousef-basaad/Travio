@@ -1,3 +1,5 @@
+"use client";
+
 import type { BookingStatus } from "../types/booking";
 import { cn } from "@travio/utils";
 import { useT } from "@/lib/i18n/i18n-provider";

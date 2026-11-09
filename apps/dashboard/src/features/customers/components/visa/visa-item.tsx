@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
 import { cn } from "@travio/utils";
 import type { VisaApplication, VisaStatus } from "@travio/api";
