@@ -21,6 +21,8 @@ export interface Formatters {
   dayLabel: (iso: string) => string;
   relativeTime: (iso: string) => string;
   currency: (amount: number, currency?: string) => string;
+  /** Whole number with grouping ("1,250"), for amounts shown with a separate currency label. */
+  number: (value: number) => string;
 }
 
 // The shared @travio/utils formatters, bound to one language.
@@ -36,5 +38,6 @@ export function createFormatters(locale: Locale): Formatters {
       }),
     relativeTime: (iso) => formatRelativeTime(iso, tag),
     currency: (amount, currency) => formatCurrency(amount, currency, tag),
+    number: (value) => new Intl.NumberFormat(tag, { maximumFractionDigits: 0 }).format(value),
   };
 }
