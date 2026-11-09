@@ -14,6 +14,7 @@ import {
 } from "../schemas/create-booking.schema";
 import { useT } from "@/lib/i18n/i18n-provider";
 import { isMessageKey } from "@/lib/i18n/translate";
+import { BookingTripFields } from "./booking-trip-fields";
 
 const DEFAULT_VALUES: CreateBookingFormValues = {
   customerId: "",
@@ -21,6 +22,10 @@ const DEFAULT_VALUES: CreateBookingFormValues = {
   startDate: undefined,
   endDate: undefined,
   notes: undefined,
+  destinationCountry: undefined,
+  destinationCity: undefined,
+  adults: undefined,
+  children: undefined,
 };
 
 // Full-page form rather than a <dialog> (unlike CreateLeadDialog) - this
@@ -121,6 +126,8 @@ export function CreateBookingForm() {
                 />
               </FormField>
             </div>
+
+            <BookingTripFields register={register} errors={errors} idPrefix="booking" />
 
             <FormField label={t("common.notes")} htmlFor="booking-notes">
               <Textarea id="booking-notes" rows={4} {...register("notes")} />

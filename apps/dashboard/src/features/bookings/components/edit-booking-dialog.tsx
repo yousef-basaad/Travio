@@ -13,6 +13,7 @@ import {
 } from "../schemas/update-booking.schema";
 import { useT } from "@/lib/i18n/i18n-provider";
 import { isMessageKey } from "@/lib/i18n/translate";
+import { BookingTripFields } from "./booking-trip-fields";
 
 type EditBookingDialogProps = {
   booking: Booking;
@@ -28,6 +29,10 @@ function toFormValues(booking: Booking): UpdateBookingFormValues {
     endDate: booking.endDate ?? "",
     notes: booking.notes ?? "",
     assignedTo: booking.assignedTo ?? "",
+    destinationCountry: booking.destinationCountry ?? "",
+    destinationCity: booking.destinationCity ?? "",
+    adults: booking.adults,
+    children: booking.children,
   };
 }
 
@@ -144,6 +149,8 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
             />
           </FormField>
         </div>
+
+        <BookingTripFields register={register} errors={errors} idPrefix="edit-booking" />
 
         <FormField label={t("common.notes")} htmlFor="edit-booking-notes">
           <Textarea id="edit-booking-notes" rows={4} {...register("notes")} />

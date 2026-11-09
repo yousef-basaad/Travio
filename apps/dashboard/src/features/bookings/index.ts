@@ -4,7 +4,6 @@ export * from "./components/bookings-table";
 export * from "./components/booking-status-badge";
 export * from "./components/booking-details";
 export * from "./components/booking-profile-card";
-export * from "./components/booking-summary-cards";
 export * from "./components/booking-tabs";
 export * from "./components/create-booking-form";
 export * from "./components/edit-booking-dialog";

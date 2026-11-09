@@ -10,6 +10,11 @@ function emptyToNull(value: unknown) {
 
 const bookingStatusSchema = z.enum(["draft", "pending", "confirmed", "completed", "cancelled"]);
 
+// Matches bookings_destination_country_check / _city_check / _adults_check.
+const destinationCountrySchema = z.string().regex(/^[A-Z]{2}$/, "validation.invalidCountry");
+const destinationCitySchema = z.string().trim().max(120);
+const travelerCountSchema = z.number().int().min(0).max(999);
+
 // GET /api/bookings?status= - absent means every status.
 export const bookingStatusFilterSchema = bookingStatusSchema.optional();
 
@@ -36,6 +41,10 @@ export const createBookingSchema = z.object({
   totalAmount: z.number().nonnegative().optional(),
   currency: z.preprocess(emptyToUndefined, z.string().optional()),
   notes: z.preprocess(emptyToUndefined, z.string().optional()),
+  destinationCountry: z.preprocess(emptyToUndefined, destinationCountrySchema.optional()),
+  destinationCity: z.preprocess(emptyToUndefined, destinationCitySchema.optional()),
+  adults: travelerCountSchema.optional(),
+  children: travelerCountSchema.optional(),
 })
   // Cross-field check - endDate before startDate is nonsensical for a
   // travel booking. Only runs when both are present (either can be
@@ -61,6 +70,10 @@ export const updateBookingSchema = z.object({
   totalAmount: z.number().nonnegative().optional(),
   currency: z.preprocess(emptyToNull, z.string().nullable().optional()),
   notes: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  destinationCountry: z.preprocess(emptyToNull, destinationCountrySchema.nullable().optional()),
+  destinationCity: z.preprocess(emptyToNull, destinationCitySchema.nullable().optional()),
+  adults: travelerCountSchema.nullable().optional(),
+  children: travelerCountSchema.nullable().optional(),
 })
   // Same cross-field check as createBookingSchema - only runs when both
   // are present in this particular PATCH payload (the update form always

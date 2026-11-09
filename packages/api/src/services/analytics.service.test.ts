@@ -27,6 +27,24 @@ describe("analyticsService", () => {
     expect(wasCalled(allCalls, "payments", "select")).toBe(false);
   });
 
+  it("getTopDestinations maps the database function's rows", async () => {
+    const { client, allCalls } = createFakeSupabaseClient({
+      "rpc:analytics_top_destinations": [
+        { data: [{ country: "TR", bookings: 12 }, { country: "AE", bookings: 3 }], error: null },
+      ],
+    });
+
+    await expect(analyticsService.getTopDestinations(client)).resolves.toEqual([
+      { country: "TR", bookings: 12 },
+      { country: "AE", bookings: 3 },
+    ]);
+    expect(findCallsByMethod(allCalls, "rpc:analytics_top_destinations", "rpc")[0]?.args).toEqual([
+      "analytics_top_destinations",
+      { limit_count: 5 },
+    ]);
+    expect(wasCalled(allCalls, "bookings", "select")).toBe(false);
+  });
+
   it("getDashboardStats treats an empty result as zero", async () => {
     const { client } = createFakeSupabaseClient({
       "rpc:analytics_finance_totals": [{ data: [], error: null }],
