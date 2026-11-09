@@ -59,16 +59,19 @@ describe("visaApplicationsService", () => {
   });
 
   describe("listForTenant - visa workspace", () => {
-    it("selects the customer name, scopes to the tenant, newest first", async () => {
+    it("selects the customer name and trip date, scopes to the tenant, newest first", async () => {
       const { client, allCalls } = createFakeSupabaseClient({
-        visa_applications: [{ data: [VISA_ROW], error: null }],
+        visa_applications: [
+          { data: [{ ...VISA_ROW, customer: null, booking: { start_date: "2026-06-25" } }], error: null },
+        ],
       });
 
-      await visaApplicationsService.listForTenant(client, "tenant-1");
+      const visas = await visaApplicationsService.listForTenant(client, "tenant-1");
 
+      expect(visas[0]?.travelDate).toBe("2026-06-25");
       expect(findCallsByMethod(allCalls, "visa_applications", "select")).toContainEqual({
         method: "select",
-        args: ["*, customer:customers(id, full_name)"],
+        args: ["*, customer:customers(id, full_name), booking:bookings(start_date)"],
       });
       expect(findCallsByMethod(allCalls, "visa_applications", "eq")).toContainEqual({
         method: "eq",
