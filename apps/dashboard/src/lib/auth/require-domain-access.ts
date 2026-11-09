@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@travio/auth/server";
 import { createServerSupabaseClient } from "@travio/database/server";
+import { isAgencyInactive } from "./agency-active";
 import type { UserRole } from "@travio/types";
 import {
   CUSTOMERS_ROLES,
@@ -60,6 +61,15 @@ async function requireDomainAccess(
   }
 
   const supabase = await createServerSupabaseClient();
+
+  // RLS already blocks a deactivated agency, but /api/team and the portal
+  // invite use the service-role client, so it's refused here for every route.
+  if (await isAgencyInactive(supabase, result.profile.tenantId)) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "agency_inactive" }, { status: 403 }),
+    };
+  }
 
   return {
     ok: true,

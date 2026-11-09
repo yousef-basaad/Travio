@@ -10,6 +10,8 @@ import type { UserRole, Profile } from "@travio/types";
 let currentRole: UserRole | null = "agency_owner";
 let currentTenantId: string | null = "tenant-1";
 
+let agencyVisible = true;
+
 vi.mock("@travio/auth/server", () => ({
   requireRole: vi.fn(async (allowedRoles: UserRole[]) => {
     if (!currentRole) {
@@ -31,7 +33,16 @@ vi.mock("@travio/auth/server", () => ({
 }));
 
 vi.mock("@travio/database/server", () => ({
-  createServerSupabaseClient: vi.fn(async () => ({}) as unknown),
+  createServerSupabaseClient: vi.fn(
+    async () =>
+      ({
+        from: () => ({
+          select: () => ({
+            eq: () => ({ maybeSingle: async () => ({ data: agencyVisible ? { id: "tenant-1" } : null, error: null }) }),
+          }),
+        }),
+      }) as unknown,
+  ),
 }));
 
 import {
@@ -49,6 +60,18 @@ import {
 beforeEach(() => {
   currentRole = "agency_owner";
   currentTenantId = "tenant-1";
+  agencyVisible = true;
+});
+
+describe("a deactivated agency", () => {
+  it("is refused on every domain, with its own reason", async () => {
+    agencyVisible = false;
+    const result = await requireCustomersAccess();
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected a refusal");
+    expect(result.response.status).toBe(403);
+    await expect(result.response.json()).resolves.toEqual({ error: "agency_inactive" });
+  });
 });
 
 async function expectAllowed(helper: () => Promise<{ ok: boolean }>) {

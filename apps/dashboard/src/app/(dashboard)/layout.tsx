@@ -5,6 +5,8 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { getAgencySetupRedirect, getDashboardGateRedirect } from "@/lib/auth/dashboard-gate";
 import { completeAgencySetup } from "@/lib/auth/complete-agency-setup";
 import { DASHBOARD_ROLES } from "@/lib/auth/domain-roles";
+import { isAgencyInactive } from "@/lib/auth/agency-active";
+import { createServerSupabaseClient } from "@travio/database/server";
 
 // Route-group guard: every page under (dashboard) requires agency staff.
 // Individual feature pages don't re-check auth - this is the single
@@ -47,6 +49,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const setupRedirect = getAgencySetupRedirect(await completeAgencySetup(result.profile));
   if (setupRedirect) {
     redirect(setupRedirect);
+  }
+
+  // Travio has deactivated this agency: explain it rather than showing
+  // a dashboard full of empty lists.
+  if (result.profile.tenantId && (await isAgencyInactive(await createServerSupabaseClient(), result.profile.tenantId))) {
+    redirect("/forbidden?reason=agency_inactive");
   }
 
   return (

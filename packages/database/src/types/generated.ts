@@ -1701,7 +1701,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      platform_agencies: {
+        Args: { search_text?: string; status_filter?: string; page_number?: number; page_size?: number }
+        Returns: Json
+      }
       platform_overview: { Args: never; Returns: Json }
+      platform_set_agency_active: { Args: { target_tenant: string; active: boolean }; Returns: undefined }
       reports_overview: { Args: { range_start: string }; Returns: Json }
       visa_center_stats: { Args: never; Returns: Json }
       usage_document_totals: {

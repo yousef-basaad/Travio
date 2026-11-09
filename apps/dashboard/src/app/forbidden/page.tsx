@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { AlertTriangle, ShieldAlert, UserX } from "lucide-react";
 import { signOut } from "@travio/auth";
 import { Card, CardContent, Button, EmptyState } from "@travio/ui";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { translate } from "@/lib/i18n/translate";
+import type { Locale } from "@/lib/i18n/locales";
 
 // Rendered by (dashboard)/layout.tsx's requireRole() gate whenever a real,
 // authenticated session exists but the account's role isn't allowed into
@@ -20,11 +23,11 @@ async function signOutAndGoToLogin() {
   redirect("/login");
 }
 
-function SignOutButton({ variant }: { variant?: "outline" }) {
+function SignOutButton({ variant, label = "Sign out" }: { variant?: "outline"; label?: string }) {
   return (
     <form action={signOutAndGoToLogin}>
       <Button type="submit" variant={variant}>
-        Sign out
+        {label}
       </Button>
     </form>
   );
@@ -34,8 +37,17 @@ function SignOutButton({ variant }: { variant?: "outline" }) {
 // variants are for an agency owner whose agency couldn't be created on
 // first sign-in (see complete-agency-setup.ts); "Try again" is a manual
 // retry, never an automatic redirect loop.
-function renderReason(reason: string | undefined) {
+function renderReason(reason: string | undefined, locale: Locale) {
   switch (reason) {
+    case "agency_inactive":
+      return (
+        <EmptyState
+          icon={<ShieldAlert size={20} />}
+          title={translate(locale, "forbidden.agencyInactive.title")}
+          description={translate(locale, "forbidden.agencyInactive.description")}
+          action={<SignOutButton label={translate(locale, "userMenu.logout")} />}
+        />
+      );
     case "no_profile":
       return (
         <EmptyState
@@ -99,7 +111,7 @@ export default async function ForbiddenPage({
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6">{renderReason(reason)}</CardContent>
+        <CardContent className="pt-6">{renderReason(reason, await getLocale())}</CardContent>
       </Card>
     </div>
   );
