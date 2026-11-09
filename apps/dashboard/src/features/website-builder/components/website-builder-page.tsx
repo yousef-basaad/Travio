@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { ExternalLink } from "lucide-react";
+import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { ExternalLink, ImagePlus, Trash2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, PageHeader, SkeletonCard } from "@travio/ui";
-import { AGENCY_SERVICES, type AgencyService, type AgencySiteContent, type AgencySiteEditor } from "@travio/api/agency-site";
+import { AGENCY_SERVICES, SITE_TEMPLATES, type AgencyService, type AgencySiteContent, type AgencySiteEditor, type SiteTemplate } from "@travio/api/agency-site";
 import { useI18n } from "@/lib/i18n/i18n-provider";
 import type { MessageKey } from "@/lib/i18n/messages/en";
 
@@ -50,7 +50,106 @@ function siteUrl(slug: string): string | null {
   return base ? `${base}/sites/${encodeURIComponent(slug)}` : null;
 }
 
-function Editor({ slug, initial }: { slug: string; initial: AgencySiteContent }) {
+const TEMPLATE_KEYS: Record<SiteTemplate, MessageKey> = {
+  classic: "websiteBuilder.template.classic",
+  split: "websiteBuilder.template.split",
+  minimal: "websiteBuilder.template.minimal",
+};
+
+// A small sketch of each layout, so the choice is visual.
+function TemplateSketch({ template }: { template: SiteTemplate }) {
+  if (template === "split") {
+    return (
+      <div className="flex h-16 items-center gap-2 p-2" aria-hidden="true">
+        <div className="flex-1 space-y-1">
+          <div className="h-1.5 rounded bg-foreground/60" />
+          <div className="h-1.5 w-2/3 rounded bg-foreground/30" />
+        </div>
+        <div className="h-full flex-1 rounded bg-primary" />
+      </div>
+    );
+  }
+  if (template === "minimal") {
+    return (
+      <div className="flex h-16 flex-col items-center justify-center gap-1 p-2" aria-hidden="true">
+        <div className="h-1.5 w-2/3 rounded bg-foreground/60" />
+        <div className="h-1.5 w-1/3 rounded bg-foreground/30" />
+      </div>
+    );
+  }
+  return (
+    <div className="flex h-16 flex-col items-center justify-center gap-1 bg-primary p-2" aria-hidden="true">
+      <div className="h-1.5 w-2/3 rounded bg-primary-foreground/80" />
+      <div className="h-1.5 w-1/3 rounded bg-primary-foreground/50" />
+    </div>
+  );
+}
+
+const HERO_ERRORS: Record<string, MessageKey> = {
+  too_large: "websiteBuilder.hero.tooLarge",
+  invalid_image: "websiteBuilder.hero.invalid",
+};
+
+function HeroCard({ heroUrl }: { heroUrl: string | null }) {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
+
+  const change = useMutation({
+    mutationFn: async (file: File | null) => {
+      const form = new FormData();
+      if (file) form.append("file", file);
+      const response = await fetch("/api/website-builder/hero", file ? { method: "POST", body: form } : { method: "DELETE" });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error ?? "failed");
+      }
+      return (await response.json()) as AgencySiteEditor;
+    },
+    onMutate: () => setError(null),
+    onSuccess: (editor) => queryClient.setQueryData(QUERY_KEY, editor),
+    onError: (failure) => setError(HERO_ERRORS[failure.message] ?? "websiteBuilder.hero.error"),
+  });
+
+  const onFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) change.mutate(file);
+  };
+
+  return (
+    <Card className="space-y-3 p-5">
+      <h2 className="text-sm font-semibold text-foreground">{t("websiteBuilder.hero.title")}</h2>
+      <p className="text-xs text-muted-foreground">{t("websiteBuilder.hero.hint")}</p>
+      <div className="flex h-36 items-center justify-center overflow-hidden rounded-lg border bg-muted/40">
+        {heroUrl ? (
+          <img src={heroUrl} alt={t("websiteBuilder.hero.title")} className="h-full w-full object-cover" />
+        ) : (
+          <ImagePlus size={24} className="text-muted-foreground" aria-hidden="true" />
+        )}
+      </div>
+      <div className="flex gap-2">
+        <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onFile} />
+        <Button variant="outline" disabled={change.isPending} onClick={() => fileInput.current?.click()}>
+          {change.isPending ? t("websiteBuilder.saving") : t("websiteBuilder.hero.change")}
+        </Button>
+        {heroUrl ? (
+          <Button variant="ghost" disabled={change.isPending} aria-label={t("websiteBuilder.hero.remove")} onClick={() => change.mutate(null)}>
+            <Trash2 size={16} aria-hidden="true" />
+          </Button>
+        ) : null}
+      </div>
+      {error ? (
+        <p role="alert" className="text-sm text-danger">
+          {t(error)}
+        </p>
+      ) : null}
+    </Card>
+  );
+}
+
+function Editor({ slug, initial, heroUrl }: { slug: string; initial: AgencySiteContent; heroUrl: string | null }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const [site, setSite] = useState(initial);
@@ -134,6 +233,29 @@ function Editor({ slug, initial }: { slug: string; initial: AgencySiteContent })
       </Card>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Card className="space-y-3 p-5">
+          <h2 className="text-sm font-semibold text-foreground">{t("websiteBuilder.template.title")}</h2>
+          <div role="radiogroup" aria-label={t("websiteBuilder.template.title")} className="grid grid-cols-3 gap-3">
+            {SITE_TEMPLATES.map((template) => (
+              <button
+                key={template}
+                type="button"
+                role="radio"
+                aria-checked={site.template === template}
+                onClick={() => update("template", template)}
+                className={`overflow-hidden rounded-lg border-2 text-xs font-medium transition-colors ${
+                  site.template === template ? "border-primary text-primary" : "border-border text-muted-foreground"
+                }`}
+              >
+                <TemplateSketch template={template} />
+                <span className="block border-t py-1.5">{t(TEMPLATE_KEYS[template])}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        <HeroCard heroUrl={heroUrl} />
+
         <Card className="space-y-4 p-5">
           <h2 className="text-sm font-semibold text-foreground">{t("websiteBuilder.section.main")}</h2>
           <Field label={t("websiteBuilder.language")}>
@@ -210,7 +332,7 @@ export function WebsiteBuilderPage() {
           {t("websiteBuilder.loadError")}
         </p>
       ) : null}
-      {data ? <Editor slug={data.slug} initial={data.site} /> : null}
+      {data ? <Editor slug={data.slug} initial={data.site} heroUrl={data.heroUrl} /> : null}
     </div>
   );
 }

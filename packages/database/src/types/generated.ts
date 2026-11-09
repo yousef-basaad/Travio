@@ -1416,6 +1416,7 @@ export type Database = {
           city: string | null
           created_at: string
           email: string | null
+          hero_path: string | null
           headline: string | null
           is_published: boolean
           language: string
@@ -1425,6 +1426,7 @@ export type Database = {
           show_contact: boolean
           show_services: boolean
           subheadline: string | null
+          template: string
           tenant_id: string
           updated_at: string
           whatsapp: string | null
@@ -1434,6 +1436,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           email?: string | null
+          hero_path?: string | null
           headline?: string | null
           is_published?: boolean
           language?: string
@@ -1443,6 +1446,7 @@ export type Database = {
           show_contact?: boolean
           show_services?: boolean
           subheadline?: string | null
+          template?: string
           tenant_id: string
           updated_at?: string
           whatsapp?: string | null
@@ -1452,6 +1456,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           email?: string | null
+          hero_path?: string | null
           headline?: string | null
           is_published?: boolean
           language?: string
@@ -1461,6 +1466,7 @@ export type Database = {
           show_contact?: boolean
           show_services?: boolean
           subheadline?: string | null
+          template?: string
           tenant_id?: string
           updated_at?: string
           whatsapp?: string | null
