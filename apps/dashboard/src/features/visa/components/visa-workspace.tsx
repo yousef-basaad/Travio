@@ -26,7 +26,8 @@ import type { UserRole } from "@travio/types";
 import type { VisaApplicationWithCustomer, VisaStatus } from "@travio/api";
 import { EditVisaDialog, VISA_STATUS_KEYS, VisaStatusBadge, useVisaApplications } from "@/features/customers";
 import { filterVisaApplications, type VisaStatusFilter } from "../utils/filter-visas";
-import { approvalRate, monthTrend } from "../utils/visa-stats";
+import { approvalRate } from "../utils/visa-stats";
+import { trendFrom } from "@/lib/analytics/trend";
 import { useVisaCenterStats } from "../api/visa-center.api";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 import type { MessageKey } from "@/lib/i18n/messages/en";
@@ -98,7 +99,7 @@ export function VisaWorkspace() {
     [visas, query, status],
   );
 
-  const totalTrend = stats ? monthTrend(stats.newThisMonth, stats.newLastMonth) : undefined;
+  const totalTrend = stats ? trendFrom([stats.newLastMonth, stats.newThisMonth]) : undefined;
   const rate = stats ? approvalRate(stats.byStatus) : null;
 
   const tabs: { value: VisaStatusFilter; label: string; count: number | undefined }[] = [

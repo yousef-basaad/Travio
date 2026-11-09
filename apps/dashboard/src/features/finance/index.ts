@@ -2,6 +2,7 @@
 // never reach into features/finance/components/* directly.
 export * from "./components/finance-page";
 export * from "./components/finance-metrics";
+export * from "./components/finance-insight-cards";
 export * from "./components/revenue-summary";
 export * from "./components/invoice-table";
 export * from "./components/payment-status";

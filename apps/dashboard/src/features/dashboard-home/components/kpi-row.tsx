@@ -7,6 +7,7 @@ import { useBookings } from "@/features/bookings";
 import { useCustomers, useVisaApplications } from "@/features/customers";
 import { useI18n } from "@/lib/i18n/i18n-provider";
 import { intlLocale } from "@/lib/i18n/format";
+import { trendFrom } from "@/lib/analytics/trend";
 
 const ICON_SIZE = 20;
 const TREND_MONTHS = 6;
@@ -32,19 +33,6 @@ function countsByMonth(dates: (string | null | undefined)[], months: string[]): 
     if (key && counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return months.map((month) => counts.get(month) ?? 0);
-}
-
-// Real month-over-month delta, never a fabricated one - returns
-// undefined (renders no trend) rather than a divide-by-zero percentage
-// when the previous period was zero.
-function trendFrom(series: number[]): { value: string; direction: "up" | "down" } | undefined {
-  if (series.length < 2) return undefined;
-  const current = series[series.length - 1] ?? 0;
-  const previous = series[series.length - 2] ?? 0;
-  if (previous === 0) return undefined;
-  const change = Math.round(((current - previous) / previous) * 100);
-  if (change === 0) return undefined;
-  return { value: `${Math.abs(change)}%`, direction: change > 0 ? "up" : "down" };
 }
 
 // The design's five KPIs: Total Bookings, New Customers, Visa Requests,
