@@ -143,6 +143,27 @@ export const en = {
   "users.unconfirmed": "Not confirmed",
   "users.empty": "No users match this search.",
   "users.error": "Couldn't load the users.",
+
+  "billing.description": "Every agency's subscription. Payments aren't collected through Travio yet.",
+  "billing.search": "Search by agency",
+  "billing.allStatuses": "All statuses",
+  "billing.kpi.mrr": "Expected monthly income",
+  "billing.kpi.mrrContext": "Active subscriptions at list price",
+  "billing.status.active": "Active",
+  "billing.status.trialing": "Trial",
+  "billing.status.past_due": "Past due",
+  "billing.status.cancelled": "Cancelled",
+  "billing.status.expired": "Expired",
+  "billing.status.none": "No subscription",
+  "billing.price": "Price",
+  "billing.startsAt": "Started",
+  "billing.endsAt": "Ends",
+  "billing.subscription": "Subscription",
+  "billing.customPrice": "Custom price",
+  "billing.perMonth": "{amount} / month",
+  "billing.perYear": "{amount} / year",
+  "billing.empty": "No subscriptions match this search.",
+  "billing.error": "Couldn't load the subscriptions.",
 } as const;
 
 export type MessageKey = keyof typeof en;

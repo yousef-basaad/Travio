@@ -114,6 +114,35 @@ describe("platform overview", () => {
     expect(call?.args).toEqual(["platform_users", { search_text: "sa", role_filter: "sales_agent", page_number: 2, page_size: 20 }]);
   });
 
+  it("lists subscriptions with the given filters", async () => {
+    const { client, allCalls } = createFakeSupabaseClient({
+      "rpc:platform_subscriptions": [
+        {
+          data: {
+            total: 2,
+            summary: { expected_mrr: "700.00", active: 3, trialing: 1, past_due: 1, cancelled: 0, expired: 1, none: 1 },
+            items: [
+              { id: "t1", name: "Alpha", is_active: true, plan: "starter", status: "active", price: "99.00", billing_interval: "monthly", starts_at: "2026-01-02T00:00:00Z", ends_at: null },
+              { id: "t2", name: "Beta", is_active: false, plan: null, status: null, price: null, billing_interval: null, starts_at: null, ends_at: null },
+            ],
+          },
+          error: null,
+        },
+      ],
+    });
+
+    await expect(platformService.listSubscriptions(client, { search: "a", status: "none", page: 2, pageSize: 20 })).resolves.toEqual({
+      total: 2,
+      summary: { expectedMrr: 700, active: 3, trialing: 1, pastDue: 1, cancelled: 0, expired: 1, none: 1 },
+      items: [
+        { id: "t1", name: "Alpha", isActive: true, plan: "starter", status: "active", price: 99, billingInterval: "monthly", startsAt: "2026-01-02T00:00:00Z", endsAt: null },
+        { id: "t2", name: "Beta", isActive: false, plan: null, status: null, price: null, billingInterval: null, startsAt: null, endsAt: null },
+      ],
+    });
+    const [call] = findCallsByMethod(allCalls, "rpc:platform_subscriptions", "rpc");
+    expect(call?.args).toEqual(["platform_subscriptions", { search_text: "a", status_filter: "none", page_number: 2, page_size: 20 }]);
+  });
+
   it("sets an agency's status and surfaces a refusal", async () => {
     const ok = createFakeSupabaseClient({ "rpc:platform_set_agency_active": [{ data: null, error: null }] });
     await platformService.setAgencyActive(ok.client, "t1", false);
