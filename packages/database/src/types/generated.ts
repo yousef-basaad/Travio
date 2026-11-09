@@ -1706,6 +1706,10 @@ export type Database = {
         Returns: Json
       }
       platform_overview: { Args: never; Returns: Json }
+      platform_subscriptions: {
+        Args: { search_text?: string; status_filter?: string; page_number?: number; page_size?: number }
+        Returns: Json
+      }
       platform_users: {
         Args: { search_text?: string; role_filter?: string; page_number?: number; page_size?: number }
         Returns: Json

@@ -237,9 +237,88 @@ export function toPlatformUserPage(data: unknown): PlatformUserPage {
   };
 }
 
+export interface PlatformSubscription {
+  /** The agency's id. */
+  id: string;
+  name: string;
+  isActive: boolean;
+  /** Plan slug; null for an agency that has never had a subscription. */
+  plan: string | null;
+  status: string | null;
+  price: number | null;
+  billingInterval: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+}
+
+export interface PlatformSubscriptionSummary {
+  /** Active subscriptions at list price, per month. Not money collected. */
+  expectedMrr: number;
+  active: number;
+  trialing: number;
+  pastDue: number;
+  cancelled: number;
+  expired: number;
+  none: number;
+}
+
+export interface PlatformSubscriptionPage {
+  total: number;
+  summary: PlatformSubscriptionSummary;
+  items: PlatformSubscription[];
+}
+
+export interface PlatformSubscriptionQuery {
+  search?: string;
+  /** A subscription status, "none", or "all". */
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+// Maps platform_subscriptions' jsonb (20261109140000).
+export function toPlatformSubscriptionPage(data: unknown): PlatformSubscriptionPage {
+  const raw = asRecord(data);
+  const summary = asRecord(raw.summary);
+  return {
+    total: num(raw.total),
+    summary: {
+      expectedMrr: num(summary.expected_mrr),
+      active: num(summary.active),
+      trialing: num(summary.trialing),
+      pastDue: num(summary.past_due),
+      cancelled: num(summary.cancelled),
+      expired: num(summary.expired),
+      none: num(summary.none),
+    },
+    items: asList(raw.items).map((row) => ({
+      id: text(row.id),
+      name: text(row.name),
+      isActive: row.is_active === true,
+      plan: textOrNull(row.plan),
+      status: textOrNull(row.status),
+      price: row.price === null || row.price === undefined ? null : num(row.price),
+      billingInterval: textOrNull(row.billing_interval),
+      startsAt: textOrNull(row.starts_at),
+      endsAt: textOrNull(row.ends_at),
+    })),
+  };
+}
+
 // The Super Admin console. Every platform_* function refuses anyone who
 // isn't travio_admin, so these are safe with the signed-in user's client.
 export const platformService = {
+  async listSubscriptions(supabase: SupabaseClient<Database>, query: PlatformSubscriptionQuery = {}): Promise<PlatformSubscriptionPage> {
+    const { data, error } = await supabase.rpc("platform_subscriptions", {
+      search_text: query.search ?? "",
+      status_filter: query.status ?? "all",
+      page_number: query.page ?? 1,
+      page_size: query.pageSize ?? 20,
+    });
+    if (error) throw error;
+    return toPlatformSubscriptionPage(data);
+  },
+
   async listUsers(supabase: SupabaseClient<Database>, query: PlatformUserQuery = {}): Promise<PlatformUserPage> {
     const { data, error } = await supabase.rpc("platform_users", {
       search_text: query.search ?? "",
