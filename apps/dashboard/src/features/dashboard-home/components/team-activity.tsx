@@ -4,6 +4,7 @@ import { Users } from "lucide-react";
 import { Widget, DataTableState, Avatar } from "@travio/ui";
 import { useTeamMembers } from "@/features/team";
 import { useBookings } from "@/features/bookings";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 3): the reference's "Team"
 // widget - real booking counts per team member, computed client-side by
@@ -15,12 +16,13 @@ import { useBookings } from "@/features/bookings";
 // to the busiest member's count (a real, computed proportion) - never a
 // fabricated quota/target, since no such thing exists in this app.
 export function TeamActivity() {
+  const t = useT();
   const { data: members, isLoading: isLoadingMembers, isError: isErrorMembers } = useTeamMembers();
   const { data: bookings, isLoading: isLoadingBookings, isError: isErrorBookings } = useBookings();
 
   const isLoading = isLoadingMembers || isLoadingBookings;
   // A failed request (e.g. /api/team's server_misconfigured 500) shows an
-  // error state, never a misleading "No team members yet".
+  // error state, never a misleading t("home.team.empty").
   const isError = isErrorMembers || isErrorBookings;
 
   const countByMember = new Map<string, number>();
@@ -37,13 +39,13 @@ export function TeamActivity() {
   const maxCount = Math.max(1, ...rows.map((row) => row.count));
 
   return (
-    <Widget title="Team" description="Bookings assigned per team member">
+    <Widget title={t("nav.team")} description={t("home.team.description")}>
       <DataTableState
         isLoading={isLoading}
         isError={isError}
-        errorMessage="Couldn't load team activity."
+        errorMessage={t("home.team.error")}
         isEmpty={rows.length === 0}
-        emptyMessage="No team members yet"
+        emptyMessage={t("home.team.empty")}
         emptyIcon={<Users size={20} />}
       >
         <ul className="space-y-3">

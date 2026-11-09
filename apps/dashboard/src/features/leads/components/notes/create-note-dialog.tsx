@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@travio/ui";
 import { useCreateLeadNote } from "../../api/leads.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 type CreateNoteDialogProps = {
   leadId: string;
@@ -16,6 +17,7 @@ type CreateNoteDialogProps = {
 // textarea doesn't need react-hook-form/zod the way the multi-field lead
 // forms do - plain state and a manual check are proportionate here.
 export function CreateNoteDialog({ leadId, open, onOpenChange }: CreateNoteDialogProps) {
+  const t = useT();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const createNote = useCreateLeadNote();
   const [body, setBody] = useState("");
@@ -41,7 +43,7 @@ export function CreateNoteDialog({ leadId, open, onOpenChange }: CreateNoteDialo
 
     const trimmed = body.trim();
     if (trimmed.length === 0) {
-      setValidationError("Note cannot be empty.");
+      setValidationError(t("bookings.notes.emptyError"));
       return;
     }
     setValidationError(null);
@@ -73,12 +75,12 @@ export function CreateNoteDialog({ leadId, open, onOpenChange }: CreateNoteDialo
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-note-title" className="text-lg font-semibold">
-          Add Note
+          {t("bookings.notes.add")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="note-body" className="text-sm font-medium">
-            Note
+            {t("bookings.notes.note")}
           </label>
           <textarea
             id="note-body"
@@ -98,7 +100,7 @@ export function CreateNoteDialog({ leadId, open, onOpenChange }: CreateNoteDialo
 
         {createNote.isError && (
           <p role="alert" className="text-sm text-danger">
-            Couldn't add the note. Please try again.
+            {t("bookings.notes.addError")}
           </p>
         )}
 
@@ -109,10 +111,10 @@ export function CreateNoteDialog({ leadId, open, onOpenChange }: CreateNoteDialo
             onClick={() => onOpenChange(false)}
             disabled={createNote.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createNote.isPending}>
-            {createNote.isPending ? "Adding…" : "Add Note"}
+            {createNote.isPending ? t("common.adding") : t("bookings.notes.add")}
           </Button>
         </div>
       </form>

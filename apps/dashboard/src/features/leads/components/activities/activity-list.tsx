@@ -8,10 +8,12 @@ import { useLeadActivities, useDeleteLeadActivity } from "../../api/leads.api";
 import { ActivityItem } from "./activity-item";
 import { CreateActivityDialog } from "./create-activity-dialog";
 import { EditActivityDialog } from "./edit-activity-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function ActivitiesSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading activities" className="space-y-2">
+    <div role="status" aria-label={t("leads.activities.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -20,24 +22,26 @@ function ActivitiesSkeleton() {
 }
 
 function ActivitiesErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading activities. Please try again later.
+      {t("leads.activities.error")}
     </div>
   );
 }
 
 function ActivitiesEmptyState({ onAddClick }: { onAddClick: () => void }) {
+  const t = useT();
   return (
     <EmptyState
       icon={<ListChecks size={20} />}
-      message="No activities yet"
+      message={t("leads.activities.empty")}
       action={
         <Button size="sm" onClick={onAddClick}>
-          Add Activity
+          {t("leads.activities.add")}
         </Button>
       }
     />
@@ -45,6 +49,7 @@ function ActivitiesEmptyState({ onAddClick }: { onAddClick: () => void }) {
 }
 
 export function ActivityList({ leadId }: { leadId: string }) {
+  const t = useT();
   const { data: activities, isLoading, isError } = useLeadActivities(leadId);
   const deleteActivity = useDeleteLeadActivity();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -55,10 +60,10 @@ export function ActivityList({ leadId }: { leadId: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <h2 className="text-sm font-medium">Activities</h2>
+        <h2 className="text-sm font-medium">{t("nav.activities")}</h2>
         {hasActivities && (
           <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-            Add Activity
+            {t("leads.activities.add")}
           </Button>
         )}
       </CardHeader>

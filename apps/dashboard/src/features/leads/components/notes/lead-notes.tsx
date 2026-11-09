@@ -6,10 +6,12 @@ import { Button, Card, CardContent, CardHeader, EmptyState, Skeleton } from "@tr
 import { useLeadNotes, useDeleteLeadNote } from "../../api/leads.api";
 import { NoteItem } from "./note-item";
 import { CreateNoteDialog } from "./create-note-dialog";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 function NotesSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading notes" className="space-y-2">
+    <div role="status" aria-label={t("bookings.notes.loading")} className="space-y-2">
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton key={index} className="h-16 w-full" />
       ))}
@@ -18,24 +20,26 @@ function NotesSkeleton() {
 }
 
 function NotesErrorState() {
+  const t = useT();
   return (
     <div
       role="alert"
       className="rounded-md border border-danger/50 bg-danger/10 p-4 text-sm text-danger"
     >
-      Something went wrong loading notes. Please try again later.
+      {t("bookings.notes.error")}
     </div>
   );
 }
 
 function NotesEmptyState({ onAddClick }: { onAddClick: () => void }) {
+  const t = useT();
   return (
     <EmptyState
       icon={<StickyNote size={20} />}
-      message="No notes yet"
+      message={t("bookings.notes.empty")}
       action={
         <Button size="sm" onClick={onAddClick}>
-          Add Note
+          {t("bookings.notes.add")}
         </Button>
       }
     />
@@ -43,6 +47,7 @@ function NotesEmptyState({ onAddClick }: { onAddClick: () => void }) {
 }
 
 export function LeadNotes({ leadId }: { leadId: string }) {
+  const t = useT();
   const { data: notes, isLoading, isError } = useLeadNotes(leadId);
   const deleteNote = useDeleteLeadNote();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -52,10 +57,10 @@ export function LeadNotes({ leadId }: { leadId: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <h2 className="text-sm font-medium">Notes</h2>
+        <h2 className="text-sm font-medium">{t("common.notes")}</h2>
         {hasNotes && (
           <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-            Add Note
+            {t("bookings.notes.add")}
           </Button>
         )}
       </CardHeader>

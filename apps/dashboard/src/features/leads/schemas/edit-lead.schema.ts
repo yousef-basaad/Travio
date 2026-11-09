@@ -25,12 +25,12 @@ function emptyToNull(value: unknown) {
 // clears the column - omitting the key (undefined) means "leave
 // unchanged" there, which would silently keep the old value.
 export const editLeadFormSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required"),
+  fullName: z.string().trim().min(1, "customers.fullNameRequired"),
   phone: z.preprocess(emptyToNull, z.string().nullable()),
-  email: z.preprocess(emptyToNull, z.string().email("Enter a valid email").nullable()),
+  email: z.preprocess(emptyToNull, z.string().email("validation.invalidEmail").nullable()),
   source: z.preprocess(emptyToNull, crmLeadSourceSchema.nullable()),
   status: crmLeadStatusSchema,
-  assignedTo: z.preprocess(emptyToNull, z.string().uuid("Enter a valid id").nullable()),
+  assignedTo: z.preprocess(emptyToNull, z.string().uuid("validation.invalidId").nullable()),
 });
 
 export type EditLeadFormValues = z.infer<typeof editLeadFormSchema>;

@@ -3,6 +3,7 @@
 import { CalendarClock, PlaneTakeoff, PlaneLanding } from "lucide-react";
 import { Widget, Timeline, TimelineItem, DataTableState } from "@travio/ui";
 import { useBookings } from "@/features/bookings";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 3): the reference's "Today's
 // Schedule" widget shows calendar-style events (meetings, reviews) that
@@ -16,6 +17,7 @@ import { useBookings } from "@/features/bookings";
 // activity timelines) rather than a new "Activity Timeline" component -
 // same shape, no duplication.
 export function TodaySchedule() {
+  const t = useT();
   const { data: bookings, isLoading } = useBookings();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -28,12 +30,12 @@ export function TodaySchedule() {
   const events = [...departures, ...returns];
 
   return (
-    <Widget title="Today's Schedule" description="Bookings starting or ending today">
+    <Widget title={t("home.schedule.title")} description={t("home.schedule.description")}>
       <DataTableState
         isLoading={isLoading}
         isError={false}
         isEmpty={events.length === 0}
-        emptyMessage="Nothing scheduled today"
+        emptyMessage={t("home.schedule.empty")}
         emptyIcon={<CalendarClock size={20} />}
       >
         <Timeline>
@@ -44,8 +46,8 @@ export function TodaySchedule() {
               title={event.booking.title}
               description={
                 event.kind === "departure"
-                  ? `Departs today · ${event.booking.bookingNumber}`
-                  : `Returns today · ${event.booking.bookingNumber}`
+                  ? t("home.schedule.departs", { number: event.booking.bookingNumber })
+                  : t("home.schedule.returns", { number: event.booking.bookingNumber })
               }
               isLast={index === events.length - 1}
             />

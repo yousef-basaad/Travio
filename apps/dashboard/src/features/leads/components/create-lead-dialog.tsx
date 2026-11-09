@@ -10,7 +10,9 @@ import {
   CRM_LEAD_SOURCE_OPTIONS,
   type CreateLeadFormValues,
 } from "../schemas/create-lead.schema";
-import { humanize } from "../utils/humanize";
+import { LEAD_SOURCE_KEYS } from "../utils/label-keys";
+import { isMessageKey } from "@/lib/i18n/translate";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 const DEFAULT_VALUES: CreateLeadFormValues = {
   fullName: "",
@@ -31,6 +33,8 @@ type CreateLeadDialogProps = {
 // focus trapping, and focus restoration on close for free, per the HTML
 // spec - no extra dependency, no hand-rolled focus-trap code.
 export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) {
+  const t = useT();
+  const fieldError = (message?: string) => (message && isMessageKey(message) ? t(message) : message);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const createLead = useCreateLead();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -66,7 +70,7 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
     } catch {
       // Keep the dialog open and the entered values intact (reset() is
       // only called on success) - just surface a friendly message.
-      setSubmitError("Couldn't create the lead. Please try again.");
+      setSubmitError(t("leads.createError"));
     }
   });
 
@@ -79,12 +83,12 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
     >
       <form onSubmit={onSubmit} className="space-y-4 p-6" noValidate>
         <h2 id="create-lead-title" className="text-lg font-semibold">
-          New Lead
+          {t("leads.new")}
         </h2>
 
         <div className="space-y-1">
           <label htmlFor="lead-full-name" className="text-sm font-medium">
-            Full Name
+            {t("field.fullName")}
           </label>
           <input
             id="lead-full-name"
@@ -95,17 +99,18 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
           />
           {errors.fullName && (
             <p id="lead-full-name-error" className="text-sm text-danger">
-              {errors.fullName.message}
+              {fieldError(errors.fullName.message)}
             </p>
           )}
         </div>
 
         <div className="space-y-1">
           <label htmlFor="lead-phone" className="text-sm font-medium">
-            Phone
+            {t("field.phone")}
           </label>
           <input
             id="lead-phone"
+            type="tel"
             className="w-full rounded-md border px-3 py-2 text-sm"
             {...register("phone")}
           />
@@ -113,7 +118,7 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
 
         <div className="space-y-1">
           <label htmlFor="lead-email" className="text-sm font-medium">
-            Email
+            {t("field.email")}
           </label>
           <input
             id="lead-email"
@@ -125,24 +130,24 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
           />
           {errors.email && (
             <p id="lead-email-error" className="text-sm text-danger">
-              {errors.email.message}
+              {fieldError(errors.email.message)}
             </p>
           )}
         </div>
 
         <div className="space-y-1">
           <label htmlFor="lead-source" className="text-sm font-medium">
-            Source
+            {t("field.source")}
           </label>
           <select
             id="lead-source"
             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
             {...register("source")}
           >
-            <option value="">Select a source</option>
+            <option value="">{t("leads.selectSource")}</option>
             {CRM_LEAD_SOURCE_OPTIONS.map((source) => (
               <option key={source} value={source}>
-                {humanize(source)}
+                {t(LEAD_SOURCE_KEYS[source])}
               </option>
             ))}
           </select>
@@ -161,10 +166,10 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating…" : "Create Lead"}
+            {isSubmitting ? t("common.creating") : t("leads.create")}
           </Button>
         </div>
       </form>

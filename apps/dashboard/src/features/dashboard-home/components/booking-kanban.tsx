@@ -3,10 +3,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { KanbanBoard, KanbanColumn, KanbanCard, KanbanEmpty, SectionToolbar, SkeletonTable, Avatar, Button } from "@travio/ui";
-import { formatDate } from "@travio/utils";
-import { useBookings, BOOKING_STATUS_LABELS, BOOKING_STATUS_STYLES } from "@/features/bookings";
+import { useBookings, BOOKING_STATUS_KEYS, BOOKING_STATUS_STYLES } from "@/features/bookings";
 import { useCustomers } from "@/features/customers";
 import type { BookingStatus } from "@/features/bookings";
+import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
 // Real booking_status enum, in the order the reference's board reads
 // left-to-right - Draft/Pending/Confirmed/Completed/Cancelled is this
@@ -22,7 +22,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // "Today"/"Tomorrow"/"In N days" for the near future, a plain formatted
 // date otherwise. Never fabricated: every branch is a deterministic
 // function of the real date already on the booking.
-function relativeDay(dateStr: string | null | undefined): string | null {
+function relativeDay(
+  dateStr: string | null | undefined,
+  t: ReturnType<typeof useT>,
+  format: ReturnType<typeof useFormat>,
+): string | null {
   if (!dateStr) return null;
   const target = new Date(dateStr);
   if (Number.isNaN(target.getTime())) return null;
@@ -31,10 +35,11 @@ function relativeDay(dateStr: string | null | undefined): string | null {
   const targetMidnight = new Date(target.getFullYear(), target.getMonth(), target.getDate());
   const diffDays = Math.round((targetMidnight.getTime() - todayMidnight.getTime()) / DAY_MS);
 
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Tomorrow";
-  if (diffDays > 1 && diffDays <= 6) return `In ${diffDays} days`;
-  return formatDate(dateStr);
+  if (diffDays === 0) return t("date.today");
+  if (diffDays === 1) return t("date.tomorrow");
+  if (diffDays === 2) return t("date.inTwoDays");
+  if (diffDays > 2 && diffDays <= 6) return t("date.inDays", { count: diffDays });
+  return format.date(dateStr);
 }
 
 // Design System v2.7 (Product-8.2 Reference Fidelity Pass): the
@@ -52,6 +57,8 @@ function relativeDay(dateStr: string | null | undefined): string | null {
 // next to their name, matching the reference's card anatomy more closely
 // than the previous plain text-only rows.
 export function BookingKanban() {
+  const t = useT();
+  const format = useFormat();
   const { data: bookings, isLoading } = useBookings();
   const { data: customers } = useCustomers();
   const customerNameById = new Map(customers?.map((c) => [c.id, c.fullName]));
@@ -65,27 +72,27 @@ export function BookingKanban() {
   return (
     <div className="space-y-3">
       <SectionToolbar
-        filters={<h2 className="text-sm font-semibold text-foreground">Booking Board</h2>}
+        filters={<h2 className="text-sm font-semibold text-foreground">{t("home.board.title")}</h2>}
         actions={
           <Button asChild variant="ghost" size="sm">
-            <Link href="/bookings">View all</Link>
+            <Link href="/bookings">{t("common.viewAll")}</Link>
           </Button>
         }
       />
       {isLoading ? (
-        <SkeletonTable rows={4} header={false} aria-label="Loading bookings" />
+        <SkeletonTable rows={4} header={false} aria-label={t("home.board.loading")} />
       ) : (
         <KanbanBoard>
           {COLUMN_ORDER.map((status) => (
             <KanbanColumn
               key={status}
-              title={BOOKING_STATUS_LABELS[status]}
+              title={t(BOOKING_STATUS_KEYS[status])}
               count={byStatus.get(status)?.length ?? 0}
               badgeClassName={BOOKING_STATUS_STYLES[status]}
             >
               {(byStatus.get(status) ?? []).map((booking) => {
                 const customerName = customerNameById.get(booking.customerId) ?? "—";
-                const relative = relativeDay(booking.startDate);
+                const relative = relativeDay(booking.startDate, t, format);
                 return (
                   <Link key={booking.id} href={`/bookings/${booking.id}` as Route}>
                     <KanbanCard>
@@ -106,7 +113,7 @@ export function BookingKanban() {
                   </Link>
                 );
               })}
-              {(byStatus.get(status) ?? []).length === 0 ? <KanbanEmpty message="No bookings" /> : null}
+              {(byStatus.get(status) ?? []).length === 0 ? <KanbanEmpty message={t("home.board.empty")} /> : null}
             </KanbanColumn>
           ))}
         </KanbanBoard>

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@travio/ui";
 import type { CrmLead } from "@travio/api";
 import { useConvertLead, ConvertLeadError } from "../api/leads.api";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
 
 type ConvertLeadDialogProps = {
   lead: CrmLead;
@@ -12,23 +14,24 @@ type ConvertLeadDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-const ERROR_MESSAGES: Record<number, string> = {
-  404: "Lead not found.",
-  409: "This lead has already been converted.",
-  403: "You do not have permission.",
+const ERROR_MESSAGES: Record<number, MessageKey> = {
+  404: "leads.convert.notFound",
+  409: "leads.convert.alreadyConverted",
+  403: "leads.convert.forbidden",
 };
 
-function getErrorMessage(error: unknown): string {
+function getErrorMessage(error: unknown): MessageKey {
   if (error instanceof ConvertLeadError) {
-    return ERROR_MESSAGES[error.status] ?? "Something went wrong. Please try again.";
+    return ERROR_MESSAGES[error.status] ?? "common.genericError";
   }
-  return "Something went wrong. Please try again.";
+  return "common.genericError";
 }
 
 // Mirrors Create/EditLeadDialog's native <dialog> pattern (same reasoning:
 // no dialog primitive exists, scope is apps/dashboard only). No form here -
 // this is a confirmation, not data entry - so no react-hook-form/zod.
 export function ConvertLeadDialog({ lead, open, onOpenChange }: ConvertLeadDialogProps) {
+  const t = useT();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
   const convertLead = useConvertLead();
@@ -77,18 +80,17 @@ export function ConvertLeadDialog({ lead, open, onOpenChange }: ConvertLeadDialo
     >
       <div className="space-y-4 p-6">
         <h2 id="convert-lead-title" className="text-lg font-semibold">
-          Convert Lead
+          {t("leads.convert.title")}
         </h2>
 
         <p className="text-sm text-muted-foreground">
-          This will either create a new customer, or link this lead to an
-          existing customer if an exact email match already exists. This action
-          marks the lead as <span className="font-medium text-foreground">Won</span>.
+          {t("leads.convert.body")} {t("leads.convert.marksAs")}{" "}
+          <span className="font-medium text-foreground">{t("leadStatus.won")}</span>.
         </p>
 
         {convertLead.isError && (
           <p role="alert" className="text-sm text-danger">
-            {getErrorMessage(convertLead.error)}
+            {t(getErrorMessage(convertLead.error))}
           </p>
         )}
 
@@ -99,10 +101,10 @@ export function ConvertLeadDialog({ lead, open, onOpenChange }: ConvertLeadDialo
             onClick={() => onOpenChange(false)}
             disabled={convertLead.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="button" onClick={handleConvert} disabled={convertLead.isPending}>
-            {convertLead.isPending ? "Converting…" : "Convert"}
+            {convertLead.isPending ? t("leads.convert.converting") : t("leads.convert.action")}
           </Button>
         </div>
       </div>
