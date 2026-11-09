@@ -273,7 +273,7 @@ export const bookingsService = {
         type: "booking_created",
         title: "Booking created",
         message: `Booking ${booking.bookingNumber} was created.`,
-        metadata: { bookingId: booking.id },
+        metadata: { bookingId: booking.id, bookingNumber: booking.bookingNumber },
       });
     }
 
@@ -328,7 +328,12 @@ export const bookingsService = {
           type: "booking_status_changed",
           title: "Booking status changed",
           message: `Booking ${booking.bookingNumber} status changed from ${existingRow.status} to ${booking.status}.`,
-          metadata: { bookingId: booking.id, previousStatus: existingRow.status, newStatus: booking.status },
+          metadata: {
+            bookingId: booking.id,
+            bookingNumber: booking.bookingNumber,
+            previousStatus: existingRow.status,
+            newStatus: booking.status,
+          },
         });
       }
     }

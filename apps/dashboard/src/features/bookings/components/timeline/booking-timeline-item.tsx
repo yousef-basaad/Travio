@@ -5,7 +5,7 @@ import { CalendarPlus, Pencil, ArrowRightLeft, Circle } from "lucide-react";
 import { TimelineItem } from "@travio/ui";
 import type { BookingTimelineEvent, BookingTimelineEventType } from "../../types/booking";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
-import { isMessageKey } from "@/lib/i18n/translate";
+import { isMessageKey, type Translate } from "@/lib/i18n/translate";
 
 // Centralized here - the only place booking timeline icons/titles are
 // mapped. booking_timeline has no title column (see the migration), so
@@ -26,13 +26,29 @@ const BOOKING_TIMELINE_ICONS: Record<string, ReactNode> = {
   status_changed: <ArrowRightLeft size={ICON_SIZE} />,
 };
 
-
 const FALLBACK_ICON = <Circle size={ICON_SIZE} />;
 
 function getTimelineIcon(type: BookingTimelineEventType): ReactNode {
   return BOOKING_TIMELINE_ICONS[type] ?? FALLBACK_ICON;
 }
 
+// status_changed rows store an English description; rebuild it from the
+// from/to statuses in metadata so it follows the UI language.
+function eventDescription(event: BookingTimelineEvent, t: Translate): string | null | undefined {
+  const meta = event.metadata as { from?: unknown; to?: unknown } | null | undefined;
+  if (
+    event.type !== "status_changed" ||
+    typeof meta?.from !== "string" ||
+    typeof meta?.to !== "string"
+  ) {
+    return event.description;
+  }
+  const label = (status: string) => {
+    const key = `bookingStatus.${status}`;
+    return isMessageKey(key) ? t(key) : status;
+  };
+  return t("bookings.timeline.statusChangedFrom", { from: label(meta.from), to: label(meta.to) });
+}
 
 export function BookingTimelineItem({
   event,
@@ -50,7 +66,7 @@ export function BookingTimelineItem({
     <TimelineItem
       icon={getTimelineIcon(event.type)}
       title={title}
-      description={event.description}
+      description={eventDescription(event, t)}
       timestamp={event.createdAt ? format.relativeTime(event.createdAt) : null}
       timestampTitle={event.createdAt ? format.date(event.createdAt) : undefined}
       // Raw id - no profiles join exists anywhere yet (same convention

@@ -4,6 +4,7 @@ import { Button, ServiceItem, ServiceItemHeader, ServiceItemContent } from "@tra
 import { cn } from "@travio/utils";
 import type { Notification } from "@travio/api";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import { notificationText } from "../utils/notification-text";
 
 export interface NotificationItemProps {
   notification: Notification;
@@ -15,12 +16,13 @@ export function NotificationItem({ notification, onMarkRead, isMarkingRead }: No
   const isUnread = notification.readAt === null;
   const t = useT();
   const format = useFormat();
+  const { title, message } = notificationText(notification, t);
 
   return (
     <ServiceItem className={cn(isUnread && "bg-accent/50")}>
       <ServiceItemHeader>
         <span className={cn("text-sm", isUnread ? "font-semibold" : "font-medium")}>
-          {notification.title}
+          {title}
         </span>
         {isUnread ? (
           <Button
@@ -28,14 +30,14 @@ export function NotificationItem({ notification, onMarkRead, isMarkingRead }: No
             size="sm"
             onClick={() => onMarkRead(notification.id)}
             disabled={isMarkingRead}
-            aria-label={t("notifications.markReadLabel", { title: notification.title })}
+            aria-label={t("notifications.markReadLabel", { title })}
           >
             {isMarkingRead ? t("notifications.marking") : t("notifications.markRead")}
           </Button>
         ) : null}
       </ServiceItemHeader>
       <ServiceItemContent>
-        <p className="text-sm text-muted-foreground">{notification.message}</p>
+        <p className="text-sm text-muted-foreground">{message}</p>
         <p className="text-xs text-muted-foreground">{format.relativeTime(notification.createdAt)}</p>
       </ServiceItemContent>
     </ServiceItem>
