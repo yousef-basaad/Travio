@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UserRole } from "@travio/types";
+import { throwIfPlanLimit } from "@/lib/api/plan-limit-error";
 
 export const TEAM_QUERY_KEY = ["team"];
 
@@ -52,6 +53,7 @@ async function inviteTeamMember(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
+  await throwIfPlanLimit(response);
 
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);

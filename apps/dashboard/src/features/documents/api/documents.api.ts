@@ -5,6 +5,7 @@ import type { Document, DocumentListItem, DocumentType, OwnerType } from "@travi
 import { fetchPage } from "@/lib/api/fetch-page";
 import { useSession } from "@travio/auth";
 import { supabase } from "@/lib/supabase";
+import { throwIfPlanLimit } from "@/lib/api/plan-limit-error";
 
 export const DOCUMENTS_QUERY_KEY = ["documents"];
 
@@ -79,6 +80,7 @@ async function createDocumentRecord(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
+  await throwIfPlanLimit(response);
 
   if (!response.ok) {
     throw new Error(`Failed to save document (${response.status})`);
@@ -122,6 +124,13 @@ export function useUploadDocument() {
 
       const documentId = crypto.randomUUID();
       const filePath = `${profile.tenantId}/${documentId}/${file.name}`;
+
+      const quota = await fetch("/api/documents/quota", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileSize: file.size }),
+      });
+      await throwIfPlanLimit(quota);
 
       const { error: uploadError } = await supabase.storage
         .from("documents")

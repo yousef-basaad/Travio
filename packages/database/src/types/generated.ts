@@ -1815,6 +1815,7 @@ export type Database = {
         Returns: Json
       }
       public_agency_site: { Args: { site_slug: string }; Returns: Json }
+      check_document_quota: { Args: { file_bytes: number }; Returns: string | null }
       platform_overview: { Args: never; Returns: Json }
       platform_plans: { Args: never; Returns: Json }
       platform_update_plan: { Args: { target_plan: string; new_price: number; new_limits: Json }; Returns: undefined }

@@ -33,7 +33,8 @@ export const usageService = {
         supabase
           .from("profiles")
           .select("*", { count: "exact", head: true })
-          .eq("tenant_id", tenantId),
+          .eq("tenant_id", tenantId)
+          .neq("role", "customer"),
         supabase
           .from("customers")
           .select("*", { count: "exact", head: true })

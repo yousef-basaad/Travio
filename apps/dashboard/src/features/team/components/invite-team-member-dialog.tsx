@@ -5,6 +5,7 @@ import { Button, Dialog, FormField, Input, Select } from "@travio/ui";
 import { useInviteTeamMember, type AssignableRole } from "../api/team.api";
 import { TEAM_ROLE_KEYS } from "./team-role-badge";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { PlanLimitError } from "@/lib/api/plan-limit-error";
 
 const ASSIGNABLE_ROLE_OPTIONS: AssignableRole[] = [
   "sales_agent",
@@ -117,7 +118,9 @@ export function InviteTeamMemberDialog({ open, onOpenChange }: InviteTeamMemberD
 
         {inviteTeamMember.isError && (
           <p role="alert" className="text-sm text-danger">
-            {inviteTeamMember.error instanceof Error
+            {inviteTeamMember.error instanceof PlanLimitError
+              ? t(inviteTeamMember.error.messageKey)
+              : inviteTeamMember.error instanceof Error
               ? inviteTeamMember.error.message
               : t("team.inviteError")}
           </p>

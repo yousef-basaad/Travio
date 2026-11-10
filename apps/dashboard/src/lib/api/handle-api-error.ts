@@ -18,6 +18,12 @@ export interface ApiErrorContext {
 // the client-facing response is byte-identical to what every route
 // already returned, so no API contract changes.
 export function handleApiError(error: unknown, context: ApiErrorContext = {}): NextResponse {
+  // Not a failure: the agency's plan doesn't allow this (20261110130000).
+  if (typeof error === "object" && error !== null && "code" in error && error.code === "PL001") {
+    const limit = "details" in error && typeof error.details === "string" ? error.details : "";
+    return NextResponse.json({ error: "plan_limit_reached", limit }, { status: 403 });
+  }
+
   logger.error({
     message: "Unhandled API error",
     error,

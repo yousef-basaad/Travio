@@ -17,6 +17,7 @@ import type { BookingListItem } from "@travio/api";
 import type { BookingStatus } from "@travio/types";
 import type { CreateBookingFormValues } from "../schemas/create-booking.schema";
 import type { UpdateBookingFormValues } from "../schemas/update-booking.schema";
+import { throwIfPlanLimit } from "@/lib/api/plan-limit-error";
 
 // BOOKINGS_QUERY_KEY follows CUSTOMERS_QUERY_KEY's convention - a stable
 // top-level key other features/mutations can invalidate by prefix later.
@@ -115,6 +116,7 @@ async function createBooking(input: CreateBookingFormValues): Promise<Booking> {
     body: JSON.stringify(input),
   });
 
+  await throwIfPlanLimit(response);
   if (!response.ok) {
     throw new Error(`Failed to create booking (${response.status})`);
   }
