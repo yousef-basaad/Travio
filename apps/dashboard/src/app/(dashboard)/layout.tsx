@@ -54,21 +54,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect(setupRedirect);
   }
 
-  // Travio has deactivated this agency: explain it rather than showing
-  // a dashboard full of empty lists.
-  if (result.profile.tenantId && (await isAgencyInactive(await createServerSupabaseClient(), result.profile.tenantId))) {
-    redirect("/forbidden?reason=agency_inactive");
-  }
-
   // Branding must never take the dashboard down: on any failure the
   // agency simply sees the default theme.
   let branding: TenantBranding = EMPTY_BRANDING;
   if (result.profile.tenantId) {
-    try {
-      branding = await brandingService.get(await createServerSupabaseClient(), result.profile.tenantId);
-    } catch {
-      branding = EMPTY_BRANDING;
+    const supabase = await createServerSupabaseClient();
+    const [inactive, loaded] = await Promise.all([
+      isAgencyInactive(supabase, result.profile.tenantId),
+      brandingService.get(supabase, result.profile.tenantId).catch(() => EMPTY_BRANDING),
+    ]);
+
+    // Travio has deactivated this agency: explain it rather than showing
+    // a dashboard full of empty lists.
+    if (inactive) {
+      redirect("/forbidden?reason=agency_inactive");
     }
+    branding = loaded;
   }
   const themeCss = brandThemeCss(branding);
 

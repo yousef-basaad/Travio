@@ -61,6 +61,7 @@ export * from "./services/reports.service";
 export * from "./services/platform.service";
 export * from "./services/branding.service";
 export * from "./services/agency-site.service";
+export * from "./services/home-overview.service";
 export type {
   VisaApplication,
   VisaApplicationWithCustomer,

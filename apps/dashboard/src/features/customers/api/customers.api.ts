@@ -355,6 +355,21 @@ export function useVisaApplications() {
   });
 }
 
+// One server-side page of the Visa Center.
+export function useVisaApplicationsPage(query: { page: number; pageSize: number; search?: string; status?: string }) {
+  return useQuery({
+    queryKey: [...VISA_APPLICATIONS_QUERY_KEY, "page", query],
+    queryFn: () =>
+      fetchPage<VisaApplicationWithCustomer>("/api/visa-applications", {
+        page: query.page,
+        pageSize: query.pageSize,
+        search: query.search,
+        filters: { status: query.status },
+      }),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useCustomerVisas(customerId: string) {
   return useQuery({
     queryKey: customerVisasQueryKey(customerId),

@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@travio/database/server";
 import { isAgencyInactive } from "./agency-active";
 import type { UserRole } from "@travio/types";
 import {
+  DASHBOARD_ROLES,
   CUSTOMERS_ROLES,
   LEADS_ROLES,
   BOOKINGS_ROLES,
@@ -83,6 +84,10 @@ async function requireDomainAccess(
 }
 
 // Role lists live in ./domain-roles.ts (shared with the sidebar).
+
+export function requireDashboardAccess(): Promise<DomainAccessResult> {
+  return requireDomainAccess(DASHBOARD_ROLES);
+}
 
 export function requireCustomersAccess(): Promise<DomainAccessResult> {
   return requireDomainAccess(CUSTOMERS_ROLES);

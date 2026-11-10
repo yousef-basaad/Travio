@@ -3,7 +3,7 @@
 import { Users } from "lucide-react";
 import { Widget, DataTableState, Avatar } from "@travio/ui";
 import { useTeamMembers } from "@/features/team";
-import { useBookings } from "@/features/bookings";
+import { useHomeOverview } from "../api/home-overview.api";
 import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 3): the reference's "Team"
@@ -18,18 +18,14 @@ import { useT } from "@/lib/i18n/i18n-provider";
 export function TeamActivity() {
   const t = useT();
   const { data: members, isLoading: isLoadingMembers, isError: isErrorMembers } = useTeamMembers();
-  const { data: bookings, isLoading: isLoadingBookings, isError: isErrorBookings } = useBookings();
+  const { data: home, isLoading: isLoadingBookings, isError: isErrorBookings } = useHomeOverview();
 
   const isLoading = isLoadingMembers || isLoadingBookings;
   // A failed request (e.g. /api/team's server_misconfigured 500) shows an
   // error state, never a misleading t("home.team.empty").
   const isError = isErrorMembers || isErrorBookings;
 
-  const countByMember = new Map<string, number>();
-  for (const booking of bookings ?? []) {
-    if (!booking.assignedTo) continue;
-    countByMember.set(booking.assignedTo, (countByMember.get(booking.assignedTo) ?? 0) + 1);
-  }
+  const countByMember = new Map(Object.entries(home?.bookingsByMember ?? {}));
 
   const rows = (members ?? [])
     .map((member) => ({ member, count: countByMember.get(member.id) ?? 0 }))

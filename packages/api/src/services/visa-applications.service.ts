@@ -13,6 +13,7 @@ import {
   type UpdateVisaApplicationInput,
 } from "./visa-applications.mapper";
 import { notificationService } from "./notification.service";
+import type { Page, PageRequest } from "./pagination";
 
 export interface ListVisaApplicationsOptions {
   role: UserRole;
@@ -81,6 +82,29 @@ export const visaApplicationsService = {
     const { data, error } = await supabase.rpc("visa_center_stats");
     if (error) throw error;
     return toVisaCenterStats(data);
+  },
+
+  // One page of the Visa Center (visa_workspace_page, 20261110140000),
+  // searched and filtered in Postgres under the caller's RLS.
+  async listPage(
+    supabase: SupabaseClient<Database>,
+    request: PageRequest & { status?: VisaStatus },
+  ): Promise<Page<VisaApplicationWithCustomer>> {
+    const { data, error } = await supabase.rpc("visa_workspace_page", {
+      search_text: request.search ?? "",
+      status_filter: request.status,
+      page_number: request.page,
+      page_size: request.pageSize,
+    });
+    if (error) throw error;
+    const raw = (typeof data === "object" && data !== null ? data : {}) as { total?: unknown; items?: unknown };
+    const rows = (Array.isArray(raw.items) ? raw.items : []) as Parameters<typeof toVisaApplicationWithCustomer>[0][];
+    return {
+      items: rows.map(toVisaApplicationWithCustomer),
+      total: Number(raw.total ?? 0),
+      page: request.page,
+      pageSize: request.pageSize,
+    };
   },
 
   async listForTenant(
