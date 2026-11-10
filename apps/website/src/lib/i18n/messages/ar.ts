@@ -24,6 +24,12 @@ export const ar: Messages = {
   "meta.signupDescription": "سجّل وكالة السفر الخاصة بك في ترافيو.",
 
   "brand.name": "ترافيو",
+  "errorPage.title": "حدث خطأ غير متوقع",
+  "errorPage.description": "تعذّر تحميل هذه الصفحة. حاول مرة أخرى.",
+  "errorPage.retry": "حاول مرة أخرى",
+  "errorPage.notFoundTitle": "الصفحة غير موجودة",
+  "errorPage.notFoundDescription": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+  "errorPage.home": "العودة للصفحة الرئيسية",
   "agencySite.nav.services": "خدماتنا",
   "agencySite.nav.about": "من نحن",
   "agencySite.nav.contact": "تواصل معنا",

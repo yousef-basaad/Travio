@@ -23,6 +23,12 @@ export const en = {
   "meta.signupDescription": "Sign up your travel agency for Travio.",
 
   "brand.name": "Travio",
+  "errorPage.title": "Something went wrong",
+  "errorPage.description": "This page couldn't be loaded. Please try again.",
+  "errorPage.retry": "Try again",
+  "errorPage.notFoundTitle": "Page not found",
+  "errorPage.notFoundDescription": "The page you're looking for doesn't exist or has moved.",
+  "errorPage.home": "Go to the home page",
   "agencySite.nav.services": "Services",
   "agencySite.nav.about": "About",
   "agencySite.nav.contact": "Contact",

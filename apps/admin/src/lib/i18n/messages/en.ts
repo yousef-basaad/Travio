@@ -3,6 +3,12 @@
 // {name} placeholders are filled by t(key, { name }).
 export const en = {
   "brand.tagline": "Super Admin",
+  "errorPage.title": "Something went wrong",
+  "errorPage.description": "This page couldn't be loaded. Please try again.",
+  "errorPage.retry": "Try again",
+  "errorPage.notFoundTitle": "Page not found",
+  "errorPage.notFoundDescription": "The page you're looking for doesn't exist or has moved.",
+  "errorPage.home": "Go to the home page",
   "date.today": "Today",
   "date.yesterday": "Yesterday",
   "common.currencySar": "SAR",

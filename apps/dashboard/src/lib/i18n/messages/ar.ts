@@ -4,6 +4,12 @@ import type { Messages } from "./en";
 // one that no longer exists in en.ts) is a type error.
 export const ar: Messages = {
   "nav.operationsCenter": "مركز العمليات",
+  "errorPage.title": "حدث خطأ غير متوقع",
+  "errorPage.description": "تعذّر تحميل هذه الصفحة. حاول مرة أخرى.",
+  "errorPage.retry": "حاول مرة أخرى",
+  "errorPage.notFoundTitle": "الصفحة غير موجودة",
+  "errorPage.notFoundDescription": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+  "errorPage.home": "العودة للصفحة الرئيسية",
   "nav.crm": "العملاء",
   "nav.leads": "العملاء المحتملون",
   "nav.bookings": "الحجوزات",
