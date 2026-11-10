@@ -11,4 +11,6 @@ export const updateTenantSchema = z.object({
   phone: z.preprocess(emptyToNull, z.string().nullable().optional()),
   email: z.preprocess(emptyToNull, z.string().email().nullable().optional()),
   address: z.preprocess(emptyToNull, z.string().nullable().optional()),
+}).refine((input) => Object.values(input).some((value) => value !== undefined), {
+  message: "nothing_to_update",
 });
