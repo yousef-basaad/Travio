@@ -1816,6 +1816,11 @@ export type Database = {
       }
       public_agency_site: { Args: { site_slug: string }; Returns: Json }
       check_document_quota: { Args: { file_bytes: number }; Returns: string | null }
+      home_overview: { Args: { range_start: string }; Returns: Json }
+      visa_workspace_page: {
+        Args: { search_text?: string; status_filter?: string; page_number?: number; page_size?: number }
+        Returns: Json
+      }
       platform_overview: { Args: never; Returns: Json }
       platform_plans: { Args: never; Returns: Json }
       platform_update_plan: { Args: { target_plan: string; new_price: number; new_limits: Json }; Returns: undefined }

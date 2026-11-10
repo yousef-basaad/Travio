@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CircleCheck, CircleX, FilePen, Plus, Send, Stamp } from "lucide-react";
 import {
@@ -24,8 +24,11 @@ import { cn } from "@travio/utils";
 import { useSession } from "@travio/auth";
 import type { UserRole } from "@travio/types";
 import type { VisaApplicationWithCustomer, VisaStatus } from "@travio/api";
-import { EditVisaDialog, VISA_STATUS_KEYS, VisaStatusBadge, useVisaApplications } from "@/features/customers";
-import { filterVisaApplications, type VisaStatusFilter } from "../utils/filter-visas";
+import { EditVisaDialog, VISA_STATUS_KEYS, VisaStatusBadge, useVisaApplicationsPage } from "@/features/customers";
+import { AppPagination } from "@/components/app-pagination";
+
+type VisaStatusFilter = VisaStatus | "all";
+const PAGE_SIZE = 25;
 import { approvalRate } from "../utils/visa-stats";
 import { trendFrom } from "@/lib/analytics/trend";
 import { useVisaCenterStats } from "../api/visa-center.api";
@@ -85,7 +88,6 @@ export function VisaWorkspace() {
   const t = useT();
   const format = useFormat();
   const { profile } = useSession();
-  const { data: visas, isLoading, isError } = useVisaApplications();
   const { data: stats, isLoading: isLoadingStats } = useVisaCenterStats();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<VisaStatusFilter>("all");
@@ -94,10 +96,24 @@ export function VisaWorkspace() {
   const canOpenCustomer = profile ? CUSTOMER_PAGE_ROLES.includes(profile.role) : false;
   const isFiltering = query.trim() !== "" || status !== "all";
 
-  const filtered = useMemo(
-    () => filterVisaApplications(visas ?? [], { query, status }),
-    [visas, query, status],
-  );
+  // Search is sent to the server a moment after typing stops.
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(query.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const { data, isLoading, isError } = useVisaApplicationsPage({
+    page,
+    pageSize: PAGE_SIZE,
+    search,
+    status: status === "all" ? undefined : status,
+  });
+  const filtered = data?.items ?? [];
 
   const totalTrend = stats ? trendFrom([stats.newLastMonth, stats.newThisMonth]) : undefined;
   const rate = stats ? approvalRate(stats.byStatus) : null;
@@ -163,7 +179,10 @@ export function VisaWorkspace() {
                   key={tab.value}
                   type="button"
                   aria-pressed={status === tab.value}
-                  onClick={() => setStatus(tab.value)}
+                  onClick={() => {
+                    setStatus(tab.value);
+                    setPage(1);
+                  }}
                   className={cn(
                     "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors duration-fast",
                     status === tab.value
@@ -251,6 +270,7 @@ export function VisaWorkspace() {
                 </TableBody>
               </Table>
             </DataTableState>
+            <AppPagination page={page} pageSize={PAGE_SIZE} total={data?.total ?? 0} onPageChange={setPage} />
           </Card>
 
           {stats && stats.total > 0 ? (

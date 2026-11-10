@@ -2,7 +2,7 @@
 
 import { CalendarClock, PlaneTakeoff, PlaneLanding } from "lucide-react";
 import { Widget, Timeline, TimelineItem, DataTableState } from "@travio/ui";
-import { useBookings } from "@/features/bookings";
+import { useHomeOverview } from "../api/home-overview.api";
 import { useT } from "@/lib/i18n/i18n-provider";
 
 // Design System v2.5 (Product-8.2 Phase 3): the reference's "Today's
@@ -18,16 +18,8 @@ import { useT } from "@/lib/i18n/i18n-provider";
 // same shape, no duplication.
 export function TodaySchedule() {
   const t = useT();
-  const { data: bookings, isLoading } = useBookings();
-  const today = new Date().toISOString().slice(0, 10);
-
-  const departures = (bookings ?? [])
-    .filter((b) => b.startDate === today)
-    .map((b) => ({ booking: b, kind: "departure" as const }));
-  const returns = (bookings ?? [])
-    .filter((b) => b.endDate === today)
-    .map((b) => ({ booking: b, kind: "return" as const }));
-  const events = [...departures, ...returns];
+  const { data, isLoading } = useHomeOverview();
+  const events = data?.today ?? [];
 
   return (
     <Widget title={t("home.schedule.title")} description={t("home.schedule.description")}>
@@ -41,13 +33,13 @@ export function TodaySchedule() {
         <Timeline>
           {events.map((event, index) => (
             <TimelineItem
-              key={`${event.kind}-${event.booking.id}`}
+              key={`${event.kind}-${event.id}`}
               icon={event.kind === "departure" ? <PlaneTakeoff size={14} /> : <PlaneLanding size={14} />}
-              title={event.booking.title}
+              title={event.title}
               description={
                 event.kind === "departure"
-                  ? t("home.schedule.departs", { number: event.booking.bookingNumber })
-                  : t("home.schedule.returns", { number: event.booking.bookingNumber })
+                  ? t("home.schedule.departs", { number: event.bookingNumber })
+                  : t("home.schedule.returns", { number: event.bookingNumber })
               }
               isLast={index === events.length - 1}
             />

@@ -14,8 +14,8 @@ import {
   Button,
   type KanbanTone,
 } from "@travio/ui";
-import { useBookings, BOOKING_STATUS_KEYS } from "@/features/bookings";
-import { useCustomers } from "@/features/customers";
+import { BOOKING_STATUS_KEYS } from "@/features/bookings";
+import { useHomeOverview } from "../api/home-overview.api";
 import type { BookingStatus } from "@/features/bookings";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 
@@ -80,15 +80,8 @@ function relativeDay(
 export function BookingKanban() {
   const t = useT();
   const format = useFormat();
-  const { data: bookings, isLoading } = useBookings();
-  const { data: customers } = useCustomers();
-  const customerNameById = new Map(customers?.map((c) => [c.id, c.fullName]));
-
-  const byStatus = new Map<BookingStatus, typeof bookings>();
-  for (const status of COLUMN_ORDER) byStatus.set(status, []);
-  for (const booking of bookings ?? []) {
-    byStatus.get(booking.status)?.push(booking);
-  }
+  const { data, isLoading } = useHomeOverview();
+  const columns = new Map(data?.board.map((column) => [column.status, column]));
 
   return (
     <div className="space-y-3">
@@ -108,7 +101,7 @@ export function BookingKanban() {
             <KanbanColumn
               key={status}
               title={t(BOOKING_STATUS_KEYS[status])}
-              count={byStatus.get(status)?.length ?? 0}
+              count={columns.get(status)?.total ?? 0}
               tone={COLUMN_TONE[status]}
               footer={
                 // New bookings start as drafts, so "add" lives under that column.
@@ -123,8 +116,8 @@ export function BookingKanban() {
                 ) : undefined
               }
             >
-              {(byStatus.get(status) ?? []).map((booking) => {
-                const customerName = customerNameById.get(booking.customerId) ?? "—";
+              {(columns.get(status)?.cards ?? []).map((booking) => {
+                const customerName = booking.customerName ?? "—";
                 const relative = relativeDay(booking.startDate, t, format);
                 return (
                   <Link key={booking.id} href={`/bookings/${booking.id}` as Route}>
@@ -146,7 +139,7 @@ export function BookingKanban() {
                   </Link>
                 );
               })}
-              {(byStatus.get(status) ?? []).length === 0 ? <KanbanEmpty message={t("home.board.empty")} /> : null}
+              {(columns.get(status)?.cards.length ?? 0) === 0 ? <KanbanEmpty message={t("home.board.empty")} /> : null}
             </KanbanColumn>
           ))}
         </KanbanBoard>
