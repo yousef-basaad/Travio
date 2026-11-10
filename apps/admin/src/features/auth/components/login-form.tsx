@@ -59,7 +59,7 @@ export function LoginForm() {
       </div>
       {state.error ? (
         <p role="alert" className="text-sm text-danger">
-          {state.error}
+          {state.code === "too_many_attempts" ? t("login.tooManyAttempts") : state.error}
         </p>
       ) : null}
       <Button type="submit" className="w-full" disabled={pending}>

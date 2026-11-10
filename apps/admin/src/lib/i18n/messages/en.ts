@@ -31,6 +31,7 @@ export const en = {
   "login.password": "Password",
   "login.submit": "Sign in",
   "login.submitting": "Signing in…",
+  "login.tooManyAttempts": "Too many sign-in attempts. Please wait 15 minutes and try again.",
   "mfa.setupTitle": "Set up two-step verification",
   "mfa.setupHint": "Required for the admin console. Scan this with an authenticator app, then enter the code it shows.",
   "mfa.verifyTitle": "Enter your code",
