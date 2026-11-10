@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { brandThemeCss, brandThemeVars, isHexColor, readableOn } from "./theme";
+import { brandThemeCss, brandThemeVars, isHexColor, readableOn } from "@travio/utils";
 
 describe("brand theme", () => {
   it("accepts only #RRGGBB", () => {

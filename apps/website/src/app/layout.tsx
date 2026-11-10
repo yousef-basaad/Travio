@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Tajawal } from "next/font/google";
 import "@travio/ui/styles.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { I18nProvider } from "@/lib/i18n/i18n-provider";
 import { getLocale, getT } from "@/lib/i18n/get-locale";
 import { dirOf } from "@/lib/i18n/locales";
@@ -50,9 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} dir={dirOf(locale)} className={`${geistSans.variable} ${tajawalHeading.variable}`}>
       <body className="flex min-h-screen flex-col">
         <I18nProvider locale={locale}>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          {children}
         </I18nProvider>
       </body>
     </html>
