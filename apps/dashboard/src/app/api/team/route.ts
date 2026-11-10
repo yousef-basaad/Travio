@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { teamMembersService } from "@travio/api";
+import { planLimitsService, teamMembersService } from "@travio/api";
 import { AdminClientConfigError, createAdminSupabaseClient } from "@travio/database/admin";
 import { logger } from "@travio/logger";
 import { requireAgencyOwnerAccess } from "@/lib/auth/require-domain-access";
@@ -96,6 +96,11 @@ export async function POST(request: Request) {
   }
 
   try {
+    const { limits } = await planLimitsService.getAllLimits(auth.access.supabase, auth.access.tenantId);
+    if (limits.max_users.isAtLimit) {
+      return NextResponse.json({ error: "plan_limit_reached", limit: "max_users" }, { status: 403 });
+    }
+
     // Real Supabase Auth invite (sends the actual invite email) - tenant_id/
     // role are stamped into the invited user's metadata here, server-side,
     // never accepted from the invitee themselves. handle_new_user() (see

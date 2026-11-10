@@ -15,6 +15,7 @@ import {
 import { useT } from "@/lib/i18n/i18n-provider";
 import { isMessageKey } from "@/lib/i18n/translate";
 import { BookingTripFields } from "./booking-trip-fields";
+import { PlanLimitError } from "@/lib/api/plan-limit-error";
 
 const DEFAULT_VALUES: CreateBookingFormValues = {
   customerId: "",
@@ -60,8 +61,8 @@ export function CreateBookingForm() {
     try {
       const booking = await createBooking.mutateAsync(values);
       router.push(`/bookings/${booking.id}`);
-    } catch {
-      setSubmitError(t("bookings.createError"));
+    } catch (error) {
+      setSubmitError(t(error instanceof PlanLimitError ? error.messageKey : "bookings.createError"));
     }
   });
 

@@ -7,6 +7,7 @@ import { DOCUMENT_TYPE_KEYS } from "../utils/label-keys";
 import type { OwnerType } from "@travio/api";
 import { useUploadDocument } from "../api/documents.api";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { PlanLimitError } from "@/lib/api/plan-limit-error";
 
 export interface UploadDocumentDialogProps {
   ownerType: OwnerType;
@@ -99,7 +100,9 @@ export function UploadDocumentDialog({
 
         {uploadDocument.isError && (
           <p role="alert" className="text-sm text-danger">
-            {uploadDocument.error instanceof Error
+            {uploadDocument.error instanceof PlanLimitError
+              ? t(uploadDocument.error.messageKey)
+              : uploadDocument.error instanceof Error
               ? uploadDocument.error.message
               : t("documents.uploadError")}
           </p>
