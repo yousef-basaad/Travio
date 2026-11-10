@@ -334,9 +334,64 @@ export function toPlatformPlans(data: unknown): PlatformPlan[] {
   }));
 }
 
+export interface PlatformAuditDetails {
+  price: number;
+  limits: Record<string, string>;
+}
+
+export interface PlatformAuditEntry {
+  id: number;
+  actorEmail: string | null;
+  action: "agency_deactivated" | "agency_activated" | "plan_updated";
+  targetLabel: string;
+  before: PlatformAuditDetails | null;
+  after: PlatformAuditDetails | null;
+  createdAt: string;
+}
+
+export interface PlatformAuditPage {
+  total: number;
+  items: PlatformAuditEntry[];
+}
+
+function toAuditDetails(value: unknown): PlatformAuditDetails | null {
+  if (typeof value !== "object" || value === null) return null;
+  const raw = asRecord(value);
+  return {
+    price: num(raw.price),
+    limits: Object.fromEntries(Object.entries(asRecord(raw.limits)).filter((entry): entry is [string, string] => typeof entry[1] === "string")),
+  };
+}
+
+// Maps platform_audit_entries' jsonb (20261110170000).
+export function toPlatformAuditPage(data: unknown): PlatformAuditPage {
+  const raw = asRecord(data);
+  return {
+    total: num(raw.total),
+    items: asList(raw.items).map((row) => {
+      const details = asRecord(row.details);
+      return {
+        id: num(row.id),
+        actorEmail: textOrNull(row.actor_email),
+        action: text(row.action) as PlatformAuditEntry["action"],
+        targetLabel: text(row.target_label),
+        before: toAuditDetails(details.before),
+        after: toAuditDetails(details.after),
+        createdAt: text(row.created_at),
+      };
+    }),
+  };
+}
+
 // The Super Admin console. Every platform_* function refuses anyone who
 // isn't travio_admin, so these are safe with the signed-in user's client.
 export const platformService = {
+  async listAudit(supabase: SupabaseClient<Database>, page: number, pageSize: number): Promise<PlatformAuditPage> {
+    const { data, error } = await supabase.rpc("platform_audit_entries", { page_number: page, page_size: pageSize });
+    if (error) throw error;
+    return toPlatformAuditPage(data);
+  },
+
   async listPlans(supabase: SupabaseClient<Database>): Promise<PlatformPlan[]> {
     const { data, error } = await supabase.rpc("platform_plans");
     if (error) throw error;

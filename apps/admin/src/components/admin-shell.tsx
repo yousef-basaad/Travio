@@ -4,7 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import { Building2, CreditCard, Languages, LayoutDashboard, LogOut, Menu, Settings, Users } from "lucide-react";
+import { Building2, CreditCard, Languages, LayoutDashboard, LogOut, Menu, ScrollText, Settings, Users } from "lucide-react";
 import { AppSidebar, MobileNavDrawer, PageContainer, isRouteActive, type AppNavItem } from "@travio/ui";
 import { cn } from "@travio/utils";
 import { signOut, useSession } from "@travio/auth";
@@ -22,6 +22,7 @@ export const ADMIN_NAV: readonly { labelKey: MessageKey; href: string; icon: Rea
   { labelKey: "nav.users", href: "/platform-users", icon: <Users size={ICON_SIZE} /> },
   { labelKey: "nav.billing", href: "/billing", icon: <CreditCard size={ICON_SIZE} /> },
   { labelKey: "nav.settings", href: "/platform-settings", icon: <Settings size={ICON_SIZE} /> },
+  { labelKey: "nav.audit", href: "/audit-log", icon: <ScrollText size={ICON_SIZE} /> },
 ];
 
 function Brand() {
