@@ -13,7 +13,7 @@ export async function register() {
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_ANON_KEY",
     ],
-    requiredInProduction: [],
+    requiredInProduction: ["SUPABASE_SERVICE_ROLE_KEY"],
     urls: [
       "NEXT_PUBLIC_SUPABASE_URL",
     ],

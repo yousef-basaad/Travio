@@ -1821,6 +1821,9 @@ export type Database = {
         Args: { search_text?: string; status_filter?: string; page_number?: number; page_size?: number }
         Returns: Json
       }
+      login_is_blocked: { Args: { pair_key: string; address_key: string; email_key: string }; Returns: boolean }
+      login_record_failure: { Args: { pair_key: string; address_key: string; email_key: string }; Returns: undefined }
+      login_clear_failures: { Args: { pair_key: string }; Returns: undefined }
       platform_overview: { Args: never; Returns: Json }
       platform_plans: { Args: never; Returns: Json }
       platform_update_plan: { Args: { target_plan: string; new_price: number; new_limits: Json }; Returns: undefined }

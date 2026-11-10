@@ -32,6 +32,7 @@ export const ar: Messages = {
   "login.password": "كلمة المرور",
   "login.submit": "تسجيل الدخول",
   "login.submitting": "جارٍ تسجيل الدخول…",
+  "login.tooManyAttempts": "محاولات دخول كثيرة. انتظر 15 دقيقة ثم حاول مرة أخرى.",
   "mfa.setupTitle": "إعداد التحقق بخطوتين",
   "mfa.setupHint": "مطلوب للوحة الإدارة. امسح الرمز بتطبيق المصادقة، ثم أدخل الرمز الظاهر فيه.",
   "mfa.verifyTitle": "أدخل رمز التحقق",
