@@ -167,6 +167,35 @@ describe("platform overview", () => {
     await expect(platformService.updatePlan(denied.client, "p1", 1, {})).rejects.toEqual({ code: "42501", message: "forbidden" });
   });
 
+  it("maps audit entries", async () => {
+    const { client, allCalls } = createFakeSupabaseClient({
+      "rpc:platform_audit_entries": [
+        {
+          data: {
+            total: 1,
+            items: [
+              {
+                id: 7, actor_email: "a@t.test", action: "plan_updated", target_label: "Starter", created_at: "2026-11-10T10:00:00Z",
+                details: { before: { price: "99", limits: { max_users: "5" } }, after: { price: 120, limits: { max_users: "10" } } },
+              },
+              { id: 6, actor_email: null, action: "agency_activated", target_label: "Alpha", created_at: "2026-11-09T10:00:00Z", details: {} },
+            ],
+          },
+          error: null,
+        },
+      ],
+    });
+
+    const page = await platformService.listAudit(client, 2, 25);
+    expect(page.items[0]).toEqual({
+      id: 7, actorEmail: "a@t.test", action: "plan_updated", targetLabel: "Starter", createdAt: "2026-11-10T10:00:00Z",
+      before: { price: 99, limits: { max_users: "5" } }, after: { price: 120, limits: { max_users: "10" } },
+    });
+    expect(page.items[1]).toMatchObject({ actorEmail: null, before: null, after: null });
+    const [call] = findCallsByMethod(allCalls, "rpc:platform_audit_entries", "rpc");
+    expect(call?.args).toEqual(["platform_audit_entries", { page_number: 2, page_size: 25 }]);
+  });
+
   it("sets an agency's status and surfaces a refusal", async () => {
     const ok = createFakeSupabaseClient({ "rpc:platform_set_agency_active": [{ data: null, error: null }] });
     await platformService.setAgencyActive(ok.client, "t1", false);
