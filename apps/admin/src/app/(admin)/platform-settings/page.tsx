@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { platformService, type PlatformPlan } from "@travio/api";
-import { requireRole } from "@travio/auth/server";
+import { isVerifiedAdmin } from "@/lib/auth/mfa";
 import { createServerSupabaseClient } from "@travio/database/server";
 import { PlatformSettingsView } from "@/features/platform-settings";
 import { getLocale } from "@/lib/i18n/get-locale";
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PlatformSettingsPage() {
   // Rendered alongside the layout's gate, so it checks the role itself.
-  if (!(await requireRole(["travio_admin"])).authorized) return null;
+  if (!(await isVerifiedAdmin())) return null;
 
   let plans: PlatformPlan[] | null = null;
   try {

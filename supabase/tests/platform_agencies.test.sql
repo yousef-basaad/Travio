@@ -55,7 +55,7 @@ select throws_ok(
 select is((select count(*)::int from public.customers), 1, 'an active agency sees its data');
 
 -- The Travio admin lists every agency.
-select set_config('request.jwt.claims', '{"sub":"1b000000-0000-0000-0000-0000000000ad","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"1b000000-0000-0000-0000-0000000000ad","role":"authenticated","aal":"aal2"}', true);
 
 select is((select (public.platform_agencies()->>'total')::int), 27, 'total counts every agency');
 select is((select jsonb_array_length(public.platform_agencies()->'items')), 20, 'first page holds page_size agencies');
@@ -105,7 +105,7 @@ select throws_ok(
 );
 
 -- Reactivating restores access.
-select set_config('request.jwt.claims', '{"sub":"1b000000-0000-0000-0000-0000000000ad","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"1b000000-0000-0000-0000-0000000000ad","role":"authenticated","aal":"aal2"}', true);
 select public.platform_set_agency_active('2b000000-0000-0000-0000-000000000001', true);
 select set_config('request.jwt.claims', '{"sub":"1b000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
 select is((select count(*)::int from public.customers), 1, 'reactivating restores access with nothing lost');

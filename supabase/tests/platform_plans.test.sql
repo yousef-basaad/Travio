@@ -44,7 +44,7 @@ select throws_ok(
   '42501', null, 'agency staff cannot change a plan'
 );
 
-select set_config('request.jwt.claims', '{"sub":"1e000000-0000-0000-0000-0000000000ad","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"1e000000-0000-0000-0000-0000000000ad","role":"authenticated","aal":"aal2"}', true);
 
 select is(
   (select pg_temp.test_plan()),

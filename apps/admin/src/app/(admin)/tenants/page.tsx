@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { platformService, type AgencyListPage } from "@travio/api";
-import { requireRole } from "@travio/auth/server";
+import { isVerifiedAdmin } from "@/lib/auth/mfa";
 import { createServerSupabaseClient } from "@travio/database/server";
 import { TenantsView } from "@/features/tenants";
 import { AGENCIES_PAGE_SIZE, parseAgencyParams } from "@/features/tenants/utils/agency-params";
@@ -15,7 +15,7 @@ export default async function TenantsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // Rendered alongside the layout's gate, so it checks the role itself.
-  if (!(await requireRole(["travio_admin"])).authorized) return null;
+  if (!(await isVerifiedAdmin())) return null;
 
   const params = parseAgencyParams(await searchParams);
   let data: AgencyListPage | null = null;

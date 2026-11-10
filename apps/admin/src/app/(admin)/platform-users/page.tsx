@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { platformService, type PlatformUserPage } from "@travio/api";
-import { requireRole } from "@travio/auth/server";
+import { isVerifiedAdmin } from "@/lib/auth/mfa";
 import { createServerSupabaseClient } from "@travio/database/server";
 import { PlatformUsersView } from "@/features/platform-users";
 import { USERS_PAGE_SIZE, parseUserParams } from "@/features/platform-users/utils/user-params";
@@ -15,7 +15,7 @@ export default async function PlatformUsersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   // Rendered alongside the layout's gate, so it checks the role itself.
-  if (!(await requireRole(["travio_admin"])).authorized) return null;
+  if (!(await isVerifiedAdmin())) return null;
 
   const params = parseUserParams(await searchParams);
   let data: PlatformUserPage | null = null;

@@ -70,7 +70,7 @@ set local role authenticated;
 select throws_ok('select public.platform_overview()', '42501', null, 'agency staff cannot read platform numbers');
 
 -- The Travio admin sees every agency.
-select set_config('request.jwt.claims', '{"sub":"1a000000-0000-0000-0000-0000000000ad","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"1a000000-0000-0000-0000-0000000000ad","role":"authenticated","aal":"aal2"}', true);
 create temp table o on commit drop as select public.platform_overview() as s;
 
 select is(
