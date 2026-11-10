@@ -49,7 +49,7 @@ select set_config('request.jwt.claims', '{"sub":"1d000000-0000-0000-0000-0000000
 set local role authenticated;
 select throws_ok('select public.platform_subscriptions()', '42501', null, 'agency staff cannot list subscriptions');
 
-select set_config('request.jwt.claims', '{"sub":"1d000000-0000-0000-0000-0000000000ad","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"1d000000-0000-0000-0000-0000000000ad","role":"authenticated","aal":"aal2"}', true);
 
 select is((select (public.platform_subscriptions()->>'total')::int), 7, 'every agency is listed, with or without a subscription');
 select is(

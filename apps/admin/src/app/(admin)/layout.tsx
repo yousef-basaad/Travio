@@ -1,4 +1,6 @@
+import type { Route } from "next";
 import { redirect } from "next/navigation";
+import { getMfaState } from "@/lib/auth/mfa";
 import { requireRole } from "@travio/auth/server";
 import { SessionProvider } from "@travio/auth";
 import { AdminShell } from "@/components/admin-shell";
@@ -23,6 +25,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // reason is "forbidden" or "error" - both land on /forbidden today,
     // same minimal-scope choice the dashboard app's layout documents.
     redirect("/forbidden");
+  }
+
+  // The password alone isn't enough for this console.
+  if ((await getMfaState()) !== "verified") {
+    redirect("/mfa" as Route);
   }
 
   return (

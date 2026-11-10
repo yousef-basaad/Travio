@@ -31,6 +31,18 @@ export const en = {
   "login.password": "Password",
   "login.submit": "Sign in",
   "login.submitting": "Signing in…",
+  "mfa.setupTitle": "Set up two-step verification",
+  "mfa.setupHint": "Required for the admin console. Scan this with an authenticator app, then enter the code it shows.",
+  "mfa.verifyTitle": "Enter your code",
+  "mfa.verifyHint": "Open your authenticator app and enter the six-digit code.",
+  "mfa.qrAlt": "QR code for your authenticator app",
+  "mfa.manualEntry": "Can't scan it? Enter this key in the app:",
+  "mfa.code": "Six-digit code",
+  "mfa.submit": "Verify",
+  "mfa.checking": "Checking…",
+  "mfa.invalidCode": "That code didn't work. Check it and try again.",
+  "mfa.error": "Couldn't verify the code. Please try again.",
+  "mfa.setupError": "Two-step verification couldn't be started. Sign out and try again, or contact support.",
 
   "forbidden.title": "You don't have permission to view this",
   "forbidden.description":

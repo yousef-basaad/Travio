@@ -40,7 +40,7 @@ set local role authenticated;
 select throws_ok('select public.platform_users()', '42501', null, 'agency staff cannot list platform users');
 
 -- The Travio admin sees every account.
-select set_config('request.jwt.claims', '{"sub":"1c000000-0000-0000-0000-0000000000ad","role":"authenticated"}', true);
+select set_config('request.jwt.claims', '{"sub":"1c000000-0000-0000-0000-0000000000ad","role":"authenticated","aal":"aal2"}', true);
 
 select is((select (public.platform_users()->>'total')::int), 28, 'total counts every account');
 select is((select jsonb_array_length(public.platform_users()->'items')), 20, 'first page holds page_size accounts');

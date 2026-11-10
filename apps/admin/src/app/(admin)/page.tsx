@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { platformService, type PlatformOverview } from "@travio/api";
-import { requireRole } from "@travio/auth/server";
+import { isVerifiedAdmin } from "@/lib/auth/mfa";
 import { createServerSupabaseClient } from "@travio/database/server";
 import { PlatformOverviewView } from "@/features/overview/components/platform-overview-view";
 import { getLocale } from "@/lib/i18n/get-locale";
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 // redirects anyone else). platform_overview() checks it a third time in
 // Postgres.
 export default async function OverviewPage() {
-  if (!(await requireRole(["travio_admin"])).authorized) return null;
+  if (!(await isVerifiedAdmin())) return null;
 
   let overview: PlatformOverview | null = null;
   try {
