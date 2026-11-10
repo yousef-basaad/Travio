@@ -5,7 +5,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(17);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('1a100000-0000-0000-0000-0000000000a1', 'owner1@site.test', '{"full_name":"Owner One"}'),
@@ -70,9 +70,13 @@ select throws_ok(
   '42501', null, 'another agency cannot write it'
 );
 
--- Publish.
+-- Publish, with a cover image and a template.
 select set_config('request.jwt.claims', '{"sub":"1a100000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
-update public.agency_sites set is_published = true;
+select throws_ok(
+  $$update public.agency_sites set template = 'neon'$$,
+  '23514', null, 'only known templates are accepted'
+);
+update public.agency_sites set is_published = true, hero_path = 't1/hero.png', template = 'split';
 reset role;
 
 select set_config('request.jwt.claims', '', true);
@@ -80,7 +84,7 @@ set local role anon;
 select is(
   (select public.public_agency_site('site-one')),
   jsonb_build_object(
-    'name', 'Site One', 'slug', 'site-one', 'logo_path', null, 'tagline', null, 'primary_color', null, 'language', 'ar',
+    'name', 'Site One', 'slug', 'site-one', 'logo_path', null, 'hero_path', 't1/hero.png', 'template', 'split', 'tagline', null, 'primary_color', null, 'language', 'ar',
     'headline', 'See the world', 'subheadline', null, 'services', jsonb_build_array('flights', 'visas'), 'about', 'About us',
     'city', 'Jeddah', 'phone', '+966 50 000 0000', 'whatsapp', '966500000000', 'email', 'hi@site.test'
   ),

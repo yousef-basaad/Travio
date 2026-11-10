@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AGENCY_SERVICES } from "@travio/api";
+import { AGENCY_SERVICES, SITE_TEMPLATES } from "@travio/api";
 
 const optionalText = (max: number) =>
   z
@@ -30,6 +30,7 @@ export const saveSiteSchema = z
   .object({
     isPublished: z.boolean(),
     language: z.enum(["ar", "en"]),
+    template: z.enum(SITE_TEMPLATES),
     headline: optionalText(120),
     subheadline: optionalText(240),
     about: optionalText(1500),

@@ -4,6 +4,7 @@ import { saveSiteSchema } from "./schemas";
 const valid = {
   isPublished: true,
   language: "ar",
+  template: "split",
   headline: "See the world",
   subheadline: "",
   about: null,
@@ -35,6 +36,7 @@ describe("saveSiteSchema", () => {
     expect(saveSiteSchema.safeParse({ ...valid, email: "not-an-email" }).success).toBe(false);
     expect(saveSiteSchema.safeParse({ ...valid, services: ["casino"] }).success).toBe(false);
     expect(saveSiteSchema.safeParse({ ...valid, language: "fr" }).success).toBe(false);
+    expect(saveSiteSchema.safeParse({ ...valid, template: "neon" }).success).toBe(false);
     expect(saveSiteSchema.safeParse({ ...valid, headline: "x".repeat(121) }).success).toBe(false);
   });
 });

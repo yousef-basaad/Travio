@@ -40,6 +40,81 @@ function ContactCard({ icon, label, value, href }: { icon: ReactNode; label: str
   );
 }
 
+function HeroText({ site, cta, ctaLabel, centered, buttonClass }: { site: PublicAgencySite; cta: string | null; ctaLabel: string; centered: boolean; buttonClass: string }) {
+  return (
+    <>
+      <h1 className="font-heading text-4xl font-extrabold sm:text-5xl">{site.headline}</h1>
+      {site.subheadline ? <p className={`mt-4 max-w-2xl text-lg opacity-90 ${centered ? "mx-auto" : ""}`}>{site.subheadline}</p> : null}
+      {cta ? (
+        <a
+          href={cta}
+          target={site.whatsapp ? "_blank" : undefined}
+          rel="noopener noreferrer"
+          className={`mt-8 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition-opacity hover:opacity-90 ${buttonClass}`}
+        >
+          <MessageCircle size={18} aria-hidden="true" />
+          {ctaLabel}
+        </a>
+      ) : null}
+    </>
+  );
+}
+
+// The three page layouts an agency can choose, each with or without a
+// cover image.
+function Hero({ site, cta, ctaLabel }: { site: PublicAgencySite; cta: string | null; ctaLabel: string }) {
+  const onColor = "bg-background text-foreground";
+  const onPlain = "bg-primary text-primary-foreground";
+
+  if (site.template === "split") {
+    return (
+      <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-4 py-14 md:grid-cols-2">
+        <div>
+          <HeroText site={site} cta={cta} ctaLabel={ctaLabel} centered={false} buttonClass={onPlain} />
+        </div>
+        {site.heroUrl ? (
+          <img src={site.heroUrl} alt="" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+        ) : (
+          <div className="aspect-[4/3] w-full rounded-2xl bg-primary" aria-hidden="true" />
+        )}
+      </section>
+    );
+  }
+
+  if (site.template === "minimal") {
+    return (
+      <section>
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <HeroText site={site} cta={cta} ctaLabel={ctaLabel} centered buttonClass={onPlain} />
+        </div>
+        {site.heroUrl ? <img src={site.heroUrl} alt="" className="mx-auto h-72 w-full max-w-6xl object-cover sm:rounded-2xl" /> : null}
+      </section>
+    );
+  }
+
+  // Classic: full-width, over the cover image when there is one. The dark
+  // layer keeps white text readable on any photo.
+  if (site.heroUrl) {
+    return (
+      <section className="relative overflow-hidden text-white">
+        <img src={site.heroUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
+        <div className="relative mx-auto max-w-6xl px-4 py-24 text-center sm:py-32">
+          <HeroText site={site} cta={cta} ctaLabel={ctaLabel} centered buttonClass={onColor} />
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="bg-primary text-primary-foreground">
+      <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:py-28">
+        <HeroText site={site} cta={cta} ctaLabel={ctaLabel} centered buttonClass={onColor} />
+      </div>
+    </section>
+  );
+}
+
 // An agency's public page: its own logo, colors, words and contact
 // details. Language comes from the agency's choice, not the visitor's
 // Travio cookie. Text is rendered by React, so agency content can't
@@ -74,23 +149,7 @@ export function AgencySitePage({ site }: { site: PublicAgencySite }) {
       </header>
 
       <main className="flex-1">
-        <section className="bg-primary text-primary-foreground">
-          <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:py-28">
-            <h1 className="font-heading text-4xl font-extrabold sm:text-5xl">{site.headline}</h1>
-            {site.subheadline ? <p className="mx-auto mt-4 max-w-2xl text-lg opacity-90">{site.subheadline}</p> : null}
-            {cta ? (
-              <a
-                href={cta}
-                target={site.whatsapp ? "_blank" : undefined}
-                rel="noopener noreferrer"
-                className="mt-8 inline-flex items-center gap-2 rounded-lg bg-background px-6 py-3 font-semibold text-foreground transition-opacity hover:opacity-90"
-              >
-                <MessageCircle size={18} aria-hidden="true" />
-                {t("agencySite.cta")}
-              </a>
-            ) : null}
-          </div>
-        </section>
+        <Hero site={site} cta={cta} ctaLabel={t("agencySite.cta")} />
 
         {site.services.length > 0 ? (
           <section id="services" className="mx-auto max-w-6xl scroll-mt-4 px-4 py-14">
