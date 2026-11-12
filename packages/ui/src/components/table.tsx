@@ -23,7 +23,9 @@ export interface TableProps extends React.TableHTMLAttributes<HTMLTableElement> 
 
 export const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, caption, children, ...props }, ref) => (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    // relative: screen-reader-only text inside the table is positioned
+    // within this scroll box, not the page, so it can't widen the page.
+    <div className="relative overflow-x-auto rounded-lg border border-border">
       <table ref={ref} className={cn("w-full text-sm", className)} {...props}>
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         {children}

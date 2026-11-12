@@ -142,7 +142,7 @@ function Studio({ branding }: { branding: TenantBranding }) {
               )}
             </div>
             <div className="flex gap-2">
-              <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onFile} />
+              <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" aria-label={t("branding.logo.change")} onChange={onFile} />
               <Button variant="outline" onClick={() => fileInput.current?.click()} disabled={isBusy}>
                 {upload.isPending ? t("branding.logo.uploading") : t("branding.logo.change")}
               </Button>

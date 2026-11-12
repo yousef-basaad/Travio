@@ -44,6 +44,7 @@ export const ar: Messages = {
   "userMenu.profile": "الملف الشخصي",
   "userMenu.settings": "الإعدادات",
   "userMenu.logout": "تسجيل الخروج",
+  "header.pickDate": "التاريخ: {date}",
   "bookings.statusChangeError": "تعذّر تغيير الحالة. حدّث الصفحة وحاول مرة أخرى.",
   "validation.invalidPhone": "أدخل رقم هاتف صحيحاً.",
   "ruleError.payment_exceeds_balance": "هذه الدفعة أكبر من المبلغ المتبقي على الفاتورة.",
