@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Digits, spaces and + ( ) - . only: a phone number, not free text.
+const PHONE_PATTERN = /^[0-9+()\-.\s]{3,32}$/;
+
 const crmLeadSourceSchema = z.enum([
   "walk_in",
   "website",
@@ -25,26 +28,26 @@ const crmLeadStatusSchema = z.enum([
 // authenticated profile in the route handler, never trusted from the
 // request body.
 export const createCrmLeadSchema = z.object({
-  fullName: z.string().min(1),
+  fullName: z.string().max(200).min(1),
   branchId: z.string().uuid().nullable().optional(),
   assignedTo: z.string().uuid().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  email: z.string().email().nullable().optional(),
+  phone: z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").nullable().optional(),
+  email: z.string().max(254).email().nullable().optional(),
   source: crmLeadSourceSchema.nullable().optional(),
   status: crmLeadStatusSchema.optional(),
-  lostReason: z.string().nullable().optional(),
+  lostReason: z.string().max(5000).nullable().optional(),
 });
 
 export const updateCrmLeadSchema = z.object({
-  fullName: z.string().min(1).optional(),
+  fullName: z.string().max(200).min(1).optional(),
   branchId: z.string().uuid().nullable().optional(),
   assignedTo: z.string().uuid().nullable().optional(),
   convertedCustomerId: z.string().uuid().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  email: z.string().email().nullable().optional(),
+  phone: z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").nullable().optional(),
+  email: z.string().max(254).email().nullable().optional(),
   source: crmLeadSourceSchema.nullable().optional(),
   status: crmLeadStatusSchema.optional(),
-  lostReason: z.string().nullable().optional(),
+  lostReason: z.string().max(5000).nullable().optional(),
 });
 
 // Body is entirely optional - an empty POST is valid and means
@@ -57,7 +60,7 @@ export const convertCrmLeadSchema = z.object({
 // request body - the route derives them from the URL param and the
 // authenticated session.
 export const createCrmNoteSchema = z.object({
-  body: z.string().min(1),
+  body: z.string().max(5000).min(1),
 });
 
 // Matches crm_activities_type_check exactly.
@@ -75,8 +78,8 @@ const crmActivityTypeSchema = z.enum([
 // session, same as createCrmNoteSchema.
 export const createCrmActivitySchema = z.object({
   type: crmActivityTypeSchema,
-  title: z.string().min(1),
-  description: z.string().nullable().optional(),
+  title: z.string().max(200).min(1),
+  description: z.string().max(1000).nullable().optional(),
   performedAt: z.string().datetime().optional(),
 });
 
@@ -84,7 +87,7 @@ export const createCrmActivitySchema = z.object({
 // accepted here either.
 export const updateCrmActivitySchema = z.object({
   type: crmActivityTypeSchema.optional(),
-  title: z.string().min(1).optional(),
-  description: z.string().nullable().optional(),
+  title: z.string().max(200).min(1).optional(),
+  description: z.string().max(1000).nullable().optional(),
   performedAt: z.string().datetime().optional(),
 });

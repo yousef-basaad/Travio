@@ -44,6 +44,8 @@ export const ar: Messages = {
   "userMenu.profile": "الملف الشخصي",
   "userMenu.settings": "الإعدادات",
   "userMenu.logout": "تسجيل الخروج",
+  "bookings.statusChangeError": "تعذّر تغيير الحالة. حدّث الصفحة وحاول مرة أخرى.",
+  "validation.invalidPhone": "أدخل رقم هاتف صحيحاً.",
   "ruleError.payment_exceeds_balance": "هذه الدفعة أكبر من المبلغ المتبقي على الفاتورة.",
   "ruleError.invoice_total_below_paid": "لا يمكن أن يقل الإجمالي عن المبلغ المدفوع على هذه الفاتورة.",
   "ruleError.invoice_number_taken": "رقم الفاتورة مستخدم من قبل.",

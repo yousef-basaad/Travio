@@ -31,16 +31,16 @@ export const bookingStatusFilterSchema = bookingStatusSchema.optional();
 // (e.g. a future import flow) can still supply one explicitly.
 export const createBookingSchema = z.object({
   customerId: z.string().uuid(),
-  bookingNumber: z.string().trim().min(1, "Booking number is required").optional(),
-  title: z.string().trim().min(1, "Title is required"),
+  bookingNumber: z.string().max(60).trim().min(1, "Booking number is required").optional(),
+  title: z.string().max(200).trim().min(1, "Title is required"),
   branchId: z.string().uuid().nullable().optional(),
   assignedTo: z.string().uuid().nullable().optional(),
   status: bookingStatusSchema.optional(),
   startDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
   endDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
   totalAmount: z.number().nonnegative().optional(),
-  currency: z.preprocess(emptyToUndefined, z.string().optional()),
-  notes: z.preprocess(emptyToUndefined, z.string().optional()),
+  currency: z.preprocess(emptyToUndefined, z.string().max(3).optional()),
+  notes: z.preprocess(emptyToUndefined, z.string().max(5000).optional()),
   destinationCountry: z.preprocess(emptyToUndefined, destinationCountrySchema.optional()),
   destinationCity: z.preprocess(emptyToUndefined, destinationCitySchema.optional()),
   adults: travelerCountSchema.optional(),
@@ -60,16 +60,16 @@ export const createBookingSchema = z.object({
 // "leave unchanged" (same reasoning as updateCustomerSchema).
 export const updateBookingSchema = z.object({
   customerId: z.string().uuid().optional(),
-  bookingNumber: z.string().trim().min(1, "Booking number is required").optional(),
-  title: z.string().trim().min(1, "Title is required").optional(),
+  bookingNumber: z.string().max(60).trim().min(1, "Booking number is required").optional(),
+  title: z.string().max(200).trim().min(1, "Title is required").optional(),
   branchId: z.string().uuid().nullable().optional(),
   assignedTo: z.string().uuid().nullable().optional(),
   status: bookingStatusSchema.optional(),
   startDate: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
   endDate: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
   totalAmount: z.number().nonnegative().optional(),
-  currency: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  notes: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  currency: z.preprocess(emptyToNull, z.string().max(3).nullable().optional()),
+  notes: z.preprocess(emptyToNull, z.string().max(5000).nullable().optional()),
   destinationCountry: z.preprocess(emptyToNull, destinationCountrySchema.nullable().optional()),
   destinationCity: z.preprocess(emptyToNull, destinationCitySchema.nullable().optional()),
   adults: travelerCountSchema.nullable().optional(),
@@ -87,7 +87,7 @@ export const updateBookingSchema = z.object({
 // the route derives them from the URL param and the authenticated
 // session, same as createCrmNoteSchema.
 export const createBookingNoteSchema = z.object({
-  body: z.string().min(1),
+  body: z.string().max(5000).min(1),
 });
 
 // Matches booking_flights_cabin_class_check exactly.
@@ -100,10 +100,10 @@ const cabinClassSchema = z.enum(["economy", "business", "first"]);
 // beyond tenant_id/booking_id) - a flight can be added before all its
 // details are known.
 export const createFlightSchema = z.object({
-  airline: z.preprocess(emptyToUndefined, z.string().optional()),
-  flightNumber: z.preprocess(emptyToUndefined, z.string().optional()),
-  departureAirport: z.preprocess(emptyToUndefined, z.string().optional()),
-  arrivalAirport: z.preprocess(emptyToUndefined, z.string().optional()),
+  airline: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  flightNumber: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  departureAirport: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  arrivalAirport: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
   departureTime: z.preprocess(emptyToUndefined, z.string().datetime().optional()),
   arrivalTime: z.preprocess(emptyToUndefined, z.string().datetime().optional()),
   cabinClass: z.preprocess(emptyToUndefined, cabinClassSchema.optional()),
@@ -113,10 +113,10 @@ export const createFlightSchema = z.object({
 // field - clearing a field must send an explicit null, same reasoning as
 // updateBookingSchema/updateCustomerSchema.
 export const updateFlightSchema = z.object({
-  airline: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  flightNumber: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  departureAirport: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  arrivalAirport: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  airline: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  flightNumber: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  departureAirport: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  arrivalAirport: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
   departureTime: z.preprocess(emptyToNull, z.string().datetime().nullable().optional()),
   arrivalTime: z.preprocess(emptyToNull, z.string().datetime().nullable().optional()),
   cabinClass: z.preprocess(emptyToNull, cabinClassSchema.nullable().optional()),
@@ -135,30 +135,30 @@ const boardTypeSchema = z.enum([
 // as createFlightSchema. Every field here is genuinely optional
 // (booking_hotels has no NOT NULL constraint beyond tenant_id/booking_id).
 export const createHotelSchema = z.object({
-  hotelName: z.preprocess(emptyToUndefined, z.string().optional()),
-  city: z.preprocess(emptyToUndefined, z.string().optional()),
-  country: z.preprocess(emptyToUndefined, z.string().optional()),
+  hotelName: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  city: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
+  country: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
   checkIn: z.preprocess(emptyToUndefined, z.string().datetime().optional()),
   checkOut: z.preprocess(emptyToUndefined, z.string().datetime().optional()),
   rooms: z.preprocess(emptyToUndefined, z.number().int().min(1).optional()),
-  roomType: z.preprocess(emptyToUndefined, z.string().optional()),
+  roomType: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
   boardType: z.preprocess(emptyToUndefined, boardTypeSchema.optional()),
-  confirmationNumber: z.preprocess(emptyToUndefined, z.string().optional()),
+  confirmationNumber: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
 });
 
 // Unlike create, update submits the full current state of every editable
 // field - clearing a field must send an explicit null, same reasoning as
 // updateFlightSchema.
 export const updateHotelSchema = z.object({
-  hotelName: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  city: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  country: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  hotelName: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  city: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+  country: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   checkIn: z.preprocess(emptyToNull, z.string().datetime().nullable().optional()),
   checkOut: z.preprocess(emptyToNull, z.string().datetime().nullable().optional()),
   rooms: z.preprocess(emptyToNull, z.number().int().min(1).nullable().optional()),
-  roomType: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  roomType: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
   boardType: z.preprocess(emptyToNull, boardTypeSchema.nullable().optional()),
-  confirmationNumber: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  confirmationNumber: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
 });
 
 // Matches booking_transfers_type_check exactly.
@@ -175,15 +175,15 @@ const transferTypeSchema = z.enum([
 // tenant_id/booking_id).
 export const createTransferSchema = z.object({
   transferType: z.preprocess(emptyToUndefined, transferTypeSchema.optional()),
-  providerName: z.preprocess(emptyToUndefined, z.string().optional()),
-  vehicleType: z.preprocess(emptyToUndefined, z.string().optional()),
-  pickupLocation: z.preprocess(emptyToUndefined, z.string().optional()),
-  dropoffLocation: z.preprocess(emptyToUndefined, z.string().optional()),
+  providerName: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  vehicleType: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  pickupLocation: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
+  dropoffLocation: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
   pickupTime: z.preprocess(emptyToUndefined, z.string().datetime().optional()),
   // No min() here (unlike hotels' rooms) - this issue's spec lists no
   // constraint on passenger_count, only transfer_type has a CHECK.
   passengerCount: z.preprocess(emptyToUndefined, z.number().int().optional()),
-  confirmationNumber: z.preprocess(emptyToUndefined, z.string().optional()),
+  confirmationNumber: z.preprocess(emptyToUndefined, z.string().max(500).optional()),
 });
 
 // Unlike create, update submits the full current state of every editable
@@ -191,11 +191,11 @@ export const createTransferSchema = z.object({
 // updateFlightSchema/updateHotelSchema.
 export const updateTransferSchema = z.object({
   transferType: z.preprocess(emptyToNull, transferTypeSchema.nullable().optional()),
-  providerName: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  vehicleType: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  pickupLocation: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  dropoffLocation: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  providerName: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  vehicleType: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  pickupLocation: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
+  dropoffLocation: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
   pickupTime: z.preprocess(emptyToNull, z.string().datetime().nullable().optional()),
   passengerCount: z.preprocess(emptyToNull, z.number().int().nullable().optional()),
-  confirmationNumber: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  confirmationNumber: z.preprocess(emptyToNull, z.string().max(500).nullable().optional()),
 });

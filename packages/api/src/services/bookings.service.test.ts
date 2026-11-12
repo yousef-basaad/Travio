@@ -291,3 +291,11 @@ describe("bookingsService", () => {
     });
   });
 });
+
+describe("booking number clashes", () => {
+  it("generated numbers carry eight random characters", async () => {
+    const { generateBookingNumber } = await import("./bookings.service");
+    expect(generateBookingNumber()).toMatch(/^BK-\d{8}-[0-9A-F]{8}$/);
+    expect(generateBookingNumber()).not.toBe(generateBookingNumber());
+  });
+});

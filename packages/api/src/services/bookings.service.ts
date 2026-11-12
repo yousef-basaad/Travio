@@ -92,17 +92,16 @@ function toBooking(row: BookingRow): Booking {
 
 // bookings.booking_number carries a plain `unique` constraint (global,
 // not per-tenant), so a per-tenant sequential counter would risk
-// collisions across agencies. A date stamp + short random suffix is
-// unique enough in practice (36^4 combinations per day, across every
-// tenant) that a collision is not worth guarding against with a
-// retry loop - no other write path in this codebase retries on a
-// unique-constraint violation either, and the DB constraint remains
-// the authoritative backstop if the near-impossible ever happens.
-function generateBookingNumber(): string {
+// collisions across agencies. A date stamp plus eight random hex
+// characters (about four billion per day) makes a clash very unlikely,
+// and create() retries with a new number if one ever happens.
+export function generateBookingNumber(): string {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const randomPart = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const randomPart = crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
   return `BK-${datePart}-${randomPart}`;
 }
+
+const GENERATED_NUMBER_ATTEMPTS = 3;
 
 function toBookingInsert(input: CreateBookingInput): BookingInsertRow {
   return {
@@ -264,12 +263,15 @@ export const bookingsService = {
   },
 
   async create(supabase: SupabaseClient<Database>, input: CreateBookingInput): Promise<Booking> {
-    const { data, error } = await supabase
-      .from("bookings")
-      .insert(toBookingInsert(input))
-      .select()
-      .single();
+    // A number the caller chose is used as-is; a generated one is retried
+    // if it happens to be taken already.
+    const attempts = input.bookingNumber ? 1 : GENERATED_NUMBER_ATTEMPTS;
+    let result = await supabase.from("bookings").insert(toBookingInsert(input)).select().single();
+    for (let attempt = 1; attempt < attempts && result.error?.code === "23505"; attempt++) {
+      result = await supabase.from("bookings").insert(toBookingInsert(input)).select().single();
+    }
 
+    const { data, error } = result;
     if (error) throw error;
     const booking = toBooking(data);
 

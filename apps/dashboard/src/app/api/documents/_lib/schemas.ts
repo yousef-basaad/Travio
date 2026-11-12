@@ -16,9 +16,9 @@ export const createDocumentSchema = z
     ownerType: ownerTypeSchema,
     ownerId: z.preprocess(emptyToUndefined, z.string().uuid().optional()),
     documentType: documentTypeSchema,
-    fileName: z.string().trim().min(1, "File name is required"),
-    filePath: z.string().trim().min(1, "File path is required"),
-    mimeType: z.string().trim().min(1, "MIME type is required"),
+    fileName: z.string().max(500).trim().min(1, "File name is required"),
+    filePath: z.string().max(500).trim().min(1, "File path is required"),
+    mimeType: z.string().max(500).trim().min(1, "MIME type is required"),
     fileSize: z.number().positive(),
   })
   .refine((value) => value.ownerType === "agency" || Boolean(value.ownerId), {
@@ -34,5 +34,5 @@ export const updateDocumentSchema = z.object({
   ownerType: z.preprocess(emptyToUndefined, ownerTypeSchema.optional()),
   ownerId: z.preprocess(emptyToUndefined, z.string().uuid().optional()),
   documentType: z.preprocess(emptyToUndefined, documentTypeSchema.optional()),
-  fileName: z.string().trim().min(1, "File name is required").optional(),
+  fileName: z.string().max(500).trim().min(1, "File name is required").optional(),
 });

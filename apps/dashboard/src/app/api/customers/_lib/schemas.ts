@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Digits, spaces and + ( ) - . only: a phone number, not free text.
+const PHONE_PATTERN = /^[0-9+()\-.\s]{3,32}$/;
+
 function emptyToUndefined(value: unknown) {
   return value === "" ? undefined : value;
 }
@@ -12,12 +15,12 @@ function emptyToNull(value: unknown) {
 // authenticated session in the route handler, never trusted from the
 // request body.
 export const createCustomerSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required"),
+  fullName: z.string().max(200).trim().min(1, "Full name is required"),
   assignedTo: z.string().uuid().nullable().optional(),
-  phone: z.preprocess(emptyToUndefined, z.string().optional()),
-  email: z.preprocess(emptyToUndefined, z.string().email("Enter a valid email").optional()),
+  phone: z.preprocess(emptyToUndefined, z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").optional()),
+  email: z.preprocess(emptyToUndefined, z.string().max(254).email("Enter a valid email").optional()),
   passportExpiry: z.preprocess(emptyToUndefined, z.string().date().optional()),
-  preferredLanguage: z.preprocess(emptyToUndefined, z.string().optional()),
+  preferredLanguage: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
 });
 
 // Unlike create, update submits the full current state of every editable
@@ -25,12 +28,12 @@ export const createCustomerSchema = z.object({
 // customerService's update mapper treats an omitted/undefined key as
 // "leave unchanged" (same reasoning as crm_leads' edit-lead.schema.ts).
 export const updateCustomerSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required").optional(),
+  fullName: z.string().max(200).trim().min(1, "Full name is required").optional(),
   assignedTo: z.string().uuid().nullable().optional(),
-  phone: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  email: z.preprocess(emptyToNull, z.string().email("Enter a valid email").nullable().optional()),
+  phone: z.preprocess(emptyToNull, z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").nullable().optional()),
+  email: z.preprocess(emptyToNull, z.string().max(254).email("Enter a valid email").nullable().optional()),
   passportExpiry: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
-  preferredLanguage: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  preferredLanguage: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
 });
 
 // Matches the real visa_status enum exactly (draft/submitted/approved/
@@ -46,8 +49,8 @@ const visaStatusSchema = z.enum(["draft", "submitted", "approved", "rejected"]);
 export const createVisaSchema = z.object({
   bookingId: z.string().uuid().nullable().optional(),
   assignedTo: z.string().uuid().nullable().optional(),
-  country: z.preprocess(emptyToUndefined, z.string().optional()),
-  visaType: z.preprocess(emptyToUndefined, z.string().optional()),
+  country: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
+  visaType: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
   status: z.preprocess(emptyToUndefined, visaStatusSchema.optional()),
   submittedAt: z.preprocess(emptyToUndefined, z.string().datetime().optional()),
 });
@@ -60,8 +63,8 @@ export const createVisaSchema = z.object({
 export const updateVisaSchema = z.object({
   bookingId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
   assignedTo: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
-  country: z.preprocess(emptyToNull, z.string().nullable().optional()),
-  visaType: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  country: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
+  visaType: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   status: z.preprocess(emptyToUndefined, visaStatusSchema.optional()),
   submittedAt: z.preprocess(emptyToNull, z.string().datetime().nullable().optional()),
 });

@@ -43,6 +43,8 @@ export const en = {
   "userMenu.profile": "Profile",
   "userMenu.settings": "Settings",
   "userMenu.logout": "Logout",
+  "bookings.statusChangeError": "Couldn't change the status. Refresh and try again.",
+  "validation.invalidPhone": "Enter a valid phone number.",
   "ruleError.payment_exceeds_balance": "This payment is more than the invoice's remaining balance.",
   "ruleError.invoice_total_below_paid": "The total can't be less than what has already been paid on this invoice.",
   "ruleError.invoice_number_taken": "This invoice number is already used.",

@@ -19,14 +19,21 @@ export interface ApiErrorContext {
 // already returned, so no API contract changes.
 // Postgres errors that mean "the request is wrong", not "the server
 // broke". Each gets a status and a code the UI can explain.
-const RULE_ERRORS = new Set(["payment_exceeds_balance", "invoice_total_below_paid", "invoice_number_taken"]);
+const RULE_ERRORS = new Set([
+  "payment_exceeds_balance",
+  "invoice_total_below_paid",
+  "invoice_number_taken",
+  "invalid_status_change",
+]);
 
 function mapDatabaseError(error: unknown): NextResponse | null {
   if (typeof error !== "object" || error === null || !("code" in error)) return null;
   const message = "message" in error && typeof error.message === "string" ? error.message : "";
   switch (error.code) {
-    // A money rule (20261112120000).
+    // A money rule (20261112120000) or a status change that isn't
+    // allowed (20261112130000).
     case "PL002":
+    case "PL003":
       return NextResponse.json({ error: RULE_ERRORS.has(message) ? message : "conflict" }, { status: 409 });
     // Unique violation: the value is already used.
     case "23505":
