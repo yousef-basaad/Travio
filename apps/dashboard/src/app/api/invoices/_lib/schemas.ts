@@ -22,15 +22,15 @@ const invoiceStatusSchema = z.enum(["draft", "issued", "paid", "partially_paid",
 export const createInvoiceSchema = z.object({
   customerId: z.string().uuid().nullable().optional(),
   bookingId: z.string().uuid().nullable().optional(),
-  invoiceNumber: z.string().trim().min(1, "Invoice number is required"),
+  invoiceNumber: z.string().max(60).trim().min(1, "Invoice number is required"),
   status: z.preprocess(emptyToUndefined, invoiceStatusSchema.optional()),
   // The invoice total is entered manually for now (no invoice_items
   // until v1.2.0) - the one required amount this iteration.
   total: z.number().nonnegative(),
-  currency: z.preprocess(emptyToUndefined, z.string().optional()),
+  currency: z.preprocess(emptyToUndefined, z.string().max(3).optional()),
   issueDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
   dueDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
-  notes: z.preprocess(emptyToUndefined, z.string().optional()),
+  notes: z.preprocess(emptyToUndefined, z.string().max(5000).optional()),
 }).refine((data) => !data.issueDate || !data.dueDate || data.dueDate >= data.issueDate, {
   message: "validation.dueBeforeIssue",
   path: ["dueDate"],
@@ -44,13 +44,13 @@ export const createInvoiceSchema = z.object({
 export const updateInvoiceSchema = z.object({
   customerId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
   bookingId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
-  invoiceNumber: z.string().trim().min(1, "Invoice number is required").optional(),
+  invoiceNumber: z.string().max(60).trim().min(1, "Invoice number is required").optional(),
   status: z.preprocess(emptyToUndefined, invoiceStatusSchema.optional()),
   total: z.number().nonnegative().optional(),
-  currency: z.preprocess(emptyToUndefined, z.string().optional()),
+  currency: z.preprocess(emptyToUndefined, z.string().max(3).optional()),
   issueDate: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
   dueDate: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
-  notes: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  notes: z.preprocess(emptyToNull, z.string().max(5000).nullable().optional()),
 });
 
 // Matches invoice_items_item_type_check exactly.
@@ -65,7 +65,7 @@ const invoiceItemTypeSchema = z.enum(["flight", "hotel", "transfer", "visa", "ma
 export const createInvoiceItemSchema = z.object({
   itemType: z.preprocess(emptyToUndefined, invoiceItemTypeSchema.optional()),
   referenceId: z.string().uuid().nullable().optional(),
-  description: z.string().trim().min(1, "Description is required"),
+  description: z.string().max(1000).trim().min(1, "Description is required"),
   quantity: z.number().int().min(1).optional(),
   unitPrice: z.number().nonnegative().optional(),
   // Computed client-side as quantity * unitPrice (see
@@ -81,7 +81,7 @@ export const createInvoiceItemSchema = z.object({
 export const updateInvoiceItemSchema = z.object({
   itemType: z.preprocess(emptyToUndefined, invoiceItemTypeSchema.optional()),
   referenceId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
-  description: z.string().trim().min(1, "Description is required").optional(),
+  description: z.string().max(1000).trim().min(1, "Description is required").optional(),
   quantity: z.number().int().min(1).optional(),
   unitPrice: z.number().nonnegative().optional(),
   total: z.number().nonnegative().optional(),
@@ -98,7 +98,7 @@ const paymentMethodSchema = z.enum(["cash", "card", "bank_transfer", "online"]);
 export const createPaymentSchema = z.object({
   amount: z.number().positive(),
   method: paymentMethodSchema,
-  reference: z.preprocess(emptyToUndefined, z.string().optional()),
+  reference: z.preprocess(emptyToUndefined, z.string().max(60).optional()),
   // Date-only input, matching issueDate/dueDate's UI convention - paid_at
   // is timestamptz at the DB level but the app has no time-of-day picker
   // anywhere else, so precision beyond the day isn't asked for here.
@@ -112,6 +112,6 @@ export const createPaymentSchema = z.object({
 export const updatePaymentSchema = z.object({
   amount: z.number().positive().optional(),
   method: paymentMethodSchema.optional(),
-  reference: z.preprocess(emptyToNull, z.string().nullable().optional()),
+  reference: z.preprocess(emptyToNull, z.string().max(60).nullable().optional()),
   paidAt: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
 });

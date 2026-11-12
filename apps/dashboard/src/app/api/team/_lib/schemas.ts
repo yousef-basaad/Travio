@@ -15,8 +15,8 @@ export const assignableRoleSchema = z.enum([
 // authenticated session server-side (see team/route.ts's POST handler),
 // never trusted from the request body.
 export const inviteTeamMemberSchema = z.object({
-  email: z.string().email(),
-  fullName: z.string().trim().min(1, "Name is required"),
+  email: z.string().max(254).email(),
+  fullName: z.string().max(200).trim().min(1, "Name is required"),
   role: assignableRoleSchema,
 });
 
