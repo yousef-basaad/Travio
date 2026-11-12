@@ -15,7 +15,7 @@ function toCount(value: unknown) {
   return typeof value === "number" ? value : Number(value);
 }
 const countSchema = z
-  .number({ invalid_type_error: "validation.travelerCount" })
+  .number({ error: "validation.travelerCount" })
   .int("validation.travelerCount")
   .min(0, "validation.travelerCount")
   .max(999, "validation.travelerCount");

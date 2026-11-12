@@ -16,7 +16,7 @@ function emptyToNull(value: unknown) {
 // request body.
 export const createCustomerSchema = z.object({
   fullName: z.string().max(200).trim().min(1, "Full name is required"),
-  assignedTo: z.string().uuid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
   phone: z.preprocess(emptyToUndefined, z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").optional()),
   email: z.preprocess(emptyToUndefined, z.string().max(254).email("Enter a valid email").optional()),
   passportExpiry: z.preprocess(emptyToUndefined, z.string().date().optional()),
@@ -29,7 +29,7 @@ export const createCustomerSchema = z.object({
 // "leave unchanged" (same reasoning as crm_leads' edit-lead.schema.ts).
 export const updateCustomerSchema = z.object({
   fullName: z.string().max(200).trim().min(1, "Full name is required").optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
   phone: z.preprocess(emptyToNull, z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").nullable().optional()),
   email: z.preprocess(emptyToNull, z.string().max(254).email("Enter a valid email").nullable().optional()),
   passportExpiry: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
@@ -47,8 +47,8 @@ const visaStatusSchema = z.enum(["draft", "submitted", "approved", "rejected"]);
 // optional - a visa application doesn't have to be tied to a specific
 // booking.
 export const createVisaSchema = z.object({
-  bookingId: z.string().uuid().nullable().optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
+  bookingId: z.guid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
   country: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
   visaType: z.preprocess(emptyToUndefined, z.string().max(200).optional()),
   status: z.preprocess(emptyToUndefined, visaStatusSchema.optional()),
@@ -61,8 +61,8 @@ export const createVisaSchema = z.object({
 // there's no "unset" status, only a change from one valid value to
 // another, same as updateBookingSchema's status.
 export const updateVisaSchema = z.object({
-  bookingId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
-  assignedTo: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
+  bookingId: z.preprocess(emptyToNull, z.guid().nullable().optional()),
+  assignedTo: z.preprocess(emptyToNull, z.guid().nullable().optional()),
   country: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   visaType: z.preprocess(emptyToNull, z.string().max(200).nullable().optional()),
   status: z.preprocess(emptyToUndefined, visaStatusSchema.optional()),

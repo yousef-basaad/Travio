@@ -12,11 +12,11 @@ export const bookingStatusSchema = z.enum([
 ]);
 
 export const bookingSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  customerId: z.string().uuid(),
-  branchId: z.string().uuid().nullable(),
-  assignedTo: z.string().uuid().nullable(),
+  id: z.guid(),
+  tenantId: z.guid(),
+  customerId: z.guid(),
+  branchId: z.guid().nullable(),
+  assignedTo: z.guid().nullable(),
   bookingNumber: z.string(),
   status: bookingStatusSchema,
   title: z.string(),
@@ -30,7 +30,7 @@ export const bookingSchema = z.object({
   children: z.number().int().nullable(),
   currency: z.string().nullable(),
   notes: z.string().nullable(),
-  createdBy: z.string().uuid().nullable(),
+  createdBy: z.guid().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

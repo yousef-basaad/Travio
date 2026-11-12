@@ -11,7 +11,7 @@ import { parsePlanForm } from "../utils/plan-form";
 // role itself; platform_update_plan() does both again in Postgres.
 export async function updatePlan(planId: string, price: string, limits: Record<string, string>): Promise<{ ok: boolean }> {
   const form = parsePlanForm(price, limits);
-  if (!form || !z.string().uuid().safeParse(planId).success) return { ok: false };
+  if (!form || !z.guid().safeParse(planId).success) return { ok: false };
   if (!(await isVerifiedAdmin())) return { ok: false };
 
   try {

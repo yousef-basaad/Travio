@@ -29,8 +29,8 @@ const crmLeadStatusSchema = z.enum([
 // request body.
 export const createCrmLeadSchema = z.object({
   fullName: z.string().max(200).min(1),
-  branchId: z.string().uuid().nullable().optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
+  branchId: z.guid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
   phone: z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").nullable().optional(),
   email: z.string().max(254).email().nullable().optional(),
   source: crmLeadSourceSchema.nullable().optional(),
@@ -40,9 +40,9 @@ export const createCrmLeadSchema = z.object({
 
 export const updateCrmLeadSchema = z.object({
   fullName: z.string().max(200).min(1).optional(),
-  branchId: z.string().uuid().nullable().optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
-  convertedCustomerId: z.string().uuid().nullable().optional(),
+  branchId: z.guid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
+  convertedCustomerId: z.guid().nullable().optional(),
   phone: z.string().max(32).regex(PHONE_PATTERN, "validation.invalidPhone").nullable().optional(),
   email: z.string().max(254).email().nullable().optional(),
   source: crmLeadSourceSchema.nullable().optional(),
