@@ -7,6 +7,10 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(10);
 
+-- These invoices have past due dates and no stated issue date; without
+-- this they would default to being issued today, after they fell due.
+alter table public.invoices alter column issue_date drop default;
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('19000000-0000-0000-0000-0000000000a0', 'owner@fin-insights.test', '{"full_name":"Owner"}'),
   ('19000000-0000-0000-0000-0000000000c1', 'agent@fin-insights.test', '{"full_name":"Agent"}'),

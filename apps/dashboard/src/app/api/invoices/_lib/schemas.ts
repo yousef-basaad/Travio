@@ -31,6 +31,9 @@ export const createInvoiceSchema = z.object({
   issueDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
   dueDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
   notes: z.preprocess(emptyToUndefined, z.string().optional()),
+}).refine((data) => !data.issueDate || !data.dueDate || data.dueDate >= data.issueDate, {
+  message: "validation.dueBeforeIssue",
+  path: ["dueDate"],
 });
 
 // Unlike create, update submits the full current state of every editable

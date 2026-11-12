@@ -12,6 +12,7 @@ import type {
   Payment,
   PaymentMethod,
 } from "@travio/api";
+import { throwIfRuleError } from "@/lib/api/rule-error";
 
 // Stable top-level key other invoice mutations invalidate by prefix,
 // matching CUSTOMERS_QUERY_KEY/BOOKINGS_QUERY_KEY's convention. Invoices
@@ -33,6 +34,9 @@ function invoiceQueryKey(id: string) {
 
 async function fetchCustomerInvoices(customerId: string): Promise<Invoice[]> {
   const response = await fetch(`/api/customers/${customerId}/invoices`);
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to load invoices (${response.status})`);
@@ -75,6 +79,9 @@ export function useInvoicesPage(query: Pick<PageQuery, "page" | "pageSize" | "se
 async function fetchBookingInvoices(bookingId: string): Promise<Invoice[]> {
   const response = await fetch(`/api/bookings/${bookingId}/invoices`);
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to load invoices (${response.status})`);
   }
@@ -111,6 +118,9 @@ async function fetchInvoice(id: string): Promise<Invoice> {
   if (response.status === 404) {
     throw new InvoiceNotFoundError();
   }
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to load invoice (${response.status})`);
@@ -175,6 +185,9 @@ async function createInvoice({
     }),
   });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to create invoice (${response.status})`);
   }
@@ -235,6 +248,9 @@ async function updateInvoice({
     body: JSON.stringify({ invoiceNumber, status, total, currency, issueDate, dueDate, notes }),
   });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to update invoice (${response.status})`);
   }
@@ -271,6 +287,9 @@ export function useUpdateInvoice() {
 async function deleteInvoice({ id }: { id: string; customerId?: string | null; bookingId?: string | null }): Promise<void> {
   const response = await fetch(`/api/invoices/${id}`, { method: "DELETE" });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to delete invoice (${response.status})`);
   }
@@ -304,6 +323,9 @@ async function restoreInvoice({
   bookingId?: string | null;
 }): Promise<Invoice> {
   const response = await fetch(`/api/invoices/${id}/restore`, { method: "POST" });
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to restore invoice (${response.status})`);
@@ -343,6 +365,9 @@ function invoiceItemsQueryKey(invoiceId: string) {
 
 async function fetchInvoiceItems(invoiceId: string): Promise<InvoiceItem[]> {
   const response = await fetch(`/api/invoices/${invoiceId}/items`);
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to load invoice items (${response.status})`);
@@ -386,6 +411,9 @@ async function createInvoiceItem({
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ itemType, referenceId, description, quantity, unitPrice, total }),
   });
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to create invoice item (${response.status})`);
@@ -436,6 +464,9 @@ async function updateInvoiceItem({
     body: JSON.stringify({ itemType, referenceId, description, quantity, unitPrice, total }),
   });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to update invoice item (${response.status})`);
   }
@@ -464,6 +495,9 @@ export function useUpdateInvoiceItem() {
 async function deleteInvoiceItem({ id }: { id: string; invoiceId: string }): Promise<void> {
   const response = await fetch(`/api/invoice-items/${id}`, { method: "DELETE" });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to delete invoice item (${response.status})`);
   }
@@ -488,6 +522,9 @@ function paymentsQueryKey(invoiceId: string) {
 
 async function fetchInvoicePayments(invoiceId: string): Promise<Payment[]> {
   const response = await fetch(`/api/invoices/${invoiceId}/payments`);
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to load payments (${response.status})`);
@@ -521,6 +558,9 @@ function bookingPaymentsQueryKey(bookingId: string) {
 
 async function fetchBookingPayments(bookingId: string): Promise<Payment[]> {
   const response = await fetch(`/api/bookings/${bookingId}/payments`);
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to load payments (${response.status})`);
@@ -576,6 +616,9 @@ async function createPayment({
     body: JSON.stringify({ amount, method, reference, paidAt }),
   });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to create payment (${response.status})`);
   }
@@ -621,6 +664,9 @@ async function updatePayment({
     body: JSON.stringify({ amount, method, reference, paidAt }),
   });
 
+  await throwIfRuleError(response);
+
+
   if (!response.ok) {
     throw new Error(`Failed to update payment (${response.status})`);
   }
@@ -648,6 +694,9 @@ export function useUpdatePayment() {
 
 async function deletePayment({ id }: { id: string; invoiceId: string }): Promise<void> {
   const response = await fetch(`/api/payments/${id}`, { method: "DELETE" });
+
+  await throwIfRuleError(response);
+
 
   if (!response.ok) {
     throw new Error(`Failed to delete payment (${response.status})`);

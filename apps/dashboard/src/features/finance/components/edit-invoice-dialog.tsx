@@ -7,6 +7,7 @@ import { useUpdateInvoice } from "../api/invoices.api";
 import { INVOICE_STATUS_KEYS } from "./invoice-item";
 import { isInvoiceStatus } from "./create-invoice-dialog";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { ruleMessage } from "@/lib/api/rule-error";
 
 const INVOICE_STATUS_OPTIONS: InvoiceStatus[] = [
   "draft",
@@ -245,7 +246,7 @@ export function EditInvoiceDialog({
 
         {updateInvoice.isError && (
           <p role="alert" className="text-sm text-danger">
-            {t("common.saveError")}
+            {t(ruleMessage(updateInvoice.error, "common.saveError"))}
           </p>
         )}
 

@@ -7,6 +7,7 @@ import { useUpdateInvoiceItem } from "../../api/invoices.api";
 import { ITEM_TYPE_KEYS } from "./invoice-item";
 import { isInvoiceItemType } from "./create-invoice-item-dialog";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import { ruleMessage } from "@/lib/api/rule-error";
 
 const ITEM_TYPE_OPTIONS: InvoiceItemType[] = ["flight", "hotel", "transfer", "visa", "manual"];
 
@@ -188,7 +189,7 @@ export function EditInvoiceItemDialog({
 
         {updateItem.isError && (
           <p role="alert" className="text-sm text-danger">
-            {t("common.saveError")}
+            {t(ruleMessage(updateItem.error, "common.saveError"))}
           </p>
         )}
 

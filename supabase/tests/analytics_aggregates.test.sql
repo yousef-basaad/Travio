@@ -47,12 +47,13 @@ insert into public.invoices (id, tenant_id, invoice_number, booking_id, customer
 insert into public.invoices (tenant_id, invoice_number, customer_id, total, deleted_at) values
   ('22000000-0000-0000-0000-000000000001', 'DELETED-1', '32000000-0000-0000-0000-0000000000c2', 999, now());
 
--- 10 payments of 2.00 on agent one's invoices (paid now), plus one with
+-- 20 payments of 1.00 on agent one's invoices (paid now, each covering
+-- its 1.00 invoice), plus one with
 -- no paid_at (counts in the total, not in any month).
 insert into public.payments (tenant_id, invoice_id, amount, method, paid_at)
-select '22000000-0000-0000-0000-000000000001', i.id, 2, 'cash', now()
+select '22000000-0000-0000-0000-000000000001', i.id, 1, 'cash', now()
 from public.invoices i
-where i.invoice_number in (select 'BIG-' || n from generate_series(1, 10) as n);
+where i.invoice_number in (select 'BIG-' || n from generate_series(1, 20) as n);
 
 insert into public.payments (tenant_id, invoice_id, amount, method, paid_at)
 values ('22000000-0000-0000-0000-000000000001', '52000000-0000-0000-0000-0000000000a2', 5, 'cash', null);
