@@ -130,7 +130,7 @@ function HeroCard({ heroUrl }: { heroUrl: string | null }) {
         )}
       </div>
       <div className="flex gap-2">
-        <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onFile} />
+        <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" aria-label={t("websiteBuilder.hero.change")} onChange={onFile} />
         <Button variant="outline" disabled={change.isPending} onClick={() => fileInput.current?.click()}>
           {change.isPending ? t("websiteBuilder.saving") : t("websiteBuilder.hero.change")}
         </Button>

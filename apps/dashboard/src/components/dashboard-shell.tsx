@@ -34,7 +34,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         renderLink={renderNavLink}
         footer={<UserMenu variant="sidebar" />}
       />
-      <div className="flex flex-1 flex-col">
+      {/* min-w-0: wide tables and boards scroll inside the page instead of
+          stretching it past the screen on phones. */}
+      <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader onMenuClick={() => setMobileNavOpen(true)} />
         <PageContainer>{children}</PageContainer>
         <DashboardFooter />

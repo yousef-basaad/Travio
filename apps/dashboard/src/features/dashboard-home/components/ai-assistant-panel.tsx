@@ -40,7 +40,7 @@ export function AiAssistantPanel() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Input disabled placeholder={t("home.ai.placeholder")} className="flex-1" />
+          <Input disabled placeholder={t("home.ai.placeholder")} aria-label={t("home.ai.placeholder")} className="flex-1" />
           <Button disabled size="sm" aria-label={t("common.send")} className="shrink-0 px-2.5">
             <Send size={14} />
           </Button>

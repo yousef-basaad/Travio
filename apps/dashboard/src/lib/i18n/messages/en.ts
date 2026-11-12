@@ -43,6 +43,7 @@ export const en = {
   "userMenu.profile": "Profile",
   "userMenu.settings": "Settings",
   "userMenu.logout": "Logout",
+  "header.pickDate": "Date: {date}",
   "bookings.statusChangeError": "Couldn't change the status. Refresh and try again.",
   "validation.invalidPhone": "Enter a valid phone number.",
   "ruleError.payment_exceeds_balance": "This payment is more than the invoice's remaining balance.",
