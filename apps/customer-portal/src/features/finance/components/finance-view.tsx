@@ -12,7 +12,7 @@ import {
   TableRow,
   TableCell,
 } from "@travio/ui";
-import { formatCurrency, formatDate } from "@travio/utils";
+import { useI18n } from "@/lib/i18n/i18n-provider";
 import type { Invoice } from "@travio/api";
 import { useInvoices } from "../api/finance.api";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
@@ -25,32 +25,33 @@ import { InvoicePaymentsDialog } from "./invoice-payments-dialog";
 // no online payment anywhere on this page.
 export function FinanceView() {
   const { data: invoices, isLoading, isError } = useInvoices();
+  const { t, format } = useI18n();
   const [viewingPayments, setViewingPayments] = useState<Invoice | null>(null);
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Finance" description="Invoices and payments for your bookings" />
+      <PageHeader title={t("finance.title")} description={t("finance.description")} />
 
       <DataTableState
         isLoading={isLoading}
         isError={isError}
         isEmpty={!isLoading && (!invoices || invoices.length === 0)}
-        loadingLabel="Loading your invoices"
-        errorMessage="Something went wrong loading your invoices. Please try again later."
-        emptyMessage="No invoices yet"
+        loadingLabel={t("finance.loading")}
+        errorMessage={t("finance.error")}
+        emptyMessage={t("finance.empty")}
         emptyIcon={<Receipt size={20} />}
         size="page"
       >
-        <Table aria-label="Invoices" caption="Invoices issued to you">
+        <Table aria-label={t("finance.tableLabel")} caption={t("finance.caption")}>
           <TableHeader>
             <TableRow>
-              <TableCell header>Invoice</TableCell>
-              <TableCell header>Status</TableCell>
-              <TableCell header>Issued</TableCell>
-              <TableCell header>Due</TableCell>
-              <TableCell header>Total</TableCell>
+              <TableCell header>{t("finance.col.invoice")}</TableCell>
+              <TableCell header>{t("finance.col.status")}</TableCell>
+              <TableCell header>{t("finance.col.issued")}</TableCell>
+              <TableCell header>{t("finance.col.due")}</TableCell>
+              <TableCell header>{t("finance.col.total")}</TableCell>
               <TableCell header>
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t("common.actions")}</span>
               </TableCell>
             </TableRow>
           </TableHeader>
@@ -62,20 +63,20 @@ export function FinanceView() {
                   <InvoiceStatusBadge status={invoice.status} />
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {invoice.issueDate ? formatDate(invoice.issueDate) : "—"}
+                  {invoice.issueDate ? format.date(invoice.issueDate) : "—"}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {invoice.dueDate ? formatDate(invoice.dueDate) : "—"}
+                  {invoice.dueDate ? format.date(invoice.dueDate) : "—"}
                 </TableCell>
-                <TableCell>{formatCurrency(invoice.total, invoice.currency)}</TableCell>
+                <TableCell>{format.currency(invoice.total, invoice.currency)}</TableCell>
                 <TableCell align="end">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setViewingPayments(invoice)}
-                    aria-label={`View payments for ${invoice.invoiceNumber}`}
+                    aria-label={t("finance.viewPaymentsFor", { number: invoice.invoiceNumber })}
                   >
-                    View Payments
+                    {t("finance.viewPayments")}
                   </Button>
                 </TableCell>
               </TableRow>

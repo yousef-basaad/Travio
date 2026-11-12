@@ -1,5 +1,8 @@
+"use client";
+
 import { ShieldAlert } from "lucide-react";
 import { Card, CardContent, EmptyState } from "@travio/ui";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Stabilization Phase 1: customer-portal's equivalent of the dashboard
 // app's own /forbidden page. Rendered by (portal)/layout.tsx's
@@ -12,14 +15,15 @@ import { Card, CardContent, EmptyState } from "@travio/ui";
 // unchanged by this phase) - this page is for a session that isn't a
 // customer at all.
 export default function ForbiddenPage() {
+  const t = useT();
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
           <EmptyState
             icon={<ShieldAlert size={20} />}
-            title="You don't have permission to view this"
-            description="This portal is only available to Travio customers. If you're a travel agency staff member, please use the Travio dashboard instead."
+            title={t("forbidden.title")}
+            description={t("forbidden.description")}
           />
         </CardContent>
       </Card>

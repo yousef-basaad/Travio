@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Dialog, Button } from "@travio/ui";
 import type { Document } from "@travio/api";
 import { useSignedUrl } from "../api/documents.api";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Mirrors apps/dashboard's own DocumentPreview exactly - images and PDFs
 // render inline via the browser's own capabilities, everything else is
@@ -20,6 +21,7 @@ export interface DocumentPreviewProps {
 
 export function DocumentPreview({ document, open, onOpenChange }: DocumentPreviewProps) {
   const signedUrl = useSignedUrl();
+  const t = useT();
 
   useEffect(() => {
     if (open && document) {
@@ -41,11 +43,11 @@ export function DocumentPreview({ document, open, onOpenChange }: DocumentPrevie
 
         {signedUrl.isPending ? (
           <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-            Loading preview…
+            {t("preview.loading")}
           </div>
         ) : signedUrl.isError ? (
           <p role="alert" className="text-sm text-danger">
-            Couldn't load a preview. Please try again.
+            {t("preview.error")}
           </p>
         ) : signedUrl.data && previewable ? (
           document.mimeType === "application/pdf" ? (
@@ -63,18 +65,18 @@ export function DocumentPreview({ document, open, onOpenChange }: DocumentPrevie
           )
         ) : signedUrl.data ? (
           <p className="text-sm text-muted-foreground">
-            This file type can't be previewed inline. Use Download below.
+            {t("preview.unsupported")}
           </p>
         ) : null}
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t("common.close")}
           </Button>
           {signedUrl.data ? (
             <Button asChild>
               <a href={signedUrl.data.url} download={document.fileName} target="_blank" rel="noreferrer">
-                Download
+                {t("preview.download")}
               </a>
             </Button>
           ) : null}

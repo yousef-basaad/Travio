@@ -1,7 +1,10 @@
 "use client";
 
-// Visa view for the customer portal - reads the signed-in customer's own
-// data only (enforced via RLS: customer_id = auth.uid() on each table).
+import { useT } from "@/lib/i18n/i18n-provider";
+
+// Visa status lives on each booking (see TripServices); this page only
+// points there. It isn't linked from the header.
 export function VisaView() {
-  return <div className="text-muted-foreground">Visa - your visa.</div>;
+  const t = useT();
+  return <div className="text-muted-foreground">{t("visa.page")}</div>;
 }
