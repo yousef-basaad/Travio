@@ -3,23 +3,25 @@
 import Link from "next/link";
 import { SearchX } from "lucide-react";
 import { Button, Card, CardContent, CardHeader, EmptyState, InfoRow, Skeleton } from "@travio/ui";
-import { formatCurrency, formatDate } from "@travio/utils";
+import { useI18n, useT } from "@/lib/i18n/i18n-provider";
 import { useProfile } from "@/features/profile";
 import { useBooking, BookingNotFoundError } from "../api/bookings.api";
 import { BookingStatusBadge } from "./booking-status-badge";
 import { TripServices } from "./trip-services";
 
 function BackToBookingsLink() {
+  const t = useT();
   return (
     <Button asChild variant="outline" size="sm">
-      <Link href="/bookings">← Back to My Bookings</Link>
+      <Link href="/bookings">{t("booking.back")}</Link>
     </Button>
   );
 }
 
 function BookingDetailsSkeleton() {
+  const t = useT();
   return (
-    <div role="status" aria-label="Loading booking" className="space-y-4">
+    <div role="status" aria-label={t("booking.loading")} className="space-y-4">
       <Skeleton className="h-8 w-40" />
       <Skeleton className="h-64 w-full" />
     </div>
@@ -27,12 +29,13 @@ function BookingDetailsSkeleton() {
 }
 
 function BookingNotFoundState() {
+  const t = useT();
   return (
     <div className="space-y-4">
       <BackToBookingsLink />
       <Card>
         <CardContent className="pt-6">
-          <EmptyState icon={<SearchX size={20} />} title="Booking not found" />
+          <EmptyState icon={<SearchX size={20} />} title={t("booking.notFound")} />
         </CardContent>
       </Card>
     </div>
@@ -40,6 +43,7 @@ function BookingNotFoundState() {
 }
 
 function BookingDetailsErrorState() {
+  const t = useT();
   return (
     <div className="space-y-4">
       <BackToBookingsLink />
@@ -47,7 +51,7 @@ function BookingDetailsErrorState() {
         role="alert"
         className="rounded-lg border border-danger/50 bg-danger/10 p-6 text-sm text-danger"
       >
-        Something went wrong loading this booking. Please try again later.
+        {t("booking.error")}
       </div>
     </div>
   );
@@ -69,6 +73,7 @@ export function BookingDetailsView({ id }: { id: string }) {
   // information" on a trip overview is this customer's own contact
   // details, not a new lookup.
   const { data: customer } = useProfile();
+  const { t, format } = useI18n();
 
   if (isLoading) {
     return <BookingDetailsSkeleton />;
@@ -93,19 +98,19 @@ export function BookingDetailsView({ id }: { id: string }) {
 
       <Card>
         <CardHeader>
-          <h2 className="text-sm font-medium">Trip Details</h2>
+          <h2 className="text-sm font-medium">{t("booking.tripDetails")}</h2>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <InfoRow label="Booking Number" value={booking.bookingNumber} />
-            <InfoRow label="Status" value={<BookingStatusBadge status={booking.status} />} />
+            <InfoRow label={t("booking.number")} value={booking.bookingNumber} />
+            <InfoRow label={t("booking.status")} value={<BookingStatusBadge status={booking.status} />} />
             <InfoRow
-              label="Start Date"
-              value={booking.startDate ? formatDate(booking.startDate) : "—"}
+              label={t("booking.start")}
+              value={booking.startDate ? format.date(booking.startDate) : "—"}
             />
-            <InfoRow label="End Date" value={booking.endDate ? formatDate(booking.endDate) : "—"} />
-            <InfoRow label="Total Amount" value={formatCurrency(booking.totalAmount, booking.currency ?? undefined)} />
-            {booking.notes ? <InfoRow label="Notes" value={booking.notes} /> : null}
+            <InfoRow label={t("booking.end")} value={booking.endDate ? format.date(booking.endDate) : "—"} />
+            <InfoRow label={t("booking.total")} value={format.currency(booking.totalAmount, booking.currency ?? undefined)} />
+            {booking.notes ? <InfoRow label={t("booking.notes")} value={booking.notes} /> : null}
           </dl>
         </CardContent>
       </Card>
@@ -113,13 +118,13 @@ export function BookingDetailsView({ id }: { id: string }) {
       {customer ? (
         <Card>
           <CardHeader>
-            <h2 className="text-sm font-medium">Customer Information</h2>
+            <h2 className="text-sm font-medium">{t("booking.customerInfo")}</h2>
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InfoRow label="Full Name" value={customer.fullName} />
-              <InfoRow label="Email" value={customer.email ?? "—"} />
-              <InfoRow label="Phone" value={customer.phone ?? "—"} />
+              <InfoRow label={t("booking.fullName")} value={customer.fullName} />
+              <InfoRow label={t("booking.email")} value={customer.email ? <span dir="ltr">{customer.email}</span> : "—"} />
+              <InfoRow label={t("booking.phone")} value={customer.phone ? <span dir="ltr">{customer.phone}</span> : "—"} />
             </dl>
           </CardContent>
         </Card>

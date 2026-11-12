@@ -1,5 +1,8 @@
+"use client";
+
 import type { BookingStatus } from "@travio/types";
 import { cn } from "@travio/utils";
+import { useT } from "@/lib/i18n/i18n-provider";
 
 // Mirrors apps/dashboard's BookingStatusBadge exactly (same 5 values,
 // same design-system tokens) - status label/style maps are always
@@ -16,15 +19,8 @@ const STATUS_STYLES: Record<BookingStatus, string> = {
   cancelled: "bg-danger/10 text-danger",
 };
 
-export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  draft: "Draft",
-  pending: "Pending",
-  confirmed: "Confirmed",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
-
 export function BookingStatusBadge({ status }: { status: BookingStatus }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -32,7 +28,7 @@ export function BookingStatusBadge({ status }: { status: BookingStatus }) {
         STATUS_STYLES[status],
       )}
     >
-      {BOOKING_STATUS_LABELS[status]}
+      {t(`bookingStatus.${status}`)}
     </span>
   );
 }

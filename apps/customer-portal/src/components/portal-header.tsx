@@ -2,21 +2,26 @@
 
 import { Fragment } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { AppHeader, Button } from "@travio/ui";
 import { cn } from "@travio/utils";
 import { signOut, useSession } from "@travio/auth";
+import { useT } from "@/lib/i18n/i18n-provider";
+import type { MessageKey } from "@/lib/i18n/messages/en";
+import { LanguageSwitch } from "./language-switch";
 
-const NAV_ITEMS = [
-  { label: "My Bookings", href: "/bookings" },
-  { label: "Documents", href: "/documents" },
-  { label: "Finance", href: "/finance" },
-  { label: "My Profile", href: "/profile" },
-] as const;
+const NAV_ITEMS: { label: MessageKey; href: Route }[] = [
+  { label: "nav.bookings", href: "/bookings" },
+  { label: "nav.documents", href: "/documents" },
+  { label: "nav.finance", href: "/finance" },
+  { label: "nav.profile", href: "/profile" },
+];
 
 function PortalNavLinks({ pathname, className }: { pathname: string; className?: string }) {
+  const t = useT();
   return (
-    <nav aria-label="Portal sections" className={cn("flex items-center gap-1", className)}>
+    <nav aria-label={t("nav.label")} className={cn("flex items-center gap-1", className)}>
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         return (
@@ -28,7 +33,7 @@ function PortalNavLinks({ pathname, className }: { pathname: string; className?:
             className={cn("shrink-0", active && "bg-accent text-accent-foreground")}
           >
             <Link href={item.href} aria-current={active ? "page" : undefined}>
-              {item.label}
+              {t(item.label)}
             </Link>
           </Button>
         );
@@ -48,6 +53,7 @@ function PortalNavLinks({ pathname, className }: { pathname: string; className?:
 export function PortalHeader() {
   const pathname = usePathname();
   const { profile } = useSession();
+  const t = useT();
 
   // Mirrors DashboardHeader's UserMenu.handleLogout exactly - the
   // already-existing signOut() server action (@travio/auth), followed
@@ -70,8 +76,9 @@ export function PortalHeader() {
                 {profile.fullName}
               </span>
             ) : null}
+            <LanguageSwitch />
             <Button variant="outline" size="sm" onClick={handleSignOut}>
-              Sign out
+              {t("header.signOut")}
             </Button>
           </div>
         }

@@ -1,39 +1,33 @@
-import { ServiceItem, ServiceItemHeader, ServiceItemContent } from "@travio/ui";
-import { formatDateTime } from "@travio/utils";
-import type { BookingTransfer, TransferType } from "@travio/api";
+"use client";
 
-const TRANSFER_TYPE_LABELS: Record<TransferType, string> = {
-  airport_transfer: "Airport Transfer",
-  hotel_transfer: "Hotel Transfer",
-  private_transfer: "Private Transfer",
-  shared_transfer: "Shared Transfer",
-};
+import { ServiceItem, ServiceItemHeader, ServiceItemContent } from "@travio/ui";
+import { useI18n } from "@/lib/i18n/i18n-provider";
+import type { BookingTransfer } from "@travio/api";
 
 // Read-only counterpart to the dashboard's own TransferItem.
 export function TransferItem({ transfer }: { transfer: BookingTransfer }) {
+  const { t, format } = useI18n();
   return (
     <ServiceItem>
       <ServiceItemHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium">{transfer.providerName ?? "Unknown provider"}</span>
+          <span className="text-sm font-medium">{transfer.providerName ?? t("transfer.unknown")}</span>
           {transfer.transferType && (
             <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-              {TRANSFER_TYPE_LABELS[transfer.transferType]}
+              {t(`transferType.${transfer.transferType}`)}
             </span>
           )}
         </div>
       </ServiceItemHeader>
       <ServiceItemContent>
         <p className="text-sm text-muted-foreground">
-          {transfer.pickupLocation ?? "—"} → {transfer.dropoffLocation ?? "—"}
+          <bdi>{transfer.pickupLocation ?? "—"}</bdi> {t("common.arrow")} <bdi>{transfer.dropoffLocation ?? "—"}</bdi>
         </p>
         <p className="text-xs text-muted-foreground">
-          {transfer.pickupTime ? formatDateTime(transfer.pickupTime) : "Pickup time not set"}
+          {transfer.pickupTime ? format.dateTime(transfer.pickupTime) : t("transfer.noPickup")}
           {transfer.vehicleType ? ` · ${transfer.vehicleType}` : ""}
-          {transfer.passengerCount
-            ? ` · ${transfer.passengerCount} passenger${transfer.passengerCount === 1 ? "" : "s"}`
-            : ""}
-          {transfer.confirmationNumber ? ` · Confirmation #${transfer.confirmationNumber}` : ""}
+          {transfer.passengerCount ? ` · ${t("transfer.passengers", { count: transfer.passengerCount })}` : ""}
+          {transfer.confirmationNumber ? ` · ${t("transfer.confirmation", { number: transfer.confirmationNumber })}` : ""}
         </p>
       </ServiceItemContent>
     </ServiceItem>

@@ -1,14 +1,9 @@
+"use client";
+
 import { ServiceItem, ServiceItemHeader, ServiceItemContent } from "@travio/ui";
-import { formatDate } from "@travio/utils";
 import type { VisaApplication, VisaStatus } from "@travio/api";
 import { cn } from "@travio/utils";
-
-const VISA_STATUS_LABELS: Record<VisaStatus, string> = {
-  draft: "Draft",
-  submitted: "Submitted",
-  approved: "Approved",
-  rejected: "Rejected",
-};
+import { useI18n } from "@/lib/i18n/i18n-provider";
 
 const VISA_STATUS_STYLES: Record<VisaStatus, string> = {
   draft: "bg-secondary text-secondary-foreground",
@@ -21,11 +16,12 @@ const VISA_STATUS_STYLES: Record<VisaStatus, string> = {
 // omits assignedTo (an internal staff-routing field, not something a
 // customer needs or should see).
 export function VisaItem({ visa }: { visa: VisaApplication }) {
+  const { t, format } = useI18n();
   return (
     <ServiceItem>
       <ServiceItemHeader>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium">{visa.visaType ?? "Unknown visa type"}</span>
+          <span className="text-sm font-medium">{visa.visaType ?? t("visa.unknownType")}</span>
           {visa.status && (
             <span
               className={cn(
@@ -33,7 +29,7 @@ export function VisaItem({ visa }: { visa: VisaApplication }) {
                 VISA_STATUS_STYLES[visa.status],
               )}
             >
-              {VISA_STATUS_LABELS[visa.status]}
+              {t(`visaStatus.${visa.status}`)}
             </span>
           )}
         </div>
@@ -41,7 +37,7 @@ export function VisaItem({ visa }: { visa: VisaApplication }) {
       <ServiceItemContent>
         <p className="text-sm text-muted-foreground">{visa.country ?? "—"}</p>
         <p className="text-xs text-muted-foreground">
-          {visa.submittedAt ? `Submitted ${formatDate(visa.submittedAt)}` : "Not submitted yet"}
+          {visa.submittedAt ? t("visa.submittedOn", { date: format.date(visa.submittedAt) }) : t("visa.notSubmitted")}
         </p>
       </ServiceItemContent>
     </ServiceItem>
