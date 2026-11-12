@@ -6,6 +6,7 @@ import type { PaymentMethod } from "@travio/api";
 import { useCreatePayment } from "../../api/invoices.api";
 import { PAYMENT_METHOD_KEYS } from "./payment-item";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { ruleMessage } from "@/lib/api/rule-error";
 
 const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ["cash", "card", "bank_transfer", "online"];
 
@@ -161,7 +162,7 @@ export function CreatePaymentDialog({ invoiceId, open, onOpenChange }: CreatePay
 
         {createPayment.isError && (
           <p role="alert" className="text-sm text-danger">
-            {t("finance.payments.addError")}
+            {t(ruleMessage(createPayment.error, "finance.payments.addError"))}
           </p>
         )}
 

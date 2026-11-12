@@ -7,6 +7,7 @@ import { useUpdatePayment } from "../../api/invoices.api";
 import { PAYMENT_METHOD_KEYS } from "./payment-item";
 import { isPaymentMethod } from "./create-payment-dialog";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { ruleMessage } from "@/lib/api/rule-error";
 
 const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ["cash", "card", "bank_transfer", "online"];
 
@@ -176,7 +177,7 @@ export function EditPaymentDialog({
 
         {updatePayment.isError && (
           <p role="alert" className="text-sm text-danger">
-            {t("common.saveError")}
+            {t(ruleMessage(updatePayment.error, "common.saveError"))}
           </p>
         )}
 

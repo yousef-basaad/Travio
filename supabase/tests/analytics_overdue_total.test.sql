@@ -9,6 +9,10 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(4);
 
+-- These invoices have past due dates and no stated issue date; without
+-- this they would default to being issued today, after they fell due.
+alter table public.invoices alter column issue_date drop default;
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('14000000-0000-0000-0000-0000000000a0', 'owner@overdue.test', '{"full_name":"Owner"}'),
   ('14000000-0000-0000-0000-0000000000b0', 'other@overdue.test', '{"full_name":"Other Owner"}');
@@ -49,8 +53,12 @@ insert into public.invoices (tenant_id, invoice_number, status, total, due_date,
 -- Overpaid overdue invoice: counts as 0, not negative.
 insert into public.invoices (id, tenant_id, invoice_number, status, total, due_date) values
   ('54000000-0000-0000-0000-0000000000a2', '24000000-0000-0000-0000-000000000001', 'OVER', 'issued', 10, current_date - 3);
+-- Overpayment is refused since 20261112120000, but rows from before that
+-- can exist, so this one is written the way they were: without the rules.
+alter table public.payments disable trigger user;
 insert into public.payments (tenant_id, invoice_id, amount, method)
 values ('24000000-0000-0000-0000-000000000001', '54000000-0000-0000-0000-0000000000a2', 25, 'cash');
+alter table public.payments enable trigger user;
 
 -- Other agency: one overdue invoice of 70.00.
 insert into public.invoices (tenant_id, invoice_number, status, total, due_date)

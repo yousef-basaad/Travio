@@ -6,6 +6,7 @@ import type { InvoiceItemType } from "@travio/api";
 import { useCreateInvoiceItem } from "../../api/invoices.api";
 import { ITEM_TYPE_KEYS } from "./invoice-item";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
+import { ruleMessage } from "@/lib/api/rule-error";
 
 const ITEM_TYPE_OPTIONS: InvoiceItemType[] = ["flight", "hotel", "transfer", "visa", "manual"];
 
@@ -183,7 +184,7 @@ export function CreateInvoiceItemDialog({
 
         {createItem.isError && (
           <p role="alert" className="text-sm text-danger">
-            {t("finance.items.addError")}
+            {t(ruleMessage(createItem.error, "finance.items.addError"))}
           </p>
         )}
 
