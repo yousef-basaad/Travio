@@ -4,7 +4,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import type { Document, DocumentListItem, DocumentType, OwnerType } from "@travio/api";
 import { fetchPage } from "@/lib/api/fetch-page";
 import { useSession } from "@travio/auth";
-import { supabase } from "@/lib/supabase";
 import { throwIfPlanLimit } from "@/lib/api/plan-limit-error";
 
 export const DOCUMENTS_QUERY_KEY = ["documents"];
@@ -94,9 +93,8 @@ async function createDocumentRecord(input: {
   return data as Document;
 }
 
-// Uploads directly from the browser to Storage (the already-existing
-// singleton browser client from @/lib/supabase, same one used for
-// sign-in) using the caller's own session - Storage RLS
+// Uploads directly from the browser to Storage (the singleton browser
+// client from @/lib/supabase) using the caller's own session - Storage RLS
 // (documents_bucket_tenant_select/_insert) enforces the tenant-prefixed
 // path, no service_role anywhere in this flow. Only after the upload
 // succeeds does this record the metadata row via POST /api/documents -
@@ -132,6 +130,10 @@ export function useUploadDocument() {
       });
       await throwIfPlanLimit(quota);
 
+      // The Supabase client (~64 kB gzipped) is loaded only when a file is
+      // actually uploaded, so it isn't part of every page that lists
+      // documents.
+      const { supabase } = await import("@/lib/supabase");
       const { error: uploadError } = await supabase.storage
         .from("documents")
         .upload(filePath, file, { contentType: file.type });
