@@ -2,6 +2,9 @@
   "name": "@travio/dashboard",
   "version": "0.1.0",
   "private": true,
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "dev": "next dev --turbopack -p 3001",
     "build": "next build",
