@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { formResolver } from "@/lib/forms/form-resolver";
 import { Button } from "@travio/ui";
 import { useCreateLead } from "../api/leads.api";
 import {
@@ -45,7 +45,7 @@ export function CreateLeadDialog({ open, onOpenChange }: CreateLeadDialogProps) 
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateLeadFormValues>({
-    resolver: zodResolver(createLeadFormSchema),
+    resolver: formResolver(createLeadFormSchema),
     defaultValues: DEFAULT_VALUES,
   });
 

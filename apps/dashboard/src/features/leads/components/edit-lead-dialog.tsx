@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { formResolver } from "@/lib/forms/form-resolver";
 import { Button } from "@travio/ui";
 import type { CrmLead } from "@travio/api";
 import { useUpdateLead } from "../api/leads.api";
@@ -49,7 +49,7 @@ export function EditLeadDialog({ lead, open, onOpenChange }: EditLeadDialogProps
     reset,
     formState: { errors, isSubmitting },
   } = useForm<EditLeadFormValues>({
-    resolver: zodResolver(editLeadFormSchema),
+    resolver: formResolver(editLeadFormSchema),
     defaultValues: toFormValues(lead),
   });
 

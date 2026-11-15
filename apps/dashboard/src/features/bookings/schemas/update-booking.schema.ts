@@ -19,7 +19,7 @@ function toCount(value: unknown) {
   return typeof value === "number" ? value : Number(value);
 }
 const countSchema = z
-  .number({ invalid_type_error: "validation.travelerCount" })
+  .number({ error: "validation.travelerCount" })
   .int("validation.travelerCount")
   .min(0, "validation.travelerCount")
   .max(999, "validation.travelerCount");
@@ -53,7 +53,7 @@ export const updateBookingFormSchema = z
     startDate: z.preprocess(emptyToNull, z.string().date("validation.invalidDate").nullable().optional()),
     endDate: z.preprocess(emptyToNull, z.string().date("validation.invalidDate").nullable().optional()),
     notes: z.preprocess(emptyToNull, z.string().nullable().optional()),
-    assignedTo: z.preprocess(emptyToNull, z.string().uuid("validation.invalidId").nullable().optional()),
+    assignedTo: z.preprocess(emptyToNull, z.guid("validation.invalidId").nullable().optional()),
     status: bookingStatusSchema.optional(),
     destinationCountry: z.preprocess(emptyToNull, countrySchema.nullable().optional()),
     destinationCity: z.preprocess(emptyToNull, citySchema.nullable().optional()),

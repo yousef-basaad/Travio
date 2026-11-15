@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { formResolver } from "@/lib/forms/form-resolver";
 import { Button, FormField, Input, Select, Textarea } from "@travio/ui";
 import { useCustomers } from "@/features/customers";
 import type { Booking } from "../types/booking";
@@ -56,7 +56,7 @@ export function EditBookingDialog({ booking, open, onOpenChange }: EditBookingDi
     reset,
     formState: { errors, isSubmitting },
   } = useForm<UpdateBookingFormValues>({
-    resolver: zodResolver(updateBookingFormSchema),
+    resolver: formResolver(updateBookingFormSchema),
     defaultValues: toFormValues(booking),
   });
 

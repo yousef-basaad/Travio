@@ -14,7 +14,7 @@ function emptyToUndefined(value: unknown) {
 export const createDocumentSchema = z
   .object({
     ownerType: ownerTypeSchema,
-    ownerId: z.preprocess(emptyToUndefined, z.string().uuid().optional()),
+    ownerId: z.preprocess(emptyToUndefined, z.guid().optional()),
     documentType: documentTypeSchema,
     fileName: z.string().max(500).trim().min(1, "File name is required"),
     filePath: z.string().max(500).trim().min(1, "File path is required"),
@@ -32,7 +32,7 @@ export const createDocumentSchema = z
 // fact, fileName can be renamed.
 export const updateDocumentSchema = z.object({
   ownerType: z.preprocess(emptyToUndefined, ownerTypeSchema.optional()),
-  ownerId: z.preprocess(emptyToUndefined, z.string().uuid().optional()),
+  ownerId: z.preprocess(emptyToUndefined, z.guid().optional()),
   documentType: z.preprocess(emptyToUndefined, documentTypeSchema.optional()),
   fileName: z.string().max(500).trim().min(1, "File name is required").optional(),
 });

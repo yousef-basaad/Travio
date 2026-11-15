@@ -30,11 +30,11 @@ export const bookingStatusFilterSchema = bookingStatusSchema.optional();
 // server-side validation; a caller that already has its own number
 // (e.g. a future import flow) can still supply one explicitly.
 export const createBookingSchema = z.object({
-  customerId: z.string().uuid(),
+  customerId: z.guid(),
   bookingNumber: z.string().max(60).trim().min(1, "Booking number is required").optional(),
   title: z.string().max(200).trim().min(1, "Title is required"),
-  branchId: z.string().uuid().nullable().optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
+  branchId: z.guid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
   status: bookingStatusSchema.optional(),
   startDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
   endDate: z.preprocess(emptyToUndefined, z.string().date().optional()),
@@ -59,11 +59,11 @@ export const createBookingSchema = z.object({
 // bookingsService's update mapper treats an omitted/undefined key as
 // "leave unchanged" (same reasoning as updateCustomerSchema).
 export const updateBookingSchema = z.object({
-  customerId: z.string().uuid().optional(),
+  customerId: z.guid().optional(),
   bookingNumber: z.string().max(60).trim().min(1, "Booking number is required").optional(),
   title: z.string().max(200).trim().min(1, "Title is required").optional(),
-  branchId: z.string().uuid().nullable().optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
+  branchId: z.guid().nullable().optional(),
+  assignedTo: z.guid().nullable().optional(),
   status: bookingStatusSchema.optional(),
   startDate: z.preprocess(emptyToNull, z.string().date().nullable().optional()),
   endDate: z.preprocess(emptyToNull, z.string().date().nullable().optional()),

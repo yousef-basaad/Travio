@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { formResolver } from "@/lib/forms/form-resolver";
 import { Button, Card, CardContent, CardHeader, FormField, Input, Select, Textarea } from "@travio/ui";
 import { useCustomers } from "@/features/customers";
 import { useCreateBooking } from "../api/bookings.api";
@@ -52,7 +52,7 @@ export function CreateBookingForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CreateBookingFormValues>({
-    resolver: zodResolver(createBookingFormSchema),
+    resolver: formResolver(createBookingFormSchema),
     defaultValues: DEFAULT_VALUES,
   });
 

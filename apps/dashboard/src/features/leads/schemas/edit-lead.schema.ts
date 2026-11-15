@@ -30,7 +30,7 @@ export const editLeadFormSchema = z.object({
   email: z.preprocess(emptyToNull, z.string().email("validation.invalidEmail").nullable()),
   source: z.preprocess(emptyToNull, crmLeadSourceSchema.nullable()),
   status: crmLeadStatusSchema,
-  assignedTo: z.preprocess(emptyToNull, z.string().uuid("validation.invalidId").nullable()),
+  assignedTo: z.preprocess(emptyToNull, z.guid("validation.invalidId").nullable()),
 });
 
 export type EditLeadFormValues = z.infer<typeof editLeadFormSchema>;

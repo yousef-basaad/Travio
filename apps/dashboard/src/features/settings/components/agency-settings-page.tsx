@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { formResolver } from "@/lib/forms/form-resolver";
 import {
   Button,
   Card,
@@ -62,7 +62,7 @@ export function AgencySettingsPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<AgencySettingsFormValues>({
-    resolver: zodResolver(agencySettingsFormSchema),
+    resolver: formResolver(agencySettingsFormSchema),
     defaultValues: { phone: null, email: null, address: null },
   });
 

@@ -20,8 +20,8 @@ const invoiceStatusSchema = z.enum(["draft", "issued", "paid", "partially_paid",
 // handler before use, same "never trust as-is" reasoning as
 // createBookingSchema's customerId.
 export const createInvoiceSchema = z.object({
-  customerId: z.string().uuid().nullable().optional(),
-  bookingId: z.string().uuid().nullable().optional(),
+  customerId: z.guid().nullable().optional(),
+  bookingId: z.guid().nullable().optional(),
   invoiceNumber: z.string().max(60).trim().min(1, "Invoice number is required"),
   status: z.preprocess(emptyToUndefined, invoiceStatusSchema.optional()),
   // The invoice total is entered manually for now (no invoice_items
@@ -42,8 +42,8 @@ export const createInvoiceSchema = z.object({
 // invoiceNumber/currency stay non-nullable-but-optional (no "unset"),
 // matching updateBookingSchema's totalAmount/status.
 export const updateInvoiceSchema = z.object({
-  customerId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
-  bookingId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
+  customerId: z.preprocess(emptyToNull, z.guid().nullable().optional()),
+  bookingId: z.preprocess(emptyToNull, z.guid().nullable().optional()),
   invoiceNumber: z.string().max(60).trim().min(1, "Invoice number is required").optional(),
   status: z.preprocess(emptyToUndefined, invoiceStatusSchema.optional()),
   total: z.number().nonnegative().optional(),
@@ -64,7 +64,7 @@ const invoiceItemTypeSchema = z.enum(["flight", "hotel", "transfer", "visa", "ma
 // own reasoning for why no FK backs it either).
 export const createInvoiceItemSchema = z.object({
   itemType: z.preprocess(emptyToUndefined, invoiceItemTypeSchema.optional()),
-  referenceId: z.string().uuid().nullable().optional(),
+  referenceId: z.guid().nullable().optional(),
   description: z.string().max(1000).trim().min(1, "Description is required"),
   quantity: z.number().int().min(1).optional(),
   unitPrice: z.number().nonnegative().optional(),
@@ -80,7 +80,7 @@ export const createInvoiceItemSchema = z.object({
 // stay non-nullable-but-optional (no "unset").
 export const updateInvoiceItemSchema = z.object({
   itemType: z.preprocess(emptyToUndefined, invoiceItemTypeSchema.optional()),
-  referenceId: z.preprocess(emptyToNull, z.string().uuid().nullable().optional()),
+  referenceId: z.preprocess(emptyToNull, z.guid().nullable().optional()),
   description: z.string().max(1000).trim().min(1, "Description is required").optional(),
   quantity: z.number().int().min(1).optional(),
   unitPrice: z.number().nonnegative().optional(),

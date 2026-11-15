@@ -6,7 +6,7 @@ import { platformService } from "@travio/api";
 import { isVerifiedAdmin } from "@/lib/auth/mfa";
 import { createServerSupabaseClient } from "@travio/database/server";
 
-const inputSchema = z.object({ tenantId: z.string().uuid(), active: z.boolean() });
+const inputSchema = z.object({ tenantId: z.guid(), active: z.boolean() });
 
 // Server actions are public endpoints, so this checks the role itself;
 // platform_set_agency_active() checks it again in Postgres.

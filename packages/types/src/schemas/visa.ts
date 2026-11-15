@@ -8,9 +8,9 @@ export const visaStatusSchema = z.enum([
 ]);
 
 export const visaApplicationSchema = z.object({
-  id: z.string().uuid(),
-  tenantId: z.string().uuid(),
-  bookingId: z.string().uuid(),
+  id: z.guid(),
+  tenantId: z.guid(),
+  bookingId: z.guid(),
   passportNumber: z.string().min(4),
   nationality: z.string().min(2),
   status: visaStatusSchema,
