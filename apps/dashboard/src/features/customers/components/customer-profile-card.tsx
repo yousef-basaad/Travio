@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffName } from "@/features/team";
 import { Card, CardContent, CardHeader, InfoRow, LtrText } from "@travio/ui";
 import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 import type { Customer } from "@travio/api";
@@ -12,6 +13,7 @@ import type { Customer } from "@travio/api";
 // this and who owns them" summary rather than the full profile dump.
 export function CustomerProfileCard({ customer }: { customer: Customer }) {
   const t = useT();
+  const staffName = useStaffName();
   const format = useFormat();
   return (
     <Card>
@@ -31,7 +33,7 @@ export function CustomerProfileCard({ customer }: { customer: Customer }) {
           {/* Raw id, not a resolved name - no profiles join exists yet
               (same convention as every other assignedTo display in this
               app), never fabricated. */}
-          <InfoRow label={t("field.assignedAgent")} value={customer.assignedTo ?? t("common.unassigned")} />
+          <InfoRow label={t("field.assignedAgent")} value={staffName(customer.assignedTo)} />
         </dl>
       </CardContent>
     </Card>

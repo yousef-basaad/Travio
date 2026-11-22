@@ -3,6 +3,12 @@ import type { Database } from "@travio/database";
 import type { UserRole } from "@travio/types";
 import { toTeamMember, type TeamMember } from "./team-members.mapper";
 
+/** A staff member as other staff see them: who, not how to reach them. */
+export interface TeamDirectoryEntry {
+  id: string;
+  fullName: string | null;
+}
+
 // Service layer: raw Supabase queries live here, never inline in
 // components/routes. Reading the roster relies on the new
 // profiles_select_tenant RLS policy (Product-4 migration) - without it
@@ -24,6 +30,22 @@ export const teamMembersService = {
 
     if (error) throw error;
     return data.map(toTeamMember);
+  },
+
+  // Names for showing who a record is assigned to. Every staff role can
+  // read it (unlike listByTenant, which the Team page uses and which
+  // carries emails and roles), so it returns only id and name, and
+  // leaves out customer-portal accounts that share the tenant.
+  async listDirectory(supabase: SupabaseClient<Database>, tenantId: string): Promise<TeamDirectoryEntry[]> {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("tenant_id", tenantId)
+      .neq("role", "customer")
+      .order("full_name", { ascending: true });
+
+    if (error) throw error;
+    return data.map((row) => ({ id: row.id, fullName: row.full_name }));
   },
 
   async updateRole(

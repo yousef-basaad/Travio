@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffName } from "@/features/team";
 import { Button, ServiceItem, ServiceItemHeader, ServiceItemActions, ServiceItemContent } from "@travio/ui";
 import { cn } from "@travio/utils";
 import type { VisaApplication, VisaStatus } from "@travio/api";
@@ -56,6 +57,7 @@ type VisaItemProps = {
 export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) {
   const readOnly = !onEdit && !onDelete;
   const t = useT();
+  const staffName = useStaffName();
   const format = useFormat();
 
   return (
@@ -99,7 +101,7 @@ export function VisaItem({ visa, onEdit, onDelete, isDeleting }: VisaItemProps) 
         </p>
         <p className="text-xs text-muted-foreground">
           {/* Raw id, not a resolved name - no profiles join exists yet. */}
-          {t("visa.assignedOfficer", { name: visa.assignedTo ?? t("common.unassigned") })}
+          {t("visa.assignedOfficer", { name: staffName(visa.assignedTo) })}
         </p>
       </ServiceItemContent>
     </ServiceItem>

@@ -185,6 +185,8 @@ export const ar: Messages = {
   "common.creating": "جارٍ الإنشاء…",
   "common.sending": "جارٍ الإرسال…",
   "common.unassigned": "غير مُسند",
+  "common.formerMember": "عضو سابق في الفريق",
+  "common.unnamedMember": "عضو بلا اسم",
   "common.actions": "إجراءات",
   "common.comingSoon": "قريباً",
   "common.status": "الحالة",
