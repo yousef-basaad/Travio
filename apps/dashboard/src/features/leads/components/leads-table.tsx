@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffName } from "@/features/team";
 import { useState } from "react";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
@@ -31,6 +32,7 @@ import { useFormat, useT } from "@/lib/i18n/i18n-provider";
 // detail page, never in this table) instead of plain humanized text.
 export function LeadsTable() {
   const t = useT();
+  const staffName = useStaffName();
   const format = useFormat();
   // Server-side paging + search (name/email/phone), same as Customers.
   const { page, setPage, pageSize, search, setSearch, debouncedSearch } = useListPaging();
@@ -94,8 +96,8 @@ export function LeadsTable() {
                 </TableCell>
                 <TableCell>{lead.source ? <LeadSourceBadge source={lead.source} /> : "—"}</TableCell>
                 {/* Raw id, not a resolved name - no profiles join exists yet. */}
-                <TableCell className="text-muted-foreground" title={lead.assignedTo ?? undefined}>
-                  {lead.assignedTo ? `${lead.assignedTo.slice(0, 8)}…` : t("common.unassigned")}
+                <TableCell className="text-muted-foreground">
+                  {staffName(lead.assignedTo)}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {lead.createdAt ? format.date(lead.createdAt) : "—"}

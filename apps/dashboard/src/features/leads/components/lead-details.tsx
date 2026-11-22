@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffName } from "@/features/team";
 import { useState } from "react";
 import Link from "next/link";
 import { SearchX } from "lucide-react";
@@ -63,6 +64,7 @@ function LeadDetailsErrorState() {
 
 export function LeadDetails({ id }: { id: string }) {
   const t = useT();
+  const staffName = useStaffName();
   const format = useFormat();
   const { data: lead, isLoading, error } = useLead(id);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -121,7 +123,7 @@ export function LeadDetails({ id }: { id: string }) {
             />
             {/* No profiles join here by design - assigned_to is displayed
                 as-is (raw id) until a name-resolution path exists. */}
-            <InfoRow label={t("field.assignedTo")} value={lead.assignedTo ?? t("common.unassigned")} />
+            <InfoRow label={t("field.assignedTo")} value={staffName(lead.assignedTo)} />
           </dl>
         </CardContent>
       </Card>

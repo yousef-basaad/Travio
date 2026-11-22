@@ -185,6 +185,8 @@ export const en = {
   "common.creating": "Creating…",
   "common.sending": "Sending…",
   "common.unassigned": "Unassigned",
+  "common.formerMember": "Former team member",
+  "common.unnamedMember": "Unnamed team member",
   "common.actions": "Actions",
   "common.comingSoon": "Coming soon",
   "common.status": "Status",

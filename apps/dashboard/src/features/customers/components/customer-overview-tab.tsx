@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffName } from "@/features/team";
 import { MiniStat, InfoRow } from "@travio/ui";
 import type { Customer } from "@travio/api";
 import { useCustomerBookings, useCustomerTimeline } from "../api/customers.api";
@@ -18,6 +19,7 @@ export function CustomerOverviewTab({ customer }: { customer: Customer }) {
   const { data: bookings, isLoading: isLoadingBookings } = useCustomerBookings(customer.id);
   const { data: timeline, isLoading: isLoadingTimeline } = useCustomerTimeline(customer.id);
   const t = useT();
+  const staffName = useStaffName();
   const format = useFormat();
 
   const totalBookings = bookings?.length ?? 0;
@@ -30,7 +32,7 @@ export function CustomerOverviewTab({ customer }: { customer: Customer }) {
         <InfoRow label={t("field.nationality")} value={customer.nationality ?? "—"} />
         <InfoRow label={t("field.passportNumber")} value={customer.passportNumber ?? "—"} />
         {/* Raw id, not a resolved name - no profiles join exists yet. */}
-        <InfoRow label={t("field.assignedOwner")} value={customer.assignedTo ?? t("common.unassigned")} />
+        <InfoRow label={t("field.assignedOwner")} value={staffName(customer.assignedTo)} />
         <InfoRow label={t("field.customerSince")} value={format.date(customer.createdAt)} />
       </dl>
 

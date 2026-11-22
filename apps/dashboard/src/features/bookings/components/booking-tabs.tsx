@@ -1,5 +1,6 @@
 "use client";
 
+import { useStaffName } from "@/features/team";
 import { useState } from "react";
 import { DetailLayout, InfoRow } from "@travio/ui";
 import type { Booking } from "../types/booking";
@@ -44,6 +45,7 @@ function OverviewTab({
   customerName: string | null;
 }) {
   const t = useT();
+  const staffName = useStaffName();
   const format = useFormat();
   return (
     <div className="space-y-6">
@@ -54,7 +56,7 @@ function OverviewTab({
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <InfoRow label={t("common.customer")} value={customerName ?? booking.customerId} />
           {/* Raw id, not a resolved name - no profiles join exists yet. */}
-          <InfoRow label={t("bookings.field.assignedAgent")} value={booking.assignedTo ?? t("common.unassigned")} />
+          <InfoRow label={t("bookings.field.assignedAgent")} value={staffName(booking.assignedTo)} />
         </dl>
       </div>
 

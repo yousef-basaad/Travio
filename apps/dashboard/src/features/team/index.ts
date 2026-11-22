@@ -3,3 +3,4 @@ export * from "./components/team-role-badge";
 export * from "./components/invite-team-member-dialog";
 export * from "./components/change-team-member-role";
 export * from "./api/team.api";
+export * from "./api/team-directory.api";

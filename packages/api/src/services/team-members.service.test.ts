@@ -37,6 +37,21 @@ describe("teamMembersService", () => {
     });
   });
 
+  describe("listDirectory", () => {
+    it("returns only id and name, for staff of the tenant (not customers)", async () => {
+      const { client, allCalls } = createFakeSupabaseClient({
+        profiles: [{ data: [{ id: "user-1", full_name: "Test Agent" }], error: null }],
+      });
+
+      const members = await teamMembersService.listDirectory(client, "tenant-1");
+
+      expect(findCallsByMethod(allCalls, "profiles", "select")).toContainEqual({ method: "select", args: ["id, full_name"] });
+      expect(findCallsByMethod(allCalls, "profiles", "eq")).toContainEqual({ method: "eq", args: ["tenant_id", "tenant-1"] });
+      expect(findCallsByMethod(allCalls, "profiles", "neq")).toContainEqual({ method: "neq", args: ["role", "customer"] });
+      expect(members).toEqual([{ id: "user-1", fullName: "Test Agent" }]);
+    });
+  });
+
   describe("updateRole", () => {
     it("calls update_team_member_role via rpc() with the target id and new role", async () => {
       const { client, allCalls } = createFakeSupabaseClient({
