@@ -8,6 +8,7 @@ import {
   type CreateCustomerFieldErrors,
 } from "../api/customers.api";
 import { useT } from "@/lib/i18n/i18n-provider";
+import { isMessageKey } from "@/lib/i18n/translate";
 
 const EMPTY_FORM = {
   fullName: "",
@@ -29,6 +30,9 @@ type CreateCustomerDialogProps = {
 export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialogProps) {
   const createCustomer = useCreateCustomer();
   const t = useT();
+  // Server messages are either message keys (e.g. validation.invalidPhone)
+  // or plain text; keys are shown in the user's language.
+  const errorText = (message: string | undefined) => (message && isMessageKey(message) ? t(message) : message);
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState<CreateCustomerFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -105,23 +109,23 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
           {t("customers.new")}
         </h2>
 
-        <FormField label={t("field.fullName")} htmlFor="customer-full-name" error={fieldErrors.fullName}>
+        <FormField label={t("field.fullName")} htmlFor="customer-full-name" error={errorText(fieldErrors.fullName)}>
           <Input {...fieldProps("fullName", "customer-full-name")} autoComplete="off" required />
         </FormField>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label={t("field.phone")} htmlFor="customer-phone" error={fieldErrors.phone}>
+          <FormField label={t("field.phone")} htmlFor="customer-phone" error={errorText(fieldErrors.phone)}>
             <Input {...fieldProps("phone", "customer-phone")} type="tel" autoComplete="off" />
           </FormField>
 
-          <FormField label={t("field.email")} htmlFor="customer-email" error={fieldErrors.email}>
+          <FormField label={t("field.email")} htmlFor="customer-email" error={errorText(fieldErrors.email)}>
             <Input {...fieldProps("email", "customer-email")} type="email" autoComplete="off" />
           </FormField>
 
           <FormField
             label={t("field.passportExpiry")}
             htmlFor="customer-passport-expiry"
-            error={fieldErrors.passportExpiry}
+            error={errorText(fieldErrors.passportExpiry)}
           >
             <Input {...fieldProps("passportExpiry", "customer-passport-expiry")} type="date" />
           </FormField>
@@ -129,7 +133,7 @@ export function CreateCustomerDialog({ open, onOpenChange }: CreateCustomerDialo
           <FormField
             label={t("field.preferredLanguage")}
             htmlFor="customer-preferred-language"
-            error={fieldErrors.preferredLanguage}
+            error={errorText(fieldErrors.preferredLanguage)}
           >
             <Input {...fieldProps("preferredLanguage", "customer-preferred-language")} autoComplete="off" />
           </FormField>

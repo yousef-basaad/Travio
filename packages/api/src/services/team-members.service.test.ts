@@ -23,6 +23,8 @@ describe("teamMembersService", () => {
 
       const eqCalls = findCallsByMethod(allCalls, "profiles", "eq");
       expect(eqCalls).toContainEqual({ method: "eq", args: ["tenant_id", "tenant-1"] });
+      // Customer-portal accounts share the tenant but aren't team members.
+      expect(findCallsByMethod(allCalls, "profiles", "neq")).toContainEqual({ method: "neq", args: ["role", "customer"] });
 
       expect(members).toEqual([
         {
