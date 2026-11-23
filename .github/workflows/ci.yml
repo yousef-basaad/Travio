@@ -56,3 +56,48 @@ jobs:
 
       - name: Run pgTAP tests
         run: supabase test db
+
+  # End-to-end tests (e2e/): the real dashboard and customer portal in a
+  # browser, against a throwaway local Supabase stack in the runner (all
+  # migrations applied). No secrets, never touches the remote project -
+  # e2e/support/local-env.ts refuses anything that isn't 127.0.0.1.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.118.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start local Supabase
+        run: supabase start -x studio,postgres-meta,imgproxy,edge-runtime,logflare,vector,supavisor
+
+      - name: Install browser
+        run: pnpm --filter @travio/e2e exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: pnpm --filter @travio/e2e e2e
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7
