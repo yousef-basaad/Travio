@@ -26,6 +26,8 @@ export const teamMembersService = {
       .from("profiles")
       .select("*")
       .eq("tenant_id", tenantId)
+      // Customer-portal accounts share the tenant but aren't staff.
+      .neq("role", "customer")
       .order("created_at", { ascending: false });
 
     if (error) throw error;

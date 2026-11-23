@@ -13,6 +13,7 @@ import type {
   PaymentMethod,
 } from "@travio/api";
 import { throwIfRuleError } from "@/lib/api/rule-error";
+import { FINANCE_INSIGHTS_QUERY_KEY } from "./finance-insights.api";
 
 // Stable top-level key other invoice mutations invalidate by prefix,
 // matching CUSTOMERS_QUERY_KEY/BOOKINGS_QUERY_KEY's convention. Invoices
@@ -359,6 +360,17 @@ export function useRestoreInvoice() {
   });
 }
 
+// Adding, changing or removing a payment or an item changes the invoice
+// itself in the database (status, total, paid and remaining - see the
+// 20261112120000 triggers), so every invoice view is refreshed, not only
+// the list that was edited. Payments pages and the finance summaries
+// read the same numbers.
+function refreshMoneyViews(queryClient: ReturnType<typeof useQueryClient>) {
+  void queryClient.invalidateQueries({ queryKey: INVOICES_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: PAYMENTS_QUERY_KEY });
+  void queryClient.invalidateQueries({ queryKey: FINANCE_INSIGHTS_QUERY_KEY });
+}
+
 function invoiceItemsQueryKey(invoiceId: string) {
   return [...INVOICES_QUERY_KEY, invoiceId, "items"];
 }
@@ -432,11 +444,7 @@ export function useCreateInvoiceItem() {
 
   return useMutation({
     mutationFn: createInvoiceItem,
-    onSuccess: (_item, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: invoiceItemsQueryKey(variables.invoiceId),
-      });
-    },
+    onSuccess: () => refreshMoneyViews(queryClient),
   });
 }
 
@@ -484,11 +492,7 @@ export function useUpdateInvoiceItem() {
 
   return useMutation({
     mutationFn: updateInvoiceItem,
-    onSuccess: (_item, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: invoiceItemsQueryKey(variables.invoiceId),
-      });
-    },
+    onSuccess: () => refreshMoneyViews(queryClient),
   });
 }
 
@@ -508,11 +512,7 @@ export function useDeleteInvoiceItem() {
 
   return useMutation({
     mutationFn: deleteInvoiceItem,
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: invoiceItemsQueryKey(variables.invoiceId),
-      });
-    },
+    onSuccess: () => refreshMoneyViews(queryClient),
   });
 }
 
@@ -636,11 +636,7 @@ export function useCreatePayment() {
 
   return useMutation({
     mutationFn: createPayment,
-    onSuccess: (_payment, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: paymentsQueryKey(variables.invoiceId),
-      });
-    },
+    onSuccess: () => refreshMoneyViews(queryClient),
   });
 }
 
@@ -684,11 +680,7 @@ export function useUpdatePayment() {
 
   return useMutation({
     mutationFn: updatePayment,
-    onSuccess: (_payment, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: paymentsQueryKey(variables.invoiceId),
-      });
-    },
+    onSuccess: () => refreshMoneyViews(queryClient),
   });
 }
 
@@ -708,10 +700,6 @@ export function useDeletePayment() {
 
   return useMutation({
     mutationFn: deletePayment,
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: paymentsQueryKey(variables.invoiceId),
-      });
-    },
+    onSuccess: () => refreshMoneyViews(queryClient),
   });
 }
